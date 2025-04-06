@@ -1,0 +1,25 @@
+# Backend dependencies
+aiohttp>=3.8.0
+fastapi>=0.68.0
+uvicorn>=0.15.0
+websockets>=10.0
+pydantic>=1.9.0
+asyncio>=3.4.3
+uuid>=1.30
+
+# Integration dependencies
+hermes-client>=0.1.0  # This will be replaced with the actual Hermes client
+
+# Deadlock prevention dependencies
+# These will be resolved from Tekton core installation
+# tekton-core>=0.1.0
+
+# UI dependencies - these would be installed via npm
+# Listed here for documentation purposes
+# react>=17.0.2
+# electron>=15.0.0
+# @emotion/react>=11.7.0
+# @emotion/styled>=11.6.0
+# @mui/material>=5.2.0
+# react-router-dom>=6.0.0
+# d3>=7.0.0

@@ -1,0 +1,8 @@
+Placeholder for Hephaestus icon.
+
+An icon representing Hephaestus (the Greek god of craftsmen, technology, and forge) would be appropriate here.
+
+Suggested imagery:
+- Hammer and anvil (traditional symbols of Hephaestus)
+- Modern interpretation with UI elements and tools
+- Consistent with other Tekton component icons
