@@ -1,5 +1,10 @@
 # Hephaestus
 
+<div align="center">
+  <img src="images/icon.png" alt="Hephaestus Logo" width="800"/>
+  <h3>Tekton<br>AI Driven Orchestration</h3>
+</div>
+
 Integrated GUI for the Tekton Multi-AI Engineering Platform.
 
 ## Overview
