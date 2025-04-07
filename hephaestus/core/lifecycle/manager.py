@@ -14,7 +14,7 @@ from hephaestus.core.lifecycle.dependencies import DependencyResolver
 # Configure logging
 logger = logging.getLogger(__name__)
 
-class LifecycleManager:
+class HephaestusLifecycleManager:
     """
     Component lifecycle manager with deadlock prevention.
     

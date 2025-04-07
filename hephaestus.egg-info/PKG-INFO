@@ -1,0 +1,118 @@
+Metadata-Version: 2.4
+Name: hephaestus
+Version: 0.1.0
+Summary: Integrated GUI for Tekton Multi-AI Engineering Platform
+Home-page: https://github.com/cskoons/Hephaestus
+Author: Casey Koons
+Author-email: cskoons@gmail.com
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.9
+Description-Content-Type: text/markdown
+Requires-Dist: aiohttp>=3.8.0
+Requires-Dist: fastapi>=0.68.0
+Requires-Dist: uvicorn>=0.15.0
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: home-page
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
+
+# Hephaestus
+
+<div align="center">
+  <img src="images/icon.png" alt="Hephaestus Logo" width="800"/>
+  <h3>Tekton<br>AI Driven Orchestration</h3>
+</div>
+
+Integrated GUI for the Tekton Multi-AI Engineering Platform.
+
+## Overview
+
+Hephaestus provides a unified graphical interface for all Tekton components, enabling visual management and interaction with the entire platform. Named after the Greek god of craftsmen and technology, Hephaestus brings together the various components of Tekton into a cohesive whole.
+
+## Features
+
+- Unified dashboard for all Tekton components
+- Component-specific interfaces for specialized tasks
+- Real-time status monitoring of the Tekton ecosystem
+- Integration with Hermes for seamless communication
+- Cross-component workflow visualization
+- Deadlock prevention system with enhanced lifecycle management
+- Dependency cycle detection and resolution
+
+## Project Status
+
+🚧 **Early Development** 🚧
+
+This component is currently in the planning and initial implementation phase.
+
+## Component Integration
+
+Hephaestus integrates with the following Tekton components:
+
+- **Hermes**: For messaging and communication
+- **Tekton Core**: For component lifecycle management
+- **All Components**: Providing specialized UIs for each
+
+## Development
+
+### Prerequisites
+
+- Python 3.9+
+- Node.js 16+
+- Tekton core components
+
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/cskoons/Hephaestus.git
+
+# Install dependencies
+cd Hephaestus
+pip install -e .
+npm install
+```
+
+### Running the GUI
+
+```bash
+# From the Tekton root directory
+./hephaestus_launch
+
+# Or, with the integrated launcher
+./tekton_launch --gui
+```
+
+## Architecture
+
+Hephaestus follows the Tekton architectural principles while adding a presentation layer:
+
+- Component-based UI design
+- Integration with the Hermes messaging system
+- Decoupled from core functionality for optional use
+- Extensible to accommodate new Tekton components
+- Enhanced lifecycle management with deadlock prevention
+- Graceful degradation for robust operation
+
+### Deadlock Prevention
+
+The deadlock prevention system ensures Hephaestus and Tekton components operate reliably even in the presence of:
+
+- Circular dependencies between components
+- Slow-starting or intermittently failing components
+- Network connectivity issues
+- Resource constraints
+
+The system uses:
+- Fine-grained component state tracking
+- Automatic cycle detection and resolution
+- Timeout management with graceful recovery
+- Health monitoring with proactive intervention
