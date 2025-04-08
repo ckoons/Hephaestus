@@ -398,7 +398,7 @@
             <div class="component-status status-inactive"></div>
           </li>
           <li class="component-item" data-component-id="synthesis">
-            <div class="component-name">Synthesis <span class="component-specialty">- Integration</span></div>
+            <div class="component-name">Synthesis <span class="component-specialty">- Execution</span></div>
             <div class="component-status status-inactive"></div>
           </li>
         </ul>
@@ -443,21 +443,6 @@
             <p>Welcome to the Tekton Multi-AI Engineering Platform</p>
             <p id="status-message">Connecting to components...</p>
             
-            <div style="margin-top: 30px; padding: 20px; border-radius: 10px; background-color: rgba(59, 130, 246, 0.1); max-width: 600px; text-align: left;">
-              <h3 style="margin-top: 0; color: #3b82f6;">Available Component UIs</h3>
-              <p>The following components have dedicated user interfaces:</p>
-              <ul style="list-style-type: disc; padding-left: 20px;">
-                <li><strong>Athena</strong> - Knowledge Graph Management</li>
-                <li><strong>Engram</strong> - Memory System</li>
-                <li><strong>Prometheus</strong> - Planning Engine</li>
-                <li><strong>Hermes</strong> - Messaging and Data</li>
-                <li><strong>Telos</strong> - Requirements Management</li>
-                <li><strong>Rhetor</strong> - Context Management</li>
-                <li><strong>Harmonia</strong> - Orchestration</li>
-                <li><strong>Sophia</strong> - Learning System</li>
-              </ul>
-              <p style="margin-bottom: 0;">Click on a component in the left sidebar to access its interface.</p>
-            </div>
           </div>
         </div>
 
@@ -700,7 +685,7 @@
               iframe.style.width = '100%';
               iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
               iframe.style.border = 'none';
-              iframe.style.overflow = 'auto';
+              iframe.style.overflow = 'hidden';
               iframe.style.backgroundColor = '#0f172a';
               
               rightPanel.appendChild(iframe);
@@ -770,7 +755,7 @@
               iframe.style.width = '100%';
               iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
               iframe.style.border = 'none';
-              iframe.style.overflow = 'auto';
+              iframe.style.overflow = 'hidden';
               iframe.style.backgroundColor = '#0f172a';
               
               rightPanel.appendChild(iframe);
@@ -787,6 +772,7 @@
         const rhetorButton = document.querySelector('.component-item[data-component-id="rhetor"]');
         const harmoniaButton = document.querySelector('.component-item[data-component-id="harmonia"]');
         const sophiaButton = document.querySelector('.component-item[data-component-id="sophia"]');
+        const synthesisButton = document.querySelector('.component-item[data-component-id="synthesis"]');
 
         // Component colors (adjust as needed)
         const componentColors = {
@@ -795,7 +781,8 @@
           "telos": "#14b8a6",      // Teal
           "rhetor": "#a855f7",     // Purple
           "harmonia": "#ec4899",   // Pink
-          "sophia": "#6366f1"      // Indigo
+          "sophia": "#6366f1",     // Indigo
+          "synthesis": "#7c3aed"   // Violet
         };
 
         // Function to set up component UI buttons
@@ -861,7 +848,7 @@
                 iframe.style.width = '100%';
                 iframe.style.height = 'calc(100vh - 115px)';
                 iframe.style.border = 'none';
-                iframe.style.overflow = 'auto';
+                iframe.style.overflow = 'hidden';
                 iframe.style.backgroundColor = '#0f172a';
                 
                 rightPanel.appendChild(iframe);
@@ -879,6 +866,7 @@
         setupComponentUI(rhetorButton, "rhetor", componentColors.rhetor);
         setupComponentUI(harmoniaButton, "harmonia", componentColors.harmonia);
         setupComponentUI(sophiaButton, "sophia", componentColors.sophia);
+        setupComponentUI(synthesisButton, "synthesis", componentColors.synthesis);
         
       } catch (error) {
         debugMessage('Error in component loader', error.message);
