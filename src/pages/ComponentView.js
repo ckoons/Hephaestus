@@ -118,74 +118,190 @@ const ComponentView = () => {
       <Paper 
         elevation={0}
         sx={{ 
-          p: 2, 
+          p: 3, 
           display: 'flex', 
           alignItems: 'center', 
           justifyContent: 'space-between',
           borderBottom: `1px solid ${componentColor}`,
+          borderRadius: 0,
+          position: 'relative',
+          overflow: 'hidden',
+          background: `linear-gradient(90deg, 
+            rgba(0,0,0,0) 0%, 
+            ${statusSeverity === 'success' ? 'rgba(16, 185, 129, 0.05)' : 
+              statusSeverity === 'warning' ? 'rgba(245, 158, 11, 0.05)' : 
+              statusSeverity === 'error' ? 'rgba(239, 68, 68, 0.05)' : 
+              'rgba(59, 130, 246, 0.05)'} 100%)`,
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Box
+        <Box sx={{ display: 'flex', alignItems: 'center', zIndex: 1 }}>
+          <Avatar
             sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: 40,
-              height: 40,
-              borderRadius: '50%',
-              bgcolor: 'action.hover',
+              width: 56,
+              height: 56,
+              bgcolor: 'rgba(0,0,0,0.1)',
               color: componentColor,
-              mr: 2,
+              border: `2px solid ${componentColor}`,
+              boxShadow: `0 0 10px ${componentColor}40`,
+              mr: 3,
             }}
           >
-            {getComponentIcon(component.name)}
-          </Box>
+            {getComponentIcon(component.name) || component.name.charAt(0).toUpperCase()}
+          </Avatar>
           <Box>
-            <Typography variant="h5">{component.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
+              <Typography variant="h4" sx={{ fontWeight: 600 }}>{component.name}</Typography>
+              <Chip
+                label={getComponentSpecialty(component.name)}
+                size="small"
+                sx={{ 
+                  ml: 2,
+                  bgcolor: `${componentColor}20`,
+                  color: componentColor,
+                  fontWeight: 500,
+                }}
+              />
+            </Box>
+            <Typography variant="body1" color="text.secondary" sx={{ maxWidth: '600px' }}>
               {component.description || `${component.name} component for Tekton platform`}
             </Typography>
           </Box>
         </Box>
         
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <Chip
-            label={formattedStatus}
-            color={statusSeverity}
-            size="small"
-            sx={{ mr: 2 }}
-          />
+        <Box sx={{ display: 'flex', alignItems: 'center', zIndex: 1 }}>
+          <Box 
+            sx={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              bgcolor: `${statusSeverity}.dark`,
+              color: 'white',
+              py: 0.75,
+              px: 2,
+              borderRadius: 6,
+              mr: 2,
+            }}
+          >
+            <Box
+              sx={{
+                width: 8,
+                height: 8,
+                borderRadius: '50%',
+                bgcolor: `${statusSeverity}.light`,
+                mr: 1,
+                boxShadow: `0 0 6px ${statusSeverity === 'success' ? '#4caf50' : 
+                          statusSeverity === 'warning' ? '#ff9800' : 
+                          statusSeverity === 'error' ? '#f44336' : '#2196f3'}`
+              }}
+            />
+            <Typography sx={{ fontWeight: 500, fontSize: '0.875rem' }}>
+              {formattedStatus}
+            </Typography>
+          </Box>
           <Button
             variant="outlined"
-            size="small"
             startIcon={<RefreshIcon />}
             onClick={handleRefresh}
+            sx={{ 
+              borderRadius: 6,
+              textTransform: 'none',
+              borderColor: componentColor,
+              color: componentColor,
+              '&:hover': {
+                borderColor: componentColor,
+                bgcolor: `${componentColor}10`,
+              }
+            }}
           >
             Refresh
           </Button>
         </Box>
+
+        {/* Background subtle hexagon pattern */}
+        <Box 
+          sx={{
+            position: 'absolute',
+            top: -40,
+            right: -40,
+            width: 200,
+            height: 200,
+            opacity: 0.04,
+            backgroundImage: `url('/images/hexagon.png')`,
+            backgroundSize: 'contain',
+            backgroundRepeat: 'no-repeat',
+            backgroundPosition: 'center',
+            zIndex: 0,
+            pointerEvents: 'none',
+          }}
+        />
       </Paper>
       
       {/* Component tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+      <Box sx={{ 
+        borderBottom: 1, 
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        px: 2,
+        pt: 1
+      }}>
         <Tabs 
           value={tabValue} 
           onChange={handleTabChange}
           aria-label="component tabs"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           sx={{
+            '& .MuiTab-root': {
+              minHeight: 48,
+              borderRadius: '8px 8px 0 0',
+              transition: 'all 0.2s ease',
+              mx: 0.5,
+              opacity: 0.7,
+              '&:hover': {
+                bgcolor: 'rgba(255, 255, 255, 0.05)',
+                opacity: 0.9,
+              },
+            },
             '& .MuiTab-root.Mui-selected': {
               color: componentColor,
+              opacity: 1,
+              fontWeight: 600,
+              bgcolor: 'rgba(255, 255, 255, 0.03)',
             },
             '& .MuiTabs-indicator': {
               backgroundColor: componentColor,
+              height: 3,
+              borderRadius: 1.5,
+            },
+            '& .MuiTabs-scrollButtons': {
+              color: 'text.secondary',
             },
           }}
         >
-          <Tab icon={<CodeIcon />} iconPosition="start" label="Console" />
-          <Tab icon={<StorageIcon />} iconPosition="start" label="Data" />
-          <Tab icon={<AccountTreeIcon />} iconPosition="start" label="Visualization" />
-          <Tab icon={<SettingsIcon />} iconPosition="start" label="Settings" />
+          <Tab 
+            icon={<CodeIcon />} 
+            iconPosition="start" 
+            label="Console" 
+            sx={{ textTransform: 'none' }}
+          />
+          <Tab 
+            icon={<StorageIcon />} 
+            iconPosition="start" 
+            label="Data" 
+            sx={{ textTransform: 'none' }}
+          />
+          <Tab 
+            icon={<AccountTreeIcon />} 
+            iconPosition="start" 
+            label="Visualization" 
+            sx={{ textTransform: 'none' }}
+          />
+          <Tab 
+            icon={<SettingsIcon />} 
+            iconPosition="start" 
+            label="Settings" 
+            sx={{ textTransform: 'none' }}
+          />
         </Tabs>
       </Box>
       

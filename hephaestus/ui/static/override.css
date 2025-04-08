@@ -1,0 +1,26 @@
+/* Direct override styles for Hephaestus UI */
+
+.sidebar-logo-text {
+  font-size: 1.4rem !important;
+  font-weight: bold !important;
+  color: #3b82f6 !important;
+  margin-bottom: 4px !important;
+}
+
+.sidebar-platform-text {
+  color: #aaaaaa !important;
+  font-size: 0.8rem !important;
+}
+
+.sidebar-logo-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  padding: 12px !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
+  margin: 8px !important;
+}
+
+.hexagon-logo {
+  filter: brightness(1.2) contrast(1.2) !important;
+}

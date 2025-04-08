@@ -240,13 +240,24 @@ async def check_deadlocks(comp_manager: ComponentManager = Depends(get_component
 # Serve static files (if available)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    # Mount static directory for index.html and other root files
+    app.mount("/", StaticFiles(directory=static_dir, html=True), name="root")
+    
+    # Mount static/css and static/js directories for compiled assets
+    static_css_dir = os.path.join(static_dir, "static", "css")
+    if os.path.exists(static_css_dir):
+        app.mount("/static/css", StaticFiles(directory=static_css_dir), name="css")
+        
+    static_js_dir = os.path.join(static_dir, "static", "js")
+    if os.path.exists(static_js_dir):
+        app.mount("/static/js", StaticFiles(directory=static_js_dir), name="js")
 
 
-# Serve frontend files
+# We'll use StaticFiles to handle all static content
+# This catch-all route is commented out since it conflicts with the StaticFiles mount
+"""
 @app.get("/{path:path}")
 async def serve_frontend(path: str):
-    """Serve frontend files."""
     # Check if the path exists in the static directory
     frontend_dir = os.path.join(os.path.dirname(__file__), "static")
     requested_file = os.path.join(frontend_dir, path)
@@ -261,6 +272,20 @@ async def serve_frontend(path: str):
         return FileResponse(index_file)
     
     # If frontend files are not available yet, show a placeholder
+    return JSONResponse({
+        "message": "Hephaestus UI is starting...",
+        "status": "initializing"
+    })
+"""
+
+# Fallback for SPA routing - serve index.html for any other routes
+@app.get("/{path:path}")
+async def serve_spa(path: str):
+    """Serve index.html for client-side routing."""
+    index_file = os.path.join(os.path.dirname(__file__), "static", "index.html")
+    if os.path.exists(index_file):
+        return FileResponse(index_file)
+    
     return JSONResponse({
         "message": "Hephaestus UI is starting...",
         "status": "initializing"

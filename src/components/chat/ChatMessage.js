@@ -141,7 +141,14 @@ const ChatMessage = ({ message }) => {
               {message.content}
             </ReactMarkdown>
           ) : (
-            <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap' }}>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'monospace',
+                fontSize: isUser ? '0.95rem' : '1rem'
+              }}
+            >
               {message.content}
             </Typography>
           )}

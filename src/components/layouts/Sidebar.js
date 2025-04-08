@@ -12,13 +12,21 @@ import {
   Typography,
   Icon,
   Tooltip,
+  Avatar,
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import MonetizationOnIcon from '@mui/icons-material/MonetizationOn';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import { styled } from '@mui/material/styles';
 
 import { setActiveComponent } from '../../store/slices/componentsSlice';
-import { getComponentIcon } from '../../utils/componentUtils';
+import { getComponentIcon, getComponentSpecialty } from '../../utils/componentUtils';
+
+// Custom components for consistent image paths
+const TektonHexagon = styled('img')({
+  width: 36,
+  height: 36,
+});
 
 const Sidebar = ({ onItemClick }) => {
   const dispatch = useDispatch();
@@ -28,6 +36,7 @@ const Sidebar = ({ onItemClick }) => {
   // Get components from Redux store
   const components = useSelector((state) => state.components.list);
   const activeComponentId = useSelector((state) => state.components.activeComponentId);
+  const showGreekNames = useSelector((state) => state.settings.showGreekNames);
   
   const handleComponentClick = (componentId) => {
     dispatch(setActiveComponent(componentId));
@@ -77,13 +86,22 @@ const Sidebar = ({ onItemClick }) => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', py: 2 }}>
       {/* Logo */}
-      <Box sx={{ px: 3, mb: 3, textAlign: 'center' }}>
-        <Typography variant="h5" sx={{ fontWeight: 'bold' }}>
-          Tekton
-        </Typography>
-        <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-          Multi-AI Engineering Platform
-        </Typography>
+      <Box className="sidebar-logo-container">
+        <Box>
+          <Typography className="sidebar-logo-text" variant="h5">
+            TEKTON
+          </Typography>
+          <Typography className="sidebar-platform-text" variant="caption">
+            Multi-AI Engineering
+          </Typography>
+        </Box>
+        <img
+          src="/images/hexagon.png"
+          alt="Tekton"
+          className="hexagon-logo"
+          width={36}
+          height={36}
+        />
       </Box>
       
       {/* Dashboard */}
@@ -97,7 +115,7 @@ const Sidebar = ({ onItemClick }) => {
             <ListItemIcon>
               <DashboardIcon />
             </ListItemIcon>
-            <ListItemText primary="Dashboard" />
+            <ListItemText primary="Tekton - Projects" />
           </ListItemButton>
         </ListItem>
       </List>
@@ -122,7 +140,11 @@ const Sidebar = ({ onItemClick }) => {
                 {getComponentIcon(component.name)}
               </ListItemIcon>
               <ListItemText 
-                primary={component.name} 
+                primary={
+                  showGreekNames 
+                    ? `${component.name} - ${getComponentSpecialty(component.name)}` 
+                    : getComponentSpecialty(component.name)
+                } 
                 primaryTypographyProps={{
                   sx: {
                     opacity: component.status === 'OFFLINE' ? 0.5 : 1,
@@ -166,10 +188,8 @@ const Sidebar = ({ onItemClick }) => {
             onClick={() => handleNavClick('/settings')}
             sx={{ px: 3 }}
           >
-            <ListItemIcon>
-              <SettingsIcon />
-            </ListItemIcon>
             <ListItemText primary="Settings" />
+            <SettingsIcon fontSize="small" sx={{ ml: 1 }} />
           </ListItemButton>
         </ListItem>
       </List>

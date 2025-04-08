@@ -37,6 +37,7 @@ const ChatWindow = ({ componentId }) => {
         border: '1px solid',
         borderColor: 'divider',
         borderRadius: 2,
+        boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.15)',
       }}
     >
       {/* Chat messages */}
