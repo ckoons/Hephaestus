@@ -15,46 +15,64 @@
     
     /* Embedded mode styles - activated when in iframe */
     body.embedded {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
     }
     
     body.embedded header {
-      padding: 10px 0;
-      margin: 0;
+      padding: 10px 0 !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
     }
     
     body.embedded .header-content {
-      padding-left: 0;
-      padding-right: 0;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    
+    body.embedded .logo {
+      margin-left: 10px !important;
+    }
+    
+    body.embedded .status {
+      margin-right: 10px !important;
     }
     
     body.embedded .tabs {
-      padding: 0;
+      padding: 0 !important;
+      border-radius: 0 !important;
+    }
+    
+    body.embedded .tab {
+      border-radius: 0 !important;
     }
     
     body.embedded .tab-content {
-      padding: 10px 0;
+      padding: 10px !important;
+      margin: 0 !important;
     }
     
     body.embedded .container {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100vh;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
     }
     
     body.embedded .section {
-      margin-bottom: 10px;
-      margin-left: 0;
-      margin-right: 0;
-      border-radius: 0;
+      margin-bottom: 10px !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      border-radius: 0 !important;
+      padding: 15px !important;
     }
     
     body.embedded .main-content {
-      padding-left: 0;
-      padding-right: 0;
+      padding: 0 !important;
+      margin: 0 !important;
+      height: calc(100vh - 100px) !important;
     }
     
     .container {
@@ -995,7 +1013,25 @@
       const isEmbedded = urlParams.get('embedded') === 'true';
       
       if (isEmbedded) {
+        document.documentElement.classList.add('embedded');
         document.body.classList.add('embedded');
+        
+        // Force the container to take the full width and height of the iframe
+        document.querySelector('.container').style.margin = '0';
+        document.querySelector('.container').style.padding = '0';
+        document.querySelector('.container').style.width = '100%';
+        document.querySelector('.container').style.height = '100vh';
+        
+        // Adjust header padding
+        document.querySelector('header').style.padding = '10px 0';
+        document.querySelector('.header-content').style.paddingLeft = '10px';
+        document.querySelector('.header-content').style.paddingRight = '10px';
+        
+        // Adjust tab padding
+        document.querySelector('.tabs').style.padding = '0 10px';
+        
+        // Adjust main content padding
+        document.querySelector('.main-content').style.padding = '0';
       }
       
       const tabs = document.querySelectorAll('.tab');

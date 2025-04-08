@@ -146,6 +146,7 @@
       background-color: #0f0f0f;
       height: calc(100vh - 115px);
       overflow: hidden;
+      position: relative;
     }
     
     .landing-page {
@@ -337,6 +338,7 @@
     #right-panel-content {
       height: calc(100vh - 115px);
       overflow: hidden;
+      position: relative;
     }
   </style>
 </head>
@@ -687,6 +689,11 @@
               iframe.style.border = 'none';
               iframe.style.overflow = 'hidden';
               iframe.style.backgroundColor = '#0f172a';
+              iframe.style.position = 'absolute';
+              iframe.style.top = '0';
+              iframe.style.left = '0';
+              iframe.style.right = '0';
+              iframe.style.bottom = '0';
               
               rightPanel.appendChild(iframe);
             } catch (error) {
@@ -757,6 +764,11 @@
               iframe.style.border = 'none';
               iframe.style.overflow = 'hidden';
               iframe.style.backgroundColor = '#0f172a';
+              iframe.style.position = 'absolute';
+              iframe.style.top = '0';
+              iframe.style.left = '0';
+              iframe.style.right = '0';
+              iframe.style.bottom = '0';
               
               rightPanel.appendChild(iframe);
             } catch (error) {
@@ -850,6 +862,11 @@
                 iframe.style.border = 'none';
                 iframe.style.overflow = 'hidden';
                 iframe.style.backgroundColor = '#0f172a';
+                iframe.style.position = 'absolute';
+                iframe.style.top = '0';
+                iframe.style.left = '0';
+                iframe.style.right = '0';
+                iframe.style.bottom = '0';
                 
                 rightPanel.appendChild(iframe);
               } catch (error) {
