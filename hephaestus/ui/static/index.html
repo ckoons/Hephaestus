@@ -681,7 +681,7 @@
               rightPanel.innerHTML = '';
               
               const iframe = document.createElement('iframe');
-              iframe.src = '/component/athena.html';
+              iframe.src = '/component/athena.html?embedded=true';
               iframe.style.width = '100%';
               iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
               iframe.style.border = 'none';
@@ -751,7 +751,7 @@
               rightPanel.innerHTML = '';
               
               const iframe = document.createElement('iframe');
-              iframe.src = '/component/engram.html';
+              iframe.src = '/component/engram.html?embedded=true';
               iframe.style.width = '100%';
               iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
               iframe.style.border = 'none';
@@ -844,7 +844,7 @@
                 rightPanel.innerHTML = '';
                 
                 const iframe = document.createElement('iframe');
-                iframe.src = `/component/${componentId}.html`;
+                iframe.src = `/component/${componentId}.html?embedded=true`;
                 iframe.style.width = '100%';
                 iframe.style.height = 'calc(100vh - 115px)';
                 iframe.style.border = 'none';
