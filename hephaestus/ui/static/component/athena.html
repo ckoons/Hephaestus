@@ -1,0 +1,1884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Athena Component</title>
+  <style>
+    /* This CSS only applies to elements within this component */
+    .athena-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .athena-nav {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.8);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .athena-nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .athena-nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(124, 58, 237, 0.1);
+    }
+    
+    .athena-nav-item.active {
+      color: white;
+      background-color: rgba(124, 58, 237, 0.2);
+    }
+    
+    .athena-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #7c3aed;
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .athena-content {
+      flex-grow: 1;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .athena-panel {
+      display: none;
+      height: 100%;
+    }
+    
+    .athena-panel.active {
+      display: block;
+    }
+    
+    /* Dashboard panel */
+    .knowledge-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .graph-container {
+      height: 250px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .recent-facts {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .fact-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .fact-item {
+      padding: 12px;
+      border-radius: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      margin-bottom: 8px;
+      transition: background-color 0.2s;
+    }
+    
+    .fact-item:hover {
+      background-color: rgba(124, 58, 237, 0.1);
+    }
+    
+    .fact-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    
+    .fact-type {
+      font-size: 12px;
+      color: #7c3aed;
+      background-color: rgba(124, 58, 237, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    
+    .fact-time {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .fact-content {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.4;
+    }
+    
+    .fact-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .fact-source {
+      text-decoration: underline;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    
+    .confidence {
+      display: flex;
+      align-items: center;
+    }
+    
+    .confidence-bar {
+      width: 50px;
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      margin-left: 5px;
+      overflow: hidden;
+    }
+    
+    .confidence-value {
+      height: 100%;
+      background-color: #7c3aed;
+      border-radius: 3px;
+    }
+    
+    /* Graph Explorer panel */
+    .explorer-container {
+      display: flex;
+      height: 100%;
+      gap: 16px;
+      flex-direction: column;
+    }
+    
+    .graph-controls {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .search-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .search-input {
+      flex-grow: 1;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .search-input:focus {
+      border-color: rgba(124, 58, 237, 0.5);
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
+    
+    .search-select {
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      min-width: 120px;
+    }
+    
+    .search-button {
+      background-color: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .search-button:hover {
+      background-color: #6d28d9;
+    }
+    
+    .control-options {
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .control-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    
+    .control-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .control-buttons {
+      display: flex;
+      gap: 4px;
+    }
+    
+    .control-btn {
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      border-radius: 4px;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .control-btn:hover {
+      background-color: rgba(124, 58, 237, 0.2);
+      color: white;
+    }
+    
+    .graph-view {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      min-height: 400px;
+    }
+    
+    .graph-canvas {
+      flex-grow: 1;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .graph-details {
+      width: 300px;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      padding: 16px;
+      margin-left: 16px;
+      overflow-y: auto;
+    }
+    
+    .detail-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 16px;
+    }
+    
+    .detail-row {
+      margin-bottom: 12px;
+    }
+    
+    .detail-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 4px;
+    }
+    
+    .detail-value {
+      font-size: 14px;
+      color: white;
+      word-break: break-word;
+    }
+    
+    .relation-list {
+      margin-top: 20px;
+    }
+    
+    .relation-item {
+      background-color: rgba(15, 23, 42, 0.7);
+      border-radius: 4px;
+      padding: 8px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .relation-item:hover {
+      background-color: rgba(124, 58, 237, 0.2);
+    }
+    
+    .relation-name {
+      font-size: 13px;
+      color: #7c3aed;
+      margin-bottom: 4px;
+    }
+    
+    .relation-target {
+      font-size: 14px;
+      color: white;
+    }
+
+    /* Entity Management panel */
+    .entity-container {
+      display: flex;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .entity-list {
+      width: 300px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .entities-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .add-button {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+    
+    .add-button:hover {
+      background-color: #059669;
+    }
+    
+    .entity-filter {
+      margin-bottom: 12px;
+    }
+    
+    .entity-item {
+      padding: 10px;
+      border-radius: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .entity-item:hover {
+      background-color: rgba(124, 58, 237, 0.1);
+    }
+    
+    .entity-item.active {
+      background-color: rgba(124, 58, 237, 0.2);
+      border-left: 3px solid #7c3aed;
+    }
+    
+    .entity-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+    
+    .entity-meta {
+      display: flex;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .entity-type {
+      color: #7c3aed;
+      margin-right: 8px;
+    }
+    
+    .entity-editor {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .editor-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .delete-button {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .delete-button:hover {
+      background-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .editor-form {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+    }
+    
+    .form-group {
+      flex-grow: 1;
+    }
+    
+    .form-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+      display: block;
+    }
+    
+    .form-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    .relations-section {
+      margin-top: 16px;
+    }
+    
+    .relations-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    
+    .relations-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      font-size: 14px;
+    }
+    
+    .relations-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 14px;
+    }
+    
+    .action-icons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .action-icon {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
+      transition: all 0.2s;
+    }
+    
+    .action-icon:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+    
+    .add-relation {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    .add-relation button {
+      background-color: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .add-relation button:hover {
+      background-color: #6d28d9;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 16px;
+    }
+    
+    .save-button {
+      background-color: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .save-button:hover {
+      background-color: #6d28d9;
+    }
+    
+    .cancel-button {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .cancel-button:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Query Panel */
+    .query-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .query-builder {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .query-tabs {
+      display: flex;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .query-tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .query-tab.active {
+      color: white;
+      border-bottom-color: #7c3aed;
+    }
+    
+    .query-mode {
+      margin-bottom: 16px;
+    }
+    
+    .query-input {
+      width: 100%;
+      height: 100px;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      font-family: monospace;
+      outline: none;
+      resize: vertical;
+      margin-bottom: 16px;
+    }
+    
+    .query-structured {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .query-options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .option-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .query-results {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    
+    .results-tabs {
+      display: flex;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .result-tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+    
+    .result-tab.active {
+      color: white;
+      border-bottom-color: #7c3aed;
+    }
+    
+    .result-content {
+      flex-grow: 1;
+      overflow: auto;
+    }
+    
+    .result-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .result-table th {
+      text-align: left;
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      font-size: 14px;
+      position: sticky;
+      top: 0;
+      background-color: rgba(15, 23, 42, 0.9);
+    }
+    
+    .result-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: white;
+      font-size: 14px;
+    }
+    
+    .result-table tr:hover {
+      background-color: rgba(124, 58, 237, 0.1);
+    }
+    
+    .result-json {
+      background-color: rgba(15, 23, 42, 0.7);
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      white-space: pre-wrap;
+      color: white;
+      font-size: 14px;
+      overflow: auto;
+      max-height: 500px;
+    }
+    
+    .result-graph {
+      background-color: rgba(15, 23, 42, 0.7);
+      border-radius: 6px;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Integration Panel */
+    .integration-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .integration-section {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .integration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 12px;
+    }
+    
+    .integration-card {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+    
+    .integration-card:hover {
+      background-color: rgba(15, 23, 42, 0.7);
+      border-color: rgba(124, 58, 237, 0.3);
+    }
+    
+    .integration-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .integration-icon {
+      width: 40px;
+      height: 40px;
+      background-color: rgba(124, 58, 237, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+      color: #7c3aed;
+      font-size: 20px;
+    }
+    
+    .integration-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: white;
+    }
+    
+    .integration-description {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    
+    .integration-status {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .status-text {
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-connected {
+      background-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+    
+    .status-disconnected {
+      background-color: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    }
+    
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+    
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: rgba(15, 23, 42, 0.7);
+      transition: .4s;
+      border-radius: 24px;
+    }
+    
+    .toggle-slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+      background-color: #7c3aed;
+    }
+    
+    input:checked + .toggle-slider:before {
+      transform: translateX(22px);
+    }
+    
+    .integration-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+    }
+    
+    .action-button {
+      background-color: #7c3aed;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+    
+    .action-button:hover {
+      background-color: #6d28d9;
+    }
+    
+    .secondary-button {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .secondary-button:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .athena-nav {
+        flex-wrap: wrap;
+      }
+      
+      .entity-container {
+        flex-direction: column;
+      }
+      
+      .entity-list {
+        width: 100%;
+        max-height: 200px;
+      }
+      
+      .graph-view {
+        flex-direction: column;
+      }
+      
+      .graph-details {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 16px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="athena-container">
+    <!-- Navigation Tabs -->
+    <div class="athena-nav">
+      <div class="athena-nav-item active" data-panel="dashboard">Dashboard</div>
+      <div class="athena-nav-item" data-panel="explorer">Graph Explorer</div>
+      <div class="athena-nav-item" data-panel="entity">Entity Management</div>
+      <div class="athena-nav-item" data-panel="query">Query Interface</div>
+      <div class="athena-nav-item" data-panel="integration">Integrations</div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="athena-content">
+      <!-- Dashboard Panel -->
+      <div class="athena-panel active" id="dashboard-panel">
+        <div class="knowledge-stats">
+          <div class="stat-card">
+            <div class="stat-title">Total Entities</div>
+            <div class="stat-value">1,458</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Relationships</div>
+            <div class="stat-value">3,269</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Entity Types</div>
+            <div class="stat-value">27</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Queries Today</div>
+            <div class="stat-value">142</div>
+          </div>
+        </div>
+        
+        <div class="graph-container">
+          <p>Knowledge graph visualization would appear here</p>
+        </div>
+        
+        <div class="recent-facts">
+          <div class="section-title">
+            <span>Recently Added Facts</span>
+            <span>Last 24 hours</span>
+          </div>
+          
+          <div class="fact-list">
+            <div class="fact-item">
+              <div class="fact-meta">
+                <div class="fact-type">HAS_COMPONENT</div>
+                <div class="fact-time">Today, 15:22</div>
+              </div>
+              <div class="fact-content">
+                <strong>Tekton</strong> has component <strong>Hephaestus</strong> which provides GUI functionality.
+              </div>
+              <div class="fact-footer">
+                <div class="fact-source">Source: User input</div>
+                <div class="confidence">
+                  Confidence: 0.95
+                  <div class="confidence-bar">
+                    <div class="confidence-value" style="width: 95%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="fact-item">
+              <div class="fact-meta">
+                <div class="fact-type">CAPABILITY</div>
+                <div class="fact-time">Today, 14:38</div>
+              </div>
+              <div class="fact-content">
+                <strong>Engram</strong> provides memory persistence, vector embeddings, and multi-client support.
+              </div>
+              <div class="fact-footer">
+                <div class="fact-source">Source: Documentation</div>
+                <div class="confidence">
+                  Confidence: 0.98
+                  <div class="confidence-bar">
+                    <div class="confidence-value" style="width: 98%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="fact-item">
+              <div class="fact-meta">
+                <div class="fact-type">REQUIRES</div>
+                <div class="fact-time">Today, 13:15</div>
+              </div>
+              <div class="fact-content">
+                <strong>Hephaestus</strong> requires <strong>Hermes</strong> for component registration and communication.
+              </div>
+              <div class="fact-footer">
+                <div class="fact-source">Source: Code analysis</div>
+                <div class="confidence">
+                  Confidence: 0.89
+                  <div class="confidence-bar">
+                    <div class="confidence-value" style="width: 89%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="fact-item">
+              <div class="fact-meta">
+                <div class="fact-type">IMPLEMENTS</div>
+                <div class="fact-time">Today, 11:42</div>
+              </div>
+              <div class="fact-content">
+                <strong>Athena</strong> implements knowledge graph capabilities with entity and relationship management.
+              </div>
+              <div class="fact-footer">
+                <div class="fact-source">Source: README.md</div>
+                <div class="confidence">
+                  Confidence: 0.97
+                  <div class="confidence-bar">
+                    <div class="confidence-value" style="width: 97%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Graph Explorer Panel -->
+      <div class="athena-panel" id="explorer-panel">
+        <div class="explorer-container">
+          <div class="graph-controls">
+            <div class="search-row">
+              <input type="text" class="search-input" placeholder="Search entities...">
+              <select class="search-select">
+                <option value="all">All Types</option>
+                <option value="component">Component</option>
+                <option value="person">Person</option>
+                <option value="project">Project</option>
+                <option value="technology">Technology</option>
+              </select>
+              <button class="search-button">Search</button>
+            </div>
+            
+            <div class="control-options">
+              <div class="control-group">
+                <div class="control-label">Depth:</div>
+                <select class="search-select">
+                  <option value="1">1 level</option>
+                  <option value="2" selected>2 levels</option>
+                  <option value="3">3 levels</option>
+                  <option value="all">All</option>
+                </select>
+              </div>
+              
+              <div class="control-group">
+                <div class="control-label">Layout:</div>
+                <select class="search-select">
+                  <option value="force">Force-directed</option>
+                  <option value="radial">Radial</option>
+                  <option value="hierarchical">Hierarchical</option>
+                </select>
+              </div>
+              
+              <div class="control-buttons">
+                <div class="control-btn" title="Zoom in">+</div>
+                <div class="control-btn" title="Zoom out">-</div>
+                <div class="control-btn" title="Reset view">⟲</div>
+                <div class="control-btn" title="Export graph">↓</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="graph-view">
+            <div class="graph-canvas">
+              <p>Interactive knowledge graph visualization would appear here</p>
+            </div>
+            
+            <div class="graph-details">
+              <div class="detail-header">Entity Details</div>
+              
+              <div class="detail-row">
+                <div class="detail-label">Name</div>
+                <div class="detail-value">Tekton</div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-label">Type</div>
+                <div class="detail-value">Platform</div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-label">Description</div>
+                <div class="detail-value">Multi-AI Engineering Platform that orchestrates various specialized components.</div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-label">Created</div>
+                <div class="detail-value">2025-01-15</div>
+              </div>
+              
+              <div class="detail-row">
+                <div class="detail-label">Last Modified</div>
+                <div class="detail-value">2025-04-08</div>
+              </div>
+              
+              <div class="relation-list">
+                <div class="detail-label">Relationships</div>
+                
+                <div class="relation-item">
+                  <div class="relation-name">HAS_COMPONENT</div>
+                  <div class="relation-target">Hephaestus</div>
+                </div>
+                
+                <div class="relation-item">
+                  <div class="relation-name">HAS_COMPONENT</div>
+                  <div class="relation-target">Engram</div>
+                </div>
+                
+                <div class="relation-item">
+                  <div class="relation-name">HAS_COMPONENT</div>
+                  <div class="relation-target">Hermes</div>
+                </div>
+                
+                <div class="relation-item">
+                  <div class="relation-name">HAS_COMPONENT</div>
+                  <div class="relation-target">Athena</div>
+                </div>
+                
+                <div class="relation-item">
+                  <div class="relation-name">CREATED_BY</div>
+                  <div class="relation-target">Casey Koons</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Entity Management Panel -->
+      <div class="athena-panel" id="entity-panel">
+        <div class="entity-container">
+          <div class="entity-list">
+            <div class="entities-header">
+              <div class="section-title">Entities</div>
+              <div class="add-button">+</div>
+            </div>
+            
+            <div class="entity-filter">
+              <input type="text" class="search-input" placeholder="Filter entities...">
+            </div>
+            
+            <div class="entity-item active">
+              <div class="entity-name">Tekton</div>
+              <div class="entity-meta">
+                <div class="entity-type">Platform</div>
+                <div>5 relationships</div>
+              </div>
+            </div>
+            
+            <div class="entity-item">
+              <div class="entity-name">Hephaestus</div>
+              <div class="entity-meta">
+                <div class="entity-type">Component</div>
+                <div>3 relationships</div>
+              </div>
+            </div>
+            
+            <div class="entity-item">
+              <div class="entity-name">Engram</div>
+              <div class="entity-meta">
+                <div class="entity-type">Component</div>
+                <div>4 relationships</div>
+              </div>
+            </div>
+            
+            <div class="entity-item">
+              <div class="entity-name">Hermes</div>
+              <div class="entity-meta">
+                <div class="entity-type">Component</div>
+                <div>6 relationships</div>
+              </div>
+            </div>
+            
+            <div class="entity-item">
+              <div class="entity-name">Athena</div>
+              <div class="entity-meta">
+                <div class="entity-type">Component</div>
+                <div>3 relationships</div>
+              </div>
+            </div>
+            
+            <div class="entity-item">
+              <div class="entity-name">Casey Koons</div>
+              <div class="entity-meta">
+                <div class="entity-type">Person</div>
+                <div>2 relationships</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="entity-editor">
+            <div class="editor-header">
+              <div class="editor-title">Edit Entity: Tekton</div>
+              <div class="editor-actions">
+                <button class="delete-button">Delete</button>
+              </div>
+            </div>
+            
+            <div class="editor-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Name</label>
+                  <input type="text" class="form-input" value="Tekton">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Type</label>
+                  <select class="search-select form-input">
+                    <option value="platform" selected>Platform</option>
+                    <option value="component">Component</option>
+                    <option value="person">Person</option>
+                    <option value="project">Project</option>
+                    <option value="technology">Technology</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea">Multi-AI Engineering Platform that orchestrates various specialized components.</textarea>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Metadata</label>
+                  <input type="text" class="form-input" value="version: 1.0.0, status: active">
+                </div>
+              </div>
+              
+              <div class="relations-section">
+                <div class="section-title">Relationships</div>
+                
+                <table class="relations-table">
+                  <thead>
+                    <tr>
+                      <th>Relationship</th>
+                      <th>Target Entity</th>
+                      <th>Confidence</th>
+                      <th>Source</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>HAS_COMPONENT</td>
+                      <td>Hephaestus</td>
+                      <td>0.95</td>
+                      <td>User input</td>
+                      <td>
+                        <div class="action-icons">
+                          <div class="action-icon">✏️</div>
+                          <div class="action-icon">🗑️</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>HAS_COMPONENT</td>
+                      <td>Engram</td>
+                      <td>0.98</td>
+                      <td>Documentation</td>
+                      <td>
+                        <div class="action-icons">
+                          <div class="action-icon">✏️</div>
+                          <div class="action-icon">🗑️</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>HAS_COMPONENT</td>
+                      <td>Hermes</td>
+                      <td>0.97</td>
+                      <td>Documentation</td>
+                      <td>
+                        <div class="action-icons">
+                          <div class="action-icon">✏️</div>
+                          <div class="action-icon">🗑️</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>HAS_COMPONENT</td>
+                      <td>Athena</td>
+                      <td>0.96</td>
+                      <td>Documentation</td>
+                      <td>
+                        <div class="action-icons">
+                          <div class="action-icon">✏️</div>
+                          <div class="action-icon">🗑️</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>CREATED_BY</td>
+                      <td>Casey Koons</td>
+                      <td>0.99</td>
+                      <td>User input</td>
+                      <td>
+                        <div class="action-icons">
+                          <div class="action-icon">✏️</div>
+                          <div class="action-icon">🗑️</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                
+                <div class="add-relation">
+                  <select class="search-select">
+                    <option value="">-- Select Relationship --</option>
+                    <option value="has_component">HAS_COMPONENT</option>
+                    <option value="depends_on">DEPENDS_ON</option>
+                    <option value="created_by">CREATED_BY</option>
+                    <option value="part_of">PART_OF</option>
+                    <option value="uses">USES</option>
+                  </select>
+                  
+                  <select class="search-select">
+                    <option value="">-- Select Target Entity --</option>
+                    <option value="prometheus">Prometheus</option>
+                    <option value="rhetor">Rhetor</option>
+                    <option value="sophia">Sophia</option>
+                    <option value="telos">Telos</option>
+                    <option value="synthesis">Synthesis</option>
+                  </select>
+                  
+                  <input type="text" class="search-input" placeholder="Confidence (0-1)" style="width: 150px;">
+                  
+                  <button>Add</button>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button class="cancel-button">Cancel</button>
+                <button class="save-button">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Query Interface Panel -->
+      <div class="athena-panel" id="query-panel">
+        <div class="query-container">
+          <div class="query-builder">
+            <div class="query-tabs">
+              <div class="query-tab active" data-query-tab="cypher">Cypher Query</div>
+              <div class="query-tab" data-query-tab="structured">Structured Query</div>
+              <div class="query-tab" data-query-tab="natural">Natural Language</div>
+            </div>
+            
+            <div class="query-mode" id="cypher-query-mode">
+              <textarea class="query-input" placeholder="MATCH (c:Component)-[:PART_OF]->(p:Platform) WHERE p.name = 'Tekton' RETURN c.name, c.type, c.description;"></textarea>
+            </div>
+            
+            <div class="query-mode" id="structured-query-mode" style="display: none;">
+              <div class="query-structured">
+                <select class="search-select">
+                  <option value="match">MATCH</option>
+                  <option value="create">CREATE</option>
+                  <option value="merge">MERGE</option>
+                </select>
+                
+                <select class="search-select">
+                  <option value="component">Component</option>
+                  <option value="platform">Platform</option>
+                  <option value="person">Person</option>
+                  <option value="project">Project</option>
+                </select>
+                
+                <select class="search-select">
+                  <option value="part_of">PART_OF</option>
+                  <option value="depends_on">DEPENDS_ON</option>
+                  <option value="created_by">CREATED_BY</option>
+                  <option value="has_component">HAS_COMPONENT</option>
+                </select>
+                
+                <select class="search-select">
+                  <option value="component">Component</option>
+                  <option value="platform">Platform</option>
+                  <option value="person">Person</option>
+                  <option value="project">Project</option>
+                </select>
+                
+                <input type="text" class="search-input" placeholder="WHERE condition...">
+              </div>
+            </div>
+            
+            <div class="query-mode" id="natural-query-mode" style="display: none;">
+              <textarea class="query-input" placeholder="Show me all components that are part of the Tekton platform"></textarea>
+            </div>
+            
+            <div class="query-options">
+              <div class="option-group">
+                <div class="control-label">Max Results:</div>
+                <select class="search-select">
+                  <option value="10">10</option>
+                  <option value="25" selected>25</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                  <option value="all">All</option>
+                </select>
+              </div>
+              
+              <button class="search-button">Execute Query</button>
+            </div>
+          </div>
+          
+          <div class="query-results">
+            <div class="results-tabs">
+              <div class="result-tab active" data-result-tab="table">Table Results</div>
+              <div class="result-tab" data-result-tab="json">JSON</div>
+              <div class="result-tab" data-result-tab="graph">Graph View</div>
+            </div>
+            
+            <div class="result-content" id="table-result">
+              <table class="result-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Hephaestus</td>
+                    <td>Component</td>
+                    <td>Integrated GUI for the Tekton Multi-AI Engineering Platform</td>
+                  </tr>
+                  <tr>
+                    <td>Engram</td>
+                    <td>Component</td>
+                    <td>Persistent memory system for AI models</td>
+                  </tr>
+                  <tr>
+                    <td>Hermes</td>
+                    <td>Component</td>
+                    <td>Central messaging and registration service</td>
+                  </tr>
+                  <tr>
+                    <td>Athena</td>
+                    <td>Component</td>
+                    <td>Knowledge graph and reasoning engine</td>
+                  </tr>
+                  <tr>
+                    <td>Prometheus</td>
+                    <td>Component</td>
+                    <td>Forethought planning system</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="result-content" id="json-result" style="display: none;">
+              <pre class="result-json">[
+  {
+    "name": "Hephaestus",
+    "type": "Component",
+    "description": "Integrated GUI for the Tekton Multi-AI Engineering Platform"
+  },
+  {
+    "name": "Engram",
+    "type": "Component",
+    "description": "Persistent memory system for AI models"
+  },
+  {
+    "name": "Hermes",
+    "type": "Component",
+    "description": "Central messaging and registration service"
+  },
+  {
+    "name": "Athena",
+    "type": "Component",
+    "description": "Knowledge graph and reasoning engine"
+  },
+  {
+    "name": "Prometheus",
+    "type": "Component",
+    "description": "Forethought planning system"
+  }
+]</pre>
+            </div>
+            
+            <div class="result-content result-graph" id="graph-result" style="display: none;">
+              <p>Query results would be visualized as a graph here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Integration Panel -->
+      <div class="athena-panel" id="integration-panel">
+        <div class="integration-container">
+          <div class="integration-section">
+            <div class="section-title">Component Integrations</div>
+            
+            <div class="integration-grid">
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">H</div>
+                  <div class="integration-name">Hermes</div>
+                </div>
+                
+                <div class="integration-description">
+                  Register with Hermes messaging service for centralized communication and component discovery.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-connected"></div>
+                    Connected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">E</div>
+                  <div class="integration-name">Engram</div>
+                </div>
+                
+                <div class="integration-description">
+                  Connect to Engram memory system to provide knowledge persistence and retrieval.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-connected"></div>
+                    Connected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">T</div>
+                  <div class="integration-name">Telos</div>
+                </div>
+                
+                <div class="integration-description">
+                  Integrate with Telos for requirements management and project vision.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-disconnected"></div>
+                    Disconnected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">P</div>
+                  <div class="integration-name">Prometheus</div>
+                </div>
+                
+                <div class="integration-description">
+                  Connect to Prometheus for planning and reasoning capabilities.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-disconnected"></div>
+                    Disconnected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="integration-section">
+            <div class="section-title">External Integrations</div>
+            
+            <div class="integration-grid">
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">N</div>
+                  <div class="integration-name">Neo4j</div>
+                </div>
+                
+                <div class="integration-description">
+                  Connect to Neo4j graph database for persistent storage of knowledge graph.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-connected"></div>
+                    Connected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">C</div>
+                  <div class="integration-name">Claude API</div>
+                </div>
+                
+                <div class="integration-description">
+                  Connect to Claude API for reasoning and natural language capabilities.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-connected"></div>
+                    Connected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox" checked>
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+              
+              <div class="integration-card">
+                <div class="integration-header">
+                  <div class="integration-icon">W</div>
+                  <div class="integration-name">Web Scraper</div>
+                </div>
+                
+                <div class="integration-description">
+                  Enable web scraping capabilities for extracting knowledge from online sources.
+                </div>
+                
+                <div class="integration-status">
+                  <div class="status-text">
+                    <div class="status-indicator status-disconnected"></div>
+                    Disconnected
+                  </div>
+                  
+                  <label class="toggle-switch">
+                    <input type="checkbox">
+                    <span class="toggle-slider"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="integration-actions">
+            <button class="secondary-button">Refresh Connections</button>
+            <button class="action-button">Save Configuration</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Simple navigation between panels
+    document.addEventListener('DOMContentLoaded', function() {
+      // Panel navigation
+      const navItems = document.querySelectorAll('.athena-nav-item');
+      const panels = document.querySelectorAll('.athena-panel');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove active class from all nav items
+          navItems.forEach(navItem => navItem.classList.remove('active'));
+          
+          // Add active class to clicked nav item
+          item.classList.add('active');
+          
+          // Hide all panels
+          panels.forEach(panel => panel.classList.remove('active'));
+          
+          // Show the panel that corresponds to the clicked nav item
+          const panelId = item.getAttribute('data-panel') + '-panel';
+          document.getElementById(panelId).classList.add('active');
+        });
+      });
+      
+      // Query tab navigation
+      const queryTabs = document.querySelectorAll('.query-tab');
+      const queryModes = document.querySelectorAll('.query-mode');
+      
+      queryTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs
+          queryTabs.forEach(queryTab => queryTab.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          tab.classList.add('active');
+          
+          // Hide all query modes
+          queryModes.forEach(mode => mode.style.display = 'none');
+          
+          // Show the query mode that corresponds to the clicked tab
+          const modeId = tab.getAttribute('data-query-tab') + '-query-mode';
+          document.getElementById(modeId).style.display = 'block';
+        });
+      });
+      
+      // Result tab navigation
+      const resultTabs = document.querySelectorAll('.result-tab');
+      const resultContents = document.querySelectorAll('.result-content');
+      
+      resultTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          // Remove active class from all tabs
+          resultTabs.forEach(resultTab => resultTab.classList.remove('active'));
+          
+          // Add active class to clicked tab
+          tab.classList.add('active');
+          
+          // Hide all result contents
+          resultContents.forEach(content => content.style.display = 'none');
+          
+          // Show the result content that corresponds to the clicked tab
+          const contentId = tab.getAttribute('data-result-tab') + '-result';
+          document.getElementById(contentId).style.display = 'block';
+        });
+      });
+      
+      // Entity selection
+      const entityItems = document.querySelectorAll('.entity-item');
+      
+      entityItems.forEach(item => {
+        item.addEventListener('click', function() {
+          entityItems.forEach(entityItem => entityItem.classList.remove('active'));
+          item.classList.add('active');
+          
+          // In a real implementation, this would load the selected entity data
+          document.querySelector('.editor-title').textContent = 'Edit Entity: ' + item.querySelector('.entity-name').textContent;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -237,9 +237,43 @@ async def check_deadlocks(comp_manager: ComponentManager = Depends(get_component
     return {"status": "completed"}
 
 
+@app.get("/api/component-interfaces")
+async def get_component_interfaces():
+    """Get list of available component UI interfaces."""
+    component_dir = os.path.join(os.path.dirname(__file__), "static", "component")
+    
+    interfaces = []
+    if os.path.exists(component_dir):
+        for file in os.listdir(component_dir):
+            if file.endswith('.html'):
+                component_id = file.split('.')[0]
+                interfaces.append({
+                    "id": component_id,
+                    "name": component_id.capitalize(),
+                    "url": f"/component/{file}"
+                })
+    
+    return {"interfaces": interfaces}
+
+
 # Serve static files (if available)
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 if os.path.exists(static_dir):
+    # Mount component files directory if it exists
+    component_dir = os.path.join(static_dir, "component")
+    if os.path.exists(component_dir):
+        app.mount("/component", StaticFiles(directory=component_dir, html=True), name="component")
+    
+    # Mount js directory
+    js_dir = os.path.join(static_dir, "js")
+    if os.path.exists(js_dir):
+        app.mount("/js", StaticFiles(directory=js_dir), name="js")
+    
+    # Mount images directory
+    images_dir = os.path.join(static_dir, "images")
+    if os.path.exists(images_dir):
+        app.mount("/images", StaticFiles(directory=images_dir), name="images")
+    
     # Mount static directory for index.html and other root files
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="root")
     

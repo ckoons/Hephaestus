@@ -144,7 +144,8 @@
       flex-grow: 1;
       padding: 30px;
       background-color: #0f0f0f;
-      height: 100%;
+      height: calc(100vh - 115px);
+      overflow: hidden;
     }
     
     .landing-page {
@@ -277,6 +278,66 @@
     input:checked + .slider:before {
       transform: translateX(24px);
     }
+    
+    .loading-indicator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #64748b;
+      font-size: 18px;
+    }
+    
+    .has-interface {
+      position: relative;
+    }
+    
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+      }
+      70% {
+        box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+      }
+    }
+    
+    @keyframes highlight {
+      0% {
+        background-color: transparent;
+      }
+      50% {
+        background-color: rgba(16, 185, 129, 0.2);
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+    
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.1);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border-left-color: #3b82f6;
+      animation: spin 1s linear infinite;
+    }
+    
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+    
+    #right-panel-content {
+      height: calc(100vh - 145px);
+      overflow: hidden;
+    }
   </style>
 </head>
 <body>
@@ -296,47 +357,47 @@
           <li class="component-item active">
             <div class="component-name">Tekton <span class="component-specialty">- Projects</span></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="telos">
             <div class="component-name">Telos <span class="component-specialty">- Requirements</span></div>
             <div class="component-status status-active"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="prometheus">
             <div class="component-name">Prometheus <span class="component-specialty">- Planning</span></div>
             <div class="component-status status-inactive"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="ergon">
             <div class="component-name">Ergon <span class="component-specialty">- Agents</span></div>
             <div class="component-status status-active"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="athena">
             <div class="component-name">Athena <span class="component-specialty">- Knowledge</span></div>
             <div class="component-status status-active"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="sophia">
             <div class="component-name">Sophia <span class="component-specialty">- Learning</span></div>
             <div class="component-status status-inactive"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="engram">
             <div class="component-name">Engram <span class="component-specialty">- Memory</span></div>
             <div class="component-status status-inactive"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="rhetor">
             <div class="component-name">Rhetor <span class="component-specialty">- Context</span></div>
             <div class="component-status status-inactive"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="hermes">
             <div class="component-name">Hermes <span class="component-specialty">- Messages/Data</span></div>
             <div class="component-status status-active"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="codex">
             <div class="component-name">Codex <span class="component-specialty">- Coding</span></div>
             <div class="component-status status-inactive"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="harmonia">
             <div class="component-name">Harmonia <span class="component-specialty">- Orchestration</span></div>
             <div class="component-status status-inactive"></div>
           </li>
-          <li class="component-item">
+          <li class="component-item" data-component-id="synthesis">
             <div class="component-name">Synthesis <span class="component-specialty">- Integration</span></div>
             <div class="component-status status-inactive"></div>
           </li>
@@ -364,21 +425,34 @@
       </div>
       
       <div class="main-content" id="main-content">
-        <!-- Default landing page -->
-        <div class="landing-page" id="landing-page">
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 30px; width: 100%;">
-            <div style="text-align: center; margin-bottom: 5px; width: 300px;">
-              <div style="color: #3b82f6; font-size: 64px; line-height: 1; font-weight: 700; text-align: center;">Tekton</div>
+        <!-- RIGHT PANEL content container -->
+        <div id="right-panel-content">
+          <!-- Default landing page -->
+          <div class="landing-page" id="landing-page">
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin-bottom: 30px; width: 100%;">
+              <div style="text-align: center; margin-bottom: 5px; width: 300px;">
+                <div style="color: #3b82f6; font-size: 64px; line-height: 1; font-weight: 700; text-align: center;">Tekton</div>
+              </div>
+              <div style="text-align: center; margin-bottom: 25px; width: 300px;">
+                <div style="font-size: 28px; text-align: center; color: #64748b;">Multi-AI Engineering Platform</div>
+              </div>
+              <div style="height: 220px; display: flex; align-items: center; justify-content: center; margin-top: 10px; position: relative;">
+                <img src="/images/hexagon.png" alt="Tekton" style="width: 200px; height: 200px; filter: brightness(1.2) contrast(1.2); position: relative;" />
+              </div>
             </div>
-            <div style="text-align: center; margin-bottom: 25px; width: 300px;">
-              <div style="font-size: 28px; text-align: center; color: #64748b;">Multi-AI Engineering Platform</div>
-            </div>
-            <div style="height: 220px; display: flex; align-items: center; justify-content: center; margin-top: 10px; position: relative;">
-              <img src="/images/hexagon.png" alt="Tekton" style="width: 200px; height: 200px; filter: brightness(1.2) contrast(1.2); position: relative;" />
+            <p>Welcome to the Tekton Multi-AI Engineering Platform</p>
+            <p id="status-message">Connecting to components...</p>
+            
+            <div style="margin-top: 30px; padding: 20px; border-radius: 10px; background-color: rgba(59, 130, 246, 0.1); max-width: 600px; text-align: left;">
+              <h3 style="margin-top: 0; color: #3b82f6;">Available Component UIs</h3>
+              <p>The following components have dedicated user interfaces:</p>
+              <ul style="list-style-type: disc; padding-left: 20px;">
+                <li><strong>Athena</strong> - Knowledge Graph Management</li>
+                <li><strong>Engram</strong> - Memory System</li>
+              </ul>
+              <p style="margin-bottom: 0;">Click on a component in the left sidebar to access its interface.</p>
             </div>
           </div>
-          <p>Welcome to the Tekton Multi-AI Engineering Platform</p>
-          <p id="status-message">Connecting to components...</p>
         </div>
 
         <!-- Settings page (hidden by default) -->
@@ -440,28 +514,36 @@
         statusMessage.textContent = 'Connected to components. Ready to go!';
       }, 2000);
       
-      // Handle component selection
+      // Handle Budget and Settings navigation
       componentItems.forEach(item => {
-        item.addEventListener('click', function() {
-          // Remove active class from all items
-          componentItems.forEach(i => i.classList.remove('active'));
-          
-          // Add active class to clicked item
-          this.classList.add('active');
-          
-          // Update header title
-          const componentName = this.querySelector('.component-name').textContent;
-          headerTitle.textContent = componentName;
-          
-          // Show appropriate page
-          if (componentName === 'Settings') {
-            landingPage.style.display = 'none';
-            settingsPage.style.display = 'block';
-          } else {
-            landingPage.style.display = 'flex';
-            settingsPage.style.display = 'none';
-          }
-        });
+        const nameElement = item.querySelector('.component-name');
+        if (!nameElement) return;
+        
+        const componentName = nameElement.textContent.trim();
+        
+        // Only handle Budget and Settings here
+        if (componentName === 'Budget' || componentName === 'Settings') {
+          item.addEventListener('click', function() {
+            // Remove active class from all items
+            componentItems.forEach(i => i.classList.remove('active'));
+            
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Update header title
+            headerTitle.textContent = componentName;
+            
+            // Show appropriate page
+            if (componentName === 'Settings') {
+              document.getElementById('right-panel-content').style.display = 'none';
+              settingsPage.style.display = 'block';
+            } else {
+              // This would show Budget page in the future
+              document.getElementById('right-panel-content').style.display = 'flex';
+              settingsPage.style.display = 'none';
+            }
+          });
+        }
       });
       
       // Handle input
@@ -520,6 +602,181 @@
         // Store setting (would connect to backend API in a real implementation)
         console.log('TEKTON_SHOW_GREEK_NAMES set to:', isShowingGreekNames);
       });
+    });
+  </script>
+  
+  <!-- Direct component loader script - embedded to prevent loading issues -->
+  <script>
+    // Debug function to help us see what's happening
+    function debugMessage(message, data) {
+      console.log(`DEBUG: ${message}`, data);
+      const debugElem = document.createElement('div');
+      debugElem.style.position = 'fixed';
+      debugElem.style.bottom = '60px';
+      debugElem.style.right = '10px';
+      debugElem.style.backgroundColor = 'rgba(0,0,0,0.8)';
+      debugElem.style.color = '#fff';
+      debugElem.style.padding = '5px 10px';
+      debugElem.style.borderRadius = '5px';
+      debugElem.style.zIndex = '9999';
+      debugElem.style.maxWidth = '500px';
+      debugElem.style.fontSize = '12px';
+      debugElem.textContent = `${message}: ${JSON.stringify(data)}`;
+      document.body.appendChild(debugElem);
+      setTimeout(() => debugElem.remove(), 5000);
+    }
+
+    // Direct component handler
+    document.addEventListener('DOMContentLoaded', async function() {
+      // Get components that have UIs
+      try {
+        // Direct buttons for Athena and Engram
+        const athenaButton = document.querySelector('.component-item[data-component-id="athena"]');
+        const engramButton = document.querySelector('.component-item[data-component-id="engram"]');
+        
+        if (athenaButton) {
+          athenaButton.style.position = 'relative';
+          athenaButton.style.boxShadow = '0 0 5px rgba(124, 58, 237, 0.5)';
+          
+          // Add UI indicator
+          const indicator = document.createElement('div');
+          indicator.style.position = 'absolute';
+          indicator.style.right = '10px';
+          indicator.style.top = '50%';
+          indicator.style.transform = 'translateY(-50%)';
+          indicator.style.width = '16px';
+          indicator.style.height = '16px';
+          indicator.style.backgroundColor = '#7c3aed';
+          indicator.style.borderRadius = '50%';
+          indicator.style.display = 'flex';
+          indicator.style.alignItems = 'center';
+          indicator.style.justifyContent = 'center';
+          indicator.style.color = 'white';
+          indicator.style.fontSize = '10px';
+          indicator.innerHTML = '⚙️';
+          indicator.title = 'Athena UI Available';
+          athenaButton.appendChild(indicator);
+          
+          // Add click handler
+          athenaButton.addEventListener('click', async () => {
+            try {
+              // Set active
+              document.querySelectorAll('.component-item').forEach(el => el.classList.remove('active'));
+              athenaButton.classList.add('active');
+              
+              // Update header title
+              const headerTitle = document.querySelector('.header-title');
+              if (headerTitle) {
+                headerTitle.textContent = 'Athena - Knowledge';
+              }
+              
+              // Hide settings, show content
+              document.getElementById('settings-page').style.display = 'none';
+              const rightPanel = document.getElementById('right-panel-content');
+              rightPanel.style.display = 'block';
+              
+              // Show loading spinner
+              rightPanel.innerHTML = `
+                <div class="loading-indicator">
+                  <div class="spinner"></div>
+                  <div style="margin-left: 15px;">Loading Athena Component...</div>
+                </div>
+              `;
+              
+              // We don't need to fetch the content since we're using an iframe
+              
+              // We'll create an iframe to load the component directly
+              // This avoids issues with script execution and styling
+              rightPanel.innerHTML = '';
+              
+              const iframe = document.createElement('iframe');
+              iframe.src = '/component/athena.html';
+              iframe.style.width = '100%';
+              iframe.style.height = 'calc(100vh - 145px)'; // Account for header and chat input
+              iframe.style.border = 'none';
+              iframe.style.overflow = 'auto';
+              iframe.style.backgroundColor = '#0f172a';
+              
+              rightPanel.appendChild(iframe);
+            } catch (error) {
+              debugMessage('Error loading Athena UI', error.message);
+            }
+          });
+        }
+        
+        if (engramButton) {
+          engramButton.style.position = 'relative';
+          engramButton.style.boxShadow = '0 0 5px rgba(59, 130, 246, 0.5)';
+          
+          // Add UI indicator
+          const indicator = document.createElement('div');
+          indicator.style.position = 'absolute';
+          indicator.style.right = '10px';
+          indicator.style.top = '50%';
+          indicator.style.transform = 'translateY(-50%)';
+          indicator.style.width = '16px';
+          indicator.style.height = '16px';
+          indicator.style.backgroundColor = '#3b82f6';
+          indicator.style.borderRadius = '50%';
+          indicator.style.display = 'flex';
+          indicator.style.alignItems = 'center';
+          indicator.style.justifyContent = 'center';
+          indicator.style.color = 'white';
+          indicator.style.fontSize = '10px';
+          indicator.innerHTML = '⚙️';
+          indicator.title = 'Engram UI Available';
+          engramButton.appendChild(indicator);
+          
+          // Add click handler
+          engramButton.addEventListener('click', async () => {
+            try {
+              // Set active
+              document.querySelectorAll('.component-item').forEach(el => el.classList.remove('active'));
+              engramButton.classList.add('active');
+              
+              // Update header title
+              const headerTitle = document.querySelector('.header-title');
+              if (headerTitle) {
+                headerTitle.textContent = 'Engram - Memory';
+              }
+              
+              // Hide settings, show content
+              document.getElementById('settings-page').style.display = 'none';
+              const rightPanel = document.getElementById('right-panel-content');
+              rightPanel.style.display = 'block';
+              
+              // Show loading spinner
+              rightPanel.innerHTML = `
+                <div class="loading-indicator">
+                  <div class="spinner"></div>
+                  <div style="margin-left: 15px;">Loading Engram Component...</div>
+                </div>
+              `;
+              
+              // We don't need to fetch the content since we're using an iframe
+              
+              // We'll create an iframe to load the component directly
+              // This avoids issues with script execution and styling
+              rightPanel.innerHTML = '';
+              
+              const iframe = document.createElement('iframe');
+              iframe.src = '/component/engram.html';
+              iframe.style.width = '100%';
+              iframe.style.height = 'calc(100vh - 145px)'; // Account for header and chat input
+              iframe.style.border = 'none';
+              iframe.style.overflow = 'auto';
+              iframe.style.backgroundColor = '#0f172a';
+              
+              rightPanel.appendChild(iframe);
+            } catch (error) {
+              debugMessage('Error loading Engram UI', error.message);
+            }
+          });
+        }
+        
+      } catch (error) {
+        debugMessage('Error in component loader', error.message);
+      }
     });
   </script>
 </body>
