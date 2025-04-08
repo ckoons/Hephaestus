@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Harmonia Component</title>
+  <style>
+    /* This CSS only applies to elements within this component */
+    .harmonia-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .harmonia-nav {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.8);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .harmonia-nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .harmonia-nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(20, 184, 166, 0.1);
+    }
+    
+    .harmonia-nav-item.active {
+      color: white;
+      background-color: rgba(20, 184, 166, 0.2);
+    }
+    
+    .harmonia-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #14b8a6;
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .harmonia-content {
+      flex-grow: 1;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .harmonia-panel {
+      display: none;
+      height: 100%;
+    }
+    
+    .harmonia-panel.active {
+      display: block;
+    }
+
+    /* Dashboard panel */
+    .orchestration-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Workflow Editor */
+    .workflow-container {
+      display: flex;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .workflow-list {
+      width: 280px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .workflow-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .workflow-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .add-button {
+      background-color: #14b8a6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+    
+    .add-button:hover {
+      background-color: #0d9488;
+    }
+    
+    .filter-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    
+    .workflow-group {
+      margin-bottom: 16px;
+    }
+    
+    .group-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding-left: 8px;
+    }
+    
+    .workflow-item {
+      padding: 10px;
+      border-radius: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .workflow-item:hover {
+      background-color: rgba(20, 184, 166, 0.1);
+    }
+    
+    .workflow-item.active {
+      background-color: rgba(20, 184, 166, 0.2);
+      border-left: 3px solid #14b8a6;
+    }
+    
+    .workflow-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: white;
+    }
+    
+    .workflow-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .workflow-status {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .status-active {
+      background-color: rgba(20, 184, 166, 0.2);
+      color: #5eead4;
+    }
+    
+    .status-draft {
+      background-color: rgba(100, 116, 139, 0.2);
+      color: #94a3b8;
+    }
+    
+    .status-paused {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+    }
+    
+    .workflow-editor {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .editor-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .editor-action {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .editor-action:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .editor-action.primary {
+      background-color: #14b8a6;
+      color: white;
+      border-color: #14b8a6;
+    }
+    
+    .editor-action.primary:hover {
+      background-color: #0d9488;
+      border-color: #0d9488;
+    }
+    
+    .editor-action.delete {
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .editor-action.delete:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+    
+    .editor-form {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: auto;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .form-group {
+      flex-grow: 1;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-select {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .form-button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .form-cancel {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .form-cancel:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .form-save {
+      background-color: #14b8a6;
+      color: white;
+      border: none;
+    }
+    
+    .form-save:hover {
+      background-color: #0d9488;
+    }
+
+    /* Workflow canvas */
+    .workflow-canvas {
+      flex-grow: 1;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+      min-height: 400px;
+      position: relative;
+      overflow: auto;
+    }
+    
+    .canvas-instructions {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: rgba(255, 255, 255, 0.4);
+      text-align: center;
+    }
+    
+    .node {
+      position: absolute;
+      background-color: rgba(30, 41, 59, 0.9);
+      border: 2px solid #14b8a6;
+      border-radius: 8px;
+      padding: 12px;
+      width: 180px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      cursor: move;
+      user-select: none;
+    }
+    
+    .node-title {
+      font-weight: 600;
+      color: white;
+      margin-bottom: 8px;
+      font-size: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .node-content {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+    }
+    
+    .node-handles {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+    }
+    
+    .node-handle-in, .node-handle-out {
+      width: 10px;
+      height: 10px;
+      background-color: #14b8a6;
+      border-radius: 50%;
+      border: 2px solid rgba(30, 41, 59, 0.9);
+    }
+    
+    .connector {
+      position: absolute;
+      height: 2px;
+      background-color: #14b8a6;
+      transform-origin: left center;
+      pointer-events: none;
+    }
+    
+    .connector::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: -4px;
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 8px solid #14b8a6;
+    }
+
+    /* Orchestration Control */
+    .control-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .control-header {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .control-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .control-filters {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .control-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .control-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+    
+    .control-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-color: rgba(20, 184, 166, 0.3);
+    }
+    
+    .control-card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .control-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .control-card-status {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .control-card-content {
+      margin-bottom: 16px;
+    }
+    
+    .card-stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    
+    .card-stat {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      padding: 10px;
+      text-align: center;
+    }
+    
+    .stat-name {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 4px;
+    }
+    
+    .stat-number {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    
+    .progress-text {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-percent {
+      color: white;
+      font-weight: 500;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #14b8a6;
+      border-radius: 3px;
+    }
+    
+    .control-card-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .card-action {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    .card-action:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .card-action.primary {
+      background-color: #14b8a6;
+      color: white;
+      border-color: #14b8a6;
+    }
+    
+    .card-action.primary:hover {
+      background-color: #0d9488;
+      border-color: #0d9488;
+    }
+
+    /* Resource Allocation */
+    .resource-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .resource-header {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .resource-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+    }
+    
+    .resource-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    
+    .resource-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .resource-type {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      background-color: rgba(20, 184, 166, 0.2);
+      color: #5eead4;
+    }
+    
+    .resource-stats {
+      margin-bottom: 16px;
+    }
+    
+    .resource-usage {
+      margin-bottom: 12px;
+    }
+    
+    .usage-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 6px;
+    }
+    
+    .usage-name {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .usage-value {
+      color: white;
+    }
+    
+    .usage-bar {
+      height: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .usage-fill {
+      height: 100%;
+      border-radius: 3px;
+    }
+    
+    .usage-fill.low {
+      background-color: #14b8a6;
+    }
+    
+    .usage-fill.medium {
+      background-color: #f59e0b;
+    }
+    
+    .usage-fill.high {
+      background-color: #ef4444;
+    }
+    
+    .resource-assignment {
+      margin-top: 16px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .assignment-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .assignment-workflow {
+      color: white;
+    }
+    
+    .assignment-priority {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 500;
+    }
+    
+    .priority-high {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+    
+    .priority-medium {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+    }
+    
+    .priority-low {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .harmonia-nav {
+        flex-wrap: wrap;
+      }
+      
+      .workflow-container {
+        flex-direction: column;
+      }
+      
+      .workflow-list {
+        width: 100%;
+        max-height: 200px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="harmonia-container">
+    <!-- Navigation Tabs -->
+    <div class="harmonia-nav">
+      <div class="harmonia-nav-item active" data-panel="dashboard">Dashboard</div>
+      <div class="harmonia-nav-item" data-panel="workflows">Workflow Editor</div>
+      <div class="harmonia-nav-item" data-panel="orchestration">Orchestration Control</div>
+      <div class="harmonia-nav-item" data-panel="resources">Resource Allocation</div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="harmonia-content">
+      <!-- Dashboard Panel -->
+      <div class="harmonia-panel active" id="dashboard-panel">
+        <div class="orchestration-stats">
+          <div class="stat-card">
+            <div class="stat-title">Active Workflows</div>
+            <div class="stat-value">8</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Components Orchestrated</div>
+            <div class="stat-value">12</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Tasks Completed Today</div>
+            <div class="stat-value">237</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Resource Efficiency</div>
+            <div class="stat-value">86%</div>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+          <!-- First chart: Workflow Activity -->
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">Workflow Activity (24h)</h3>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7);">
+              Workflow activity chart visualization would appear here
+            </div>
+          </div>
+          
+          <!-- Second chart: Resource Allocation -->
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">Resource Allocation</h3>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7);">
+              Resource allocation chart visualization would appear here
+            </div>
+          </div>
+        </div>
+        
+        <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px; margin-top: 20px;">
+          <h3 style="color: white; margin-top: 0;">Active Workflows</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Workflow</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Status</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Progress</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Resources</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Data Processing Pipeline</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(20, 184, 166, 0.2); color: #5eead4;">Running</span>
+                </td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <div style="width: 100%; height: 6px; background-color: rgba(15, 23, 42, 0.5); border-radius: 3px; overflow: hidden;">
+                    <div style="height: 100%; width: 65%; background-color: #14b8a6; border-radius: 3px;"></div>
+                  </div>
+                </td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">4 Components</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <button style="background-color: transparent; color: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">Manage</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Knowledge Integration</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(20, 184, 166, 0.2); color: #5eead4;">Running</span>
+                </td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <div style="width: 100%; height: 6px; background-color: rgba(15, 23, 42, 0.5); border-radius: 3px; overflow: hidden;">
+                    <div style="height: 100%; width: 30%; background-color: #14b8a6; border-radius: 3px;"></div>
+                  </div>
+                </td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">3 Components</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <button style="background-color: transparent; color: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">Manage</button>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">System Monitoring</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(245, 158, 11, 0.2); color: #fcd34d;">Paused</span>
+                </td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <div style="width: 100%; height: 6px; background-color: rgba(15, 23, 42, 0.5); border-radius: 3px; overflow: hidden;">
+                    <div style="height: 100%; width: 80%; background-color: #14b8a6; border-radius: 3px;"></div>
+                  </div>
+                </td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">2 Components</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <button style="background-color: transparent; color: rgba(255, 255, 255, 0.7); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 12px;">Manage</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Workflow Editor Panel -->
+      <div class="harmonia-panel" id="workflows-panel">
+        <div class="workflow-container">
+          <div class="workflow-list">
+            <div class="workflow-header">
+              <h3 class="workflow-title">Workflows</h3>
+              <div class="add-button">+</div>
+            </div>
+            
+            <input type="text" class="filter-input" placeholder="Filter workflows...">
+            
+            <div class="workflow-group">
+              <div class="group-name">Active</div>
+              
+              <div class="workflow-item active">
+                <div class="workflow-name">Data Processing Pipeline</div>
+                <div class="workflow-meta">
+                  <div class="workflow-status status-active">Running</div>
+                  <div>65%</div>
+                </div>
+              </div>
+              
+              <div class="workflow-item">
+                <div class="workflow-name">Knowledge Integration</div>
+                <div class="workflow-meta">
+                  <div class="workflow-status status-active">Running</div>
+                  <div>30%</div>
+                </div>
+              </div>
+              
+              <div class="workflow-item">
+                <div class="workflow-name">System Monitoring</div>
+                <div class="workflow-meta">
+                  <div class="workflow-status status-paused">Paused</div>
+                  <div>80%</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="workflow-group">
+              <div class="group-name">Draft</div>
+              
+              <div class="workflow-item">
+                <div class="workflow-name">Code Analysis Workflow</div>
+                <div class="workflow-meta">
+                  <div class="workflow-status status-draft">Draft</div>
+                  <div>0%</div>
+                </div>
+              </div>
+              
+              <div class="workflow-item">
+                <div class="workflow-name">Resource Optimization</div>
+                <div class="workflow-meta">
+                  <div class="workflow-status status-draft">Draft</div>
+                  <div>0%</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="workflow-editor">
+            <div class="editor-header">
+              <div class="editor-title">Data Processing Pipeline</div>
+              <div class="editor-actions">
+                <button class="editor-action">Export</button>
+                <button class="editor-action primary">Deploy</button>
+                <button class="editor-action delete">Delete</button>
+              </div>
+            </div>
+            
+            <div class="editor-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Workflow Name</label>
+                  <input type="text" class="form-input" value="Data Processing Pipeline">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-select">
+                    <option value="draft">Draft</option>
+                    <option value="running" selected>Running</option>
+                    <option value="paused">Paused</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Priority</label>
+                  <select class="form-select">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high" selected>High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea">A workflow for processing data through multiple components, including data extraction, transformation, and loading into knowledge systems. This pipeline integrates Athena, Engram, and Hermes components.</textarea>
+                </div>
+              </div>
+              
+              <div class="workflow-canvas">
+                <div class="node" style="top: 50px; left: 80px;">
+                  <div class="node-title">
+                    <span>Data Source</span>
+                    <span style="font-size: 10px;">⚙️</span>
+                  </div>
+                  <div class="node-content">External data sources and APIs</div>
+                  <div class="node-handles">
+                    <div class="node-handle-in"></div>
+                    <div class="node-handle-out"></div>
+                  </div>
+                </div>
+                
+                <div class="node" style="top: 50px; left: 330px;">
+                  <div class="node-title">
+                    <span>Extract</span>
+                    <span style="font-size: 10px;">⚙️</span>
+                  </div>
+                  <div class="node-content">Data extraction and preprocessing</div>
+                  <div class="node-handles">
+                    <div class="node-handle-in"></div>
+                    <div class="node-handle-out"></div>
+                  </div>
+                </div>
+                
+                <div class="node" style="top: 150px; left: 330px;">
+                  <div class="node-title">
+                    <span>Transform</span>
+                    <span style="font-size: 10px;">⚙️</span>
+                  </div>
+                  <div class="node-content">Data transformation and enrichment</div>
+                  <div class="node-handles">
+                    <div class="node-handle-in"></div>
+                    <div class="node-handle-out"></div>
+                  </div>
+                </div>
+                
+                <div class="node" style="top: 250px; left: 330px;">
+                  <div class="node-title">
+                    <span>Load</span>
+                    <span style="font-size: 10px;">⚙️</span>
+                  </div>
+                  <div class="node-content">Load into target systems</div>
+                  <div class="node-handles">
+                    <div class="node-handle-in"></div>
+                    <div class="node-handle-out"></div>
+                  </div>
+                </div>
+                
+                <div class="node" style="top: 150px; left: 580px;">
+                  <div class="node-title">
+                    <span>Athena</span>
+                    <span style="font-size: 10px;">⚙️</span>
+                  </div>
+                  <div class="node-content">Knowledge graph integration</div>
+                  <div class="node-handles">
+                    <div class="node-handle-in"></div>
+                    <div class="node-handle-out"></div>
+                  </div>
+                </div>
+                
+                <div class="node" style="top: 250px; left: 580px;">
+                  <div class="node-title">
+                    <span>Engram</span>
+                    <span style="font-size: 10px;">⚙️</span>
+                  </div>
+                  <div class="node-content">Memory storage and retrieval</div>
+                  <div class="node-handles">
+                    <div class="node-handle-in"></div>
+                    <div class="node-handle-out"></div>
+                  </div>
+                </div>
+                
+                <!-- Connectors -->
+                <div class="connector" style="top: 65px; left: 180px; width: 160px;"></div>
+                <div class="connector" style="top: 65px; left: 430px; width: 30px; transform: rotate(90deg); transform-origin: left center;"></div>
+                <div class="connector" style="top: 165px; left: 430px; width: 30px; transform: rotate(90deg); transform-origin: left center;"></div>
+                <div class="connector" style="top: 165px; left: 430px; width: 160px;"></div>
+                <div class="connector" style="top: 265px; left: 430px; width: 160px;"></div>
+              </div>
+              
+              <div class="form-actions">
+                <button class="form-button form-cancel">Cancel</button>
+                <button class="form-button form-save">Save Workflow</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Orchestration Control Panel -->
+      <div class="harmonia-panel" id="orchestration-panel">
+        <div class="control-container">
+          <div class="control-header">
+            <h2 class="control-title">Orchestration Control Center</h2>
+            <div class="control-filters">
+              <select class="form-select">
+                <option value="all">All Statuses</option>
+                <option value="running">Running</option>
+                <option value="paused">Paused</option>
+                <option value="error">Error</option>
+              </select>
+              <button class="editor-action primary">Deploy New</button>
+            </div>
+          </div>
+          
+          <div class="control-grid">
+            <div class="control-card">
+              <div class="control-card-header">
+                <div class="control-card-title">Data Processing Pipeline</div>
+                <div class="control-card-status status-active">Running</div>
+              </div>
+              
+              <div class="control-card-content">
+                <div class="card-stats">
+                  <div class="card-stat">
+                    <div class="stat-name">Tasks</div>
+                    <div class="stat-number">42/65</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Components</div>
+                    <div class="stat-number">4</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Uptime</div>
+                    <div class="stat-number">3h 24m</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Efficiency</div>
+                    <div class="stat-number">89%</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">65%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 65%;"></div>
+                </div>
+              </div>
+              
+              <div class="control-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Pause</button>
+                <button class="card-action primary">Control</button>
+              </div>
+            </div>
+            
+            <div class="control-card">
+              <div class="control-card-header">
+                <div class="control-card-title">Knowledge Integration</div>
+                <div class="control-card-status status-active">Running</div>
+              </div>
+              
+              <div class="control-card-content">
+                <div class="card-stats">
+                  <div class="card-stat">
+                    <div class="stat-name">Tasks</div>
+                    <div class="stat-number">18/60</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Components</div>
+                    <div class="stat-number">3</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Uptime</div>
+                    <div class="stat-number">1h 45m</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Efficiency</div>
+                    <div class="stat-number">92%</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">30%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 30%;"></div>
+                </div>
+              </div>
+              
+              <div class="control-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Pause</button>
+                <button class="card-action primary">Control</button>
+              </div>
+            </div>
+            
+            <div class="control-card">
+              <div class="control-card-header">
+                <div class="control-card-title">System Monitoring</div>
+                <div class="control-card-status status-paused">Paused</div>
+              </div>
+              
+              <div class="control-card-content">
+                <div class="card-stats">
+                  <div class="card-stat">
+                    <div class="stat-name">Tasks</div>
+                    <div class="stat-number">40/50</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Components</div>
+                    <div class="stat-number">2</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Uptime</div>
+                    <div class="stat-number">5h 10m</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Efficiency</div>
+                    <div class="stat-number">78%</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">80%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 80%;"></div>
+                </div>
+              </div>
+              
+              <div class="control-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Resume</button>
+                <button class="card-action primary">Control</button>
+              </div>
+            </div>
+            
+            <div class="control-card">
+              <div class="control-card-header">
+                <div class="control-card-title">API Integration</div>
+                <div class="control-card-status status-active">Running</div>
+              </div>
+              
+              <div class="control-card-content">
+                <div class="card-stats">
+                  <div class="card-stat">
+                    <div class="stat-name">Tasks</div>
+                    <div class="stat-number">22/35</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Components</div>
+                    <div class="stat-number">3</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Uptime</div>
+                    <div class="stat-number">2h 30m</div>
+                  </div>
+                  <div class="card-stat">
+                    <div class="stat-name">Efficiency</div>
+                    <div class="stat-number">85%</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">63%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 63%;"></div>
+                </div>
+              </div>
+              
+              <div class="control-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Pause</button>
+                <button class="card-action primary">Control</button>
+              </div>
+            </div>
+          </div>
+          
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">System Events</h3>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+              <thead>
+                <tr>
+                  <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Time</th>
+                  <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Workflow</th>
+                  <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Event</th>
+                  <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Details</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">14:32:18</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Data Processing Pipeline</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Task Completed</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Transform task #12 completed successfully</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">14:28:05</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">System Monitoring</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Workflow Paused</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Manually paused by administrator</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">14:15:42</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Knowledge Integration</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Resource Allocation</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Additional memory allocated to Athena component</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">14:02:17</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">API Integration</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Workflow Started</td>
+                  <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Workflow deployed and started successfully</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Resource Allocation Panel -->
+      <div class="harmonia-panel" id="resources-panel">
+        <div class="resource-container">
+          <div class="resource-header">
+            <h2 style="color: white; margin: 0;">Resource Allocation</h2>
+            <div style="display: flex; gap: 8px;">
+              <button class="editor-action">Refresh</button>
+              <button class="editor-action primary">Optimize</button>
+            </div>
+          </div>
+          
+          <div class="resource-grid">
+            <div class="resource-card">
+              <div class="resource-name">
+                CPU Resources
+                <div class="resource-type">Compute</div>
+              </div>
+              
+              <div class="resource-stats">
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Total Usage</div>
+                    <div class="usage-value">45%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 45%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Data Processing</div>
+                    <div class="usage-value">25%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 25%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Knowledge Integration</div>
+                    <div class="usage-value">15%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 15%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">System Processes</div>
+                    <div class="usage-value">5%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 5%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-assignment">
+                <div style="margin-bottom: 8px;">Current Assignments:</div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Data Processing Pipeline</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Knowledge Integration</div>
+                  <div class="assignment-priority priority-medium">Medium</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">API Integration</div>
+                  <div class="assignment-priority priority-medium">Medium</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="resource-card">
+              <div class="resource-name">
+                Memory Resources
+                <div class="resource-type">Compute</div>
+              </div>
+              
+              <div class="resource-stats">
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Total Usage</div>
+                    <div class="usage-value">68%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 68%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Data Processing</div>
+                    <div class="usage-value">30%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 30%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Knowledge Integration</div>
+                    <div class="usage-value">28%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 28%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">System Processes</div>
+                    <div class="usage-value">10%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 10%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-assignment">
+                <div style="margin-bottom: 8px;">Current Assignments:</div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Data Processing Pipeline</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Knowledge Integration</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">API Integration</div>
+                  <div class="assignment-priority priority-medium">Medium</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="resource-card">
+              <div class="resource-name">
+                Athena Component
+                <div class="resource-type">Component</div>
+              </div>
+              
+              <div class="resource-stats">
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Total Usage</div>
+                    <div class="usage-value">85%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill high" style="width: 85%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Knowledge Integration</div>
+                    <div class="usage-value">65%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 65%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Data Processing</div>
+                    <div class="usage-value">20%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 20%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-assignment">
+                <div style="margin-bottom: 8px;">Current Assignments:</div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Knowledge Integration</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Data Processing Pipeline</div>
+                  <div class="assignment-priority priority-medium">Medium</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="resource-card">
+              <div class="resource-name">
+                Engram Component
+                <div class="resource-type">Component</div>
+              </div>
+              
+              <div class="resource-stats">
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Total Usage</div>
+                    <div class="usage-value">72%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 72%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Data Processing</div>
+                    <div class="usage-value">40%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 40%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Knowledge Integration</div>
+                    <div class="usage-value">32%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 32%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-assignment">
+                <div style="margin-bottom: 8px;">Current Assignments:</div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Data Processing Pipeline</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Knowledge Integration</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">System Monitoring</div>
+                  <div class="assignment-priority priority-low">Low</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="resource-card">
+              <div class="resource-name">
+                Hermes Component
+                <div class="resource-type">Component</div>
+              </div>
+              
+              <div class="resource-stats">
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Total Usage</div>
+                    <div class="usage-value">58%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 58%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Message Routing</div>
+                    <div class="usage-value">45%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill medium" style="width: 45%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Component Registry</div>
+                    <div class="usage-value">13%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 13%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-assignment">
+                <div style="margin-bottom: 8px;">Current Assignments:</div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">All Workflows</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="resource-card">
+              <div class="resource-name">
+                Network Resources
+                <div class="resource-type">Infrastructure</div>
+              </div>
+              
+              <div class="resource-stats">
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Total Usage</div>
+                    <div class="usage-value">32%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 32%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">Data Processing</div>
+                    <div class="usage-value">15%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 15%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">API Integration</div>
+                    <div class="usage-value">12%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 12%;"></div>
+                  </div>
+                </div>
+                
+                <div class="resource-usage">
+                  <div class="usage-label">
+                    <div class="usage-name">System Processes</div>
+                    <div class="usage-value">5%</div>
+                  </div>
+                  <div class="usage-bar">
+                    <div class="usage-fill low" style="width: 5%;"></div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="resource-assignment">
+                <div style="margin-bottom: 8px;">Current Assignments:</div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">Data Processing Pipeline</div>
+                  <div class="assignment-priority priority-medium">Medium</div>
+                </div>
+                <div class="assignment-item">
+                  <div class="assignment-workflow">API Integration</div>
+                  <div class="assignment-priority priority-high">High</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Simple navigation between panels
+    document.addEventListener('DOMContentLoaded', function() {
+      // Panel navigation
+      const navItems = document.querySelectorAll('.harmonia-nav-item');
+      const panels = document.querySelectorAll('.harmonia-panel');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove active class from all nav items
+          navItems.forEach(navItem => navItem.classList.remove('active'));
+          
+          // Add active class to clicked nav item
+          item.classList.add('active');
+          
+          // Hide all panels
+          panels.forEach(panel => panel.classList.remove('active'));
+          
+          // Show the panel that corresponds to the clicked nav item
+          const panelId = item.getAttribute('data-panel') + '-panel';
+          document.getElementById(panelId).classList.add('active');
+        });
+      });
+
+      // Workflow selection
+      const workflowItems = document.querySelectorAll('.workflow-item');
+      
+      workflowItems.forEach(item => {
+        item.addEventListener('click', function() {
+          workflowItems.forEach(wfItem => wfItem.classList.remove('active'));
+          item.classList.add('active');
+          
+          // In a real implementation, this would load the selected workflow data
+          const workflowName = item.querySelector('.workflow-name').textContent;
+          document.querySelector('.editor-title').textContent = workflowName;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

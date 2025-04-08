@@ -1,0 +1,1492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Telos Component</title>
+  <style>
+    /* This CSS only applies to elements within this component */
+    .telos-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .telos-nav {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.8);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .telos-nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .telos-nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+    
+    .telos-nav-item.active {
+      color: white;
+      background-color: rgba(79, 70, 229, 0.2);
+    }
+    
+    .telos-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #4f46e5;
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .telos-content {
+      flex-grow: 1;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .telos-panel {
+      display: none;
+      height: 100%;
+    }
+    
+    .telos-panel.active {
+      display: block;
+    }
+
+    /* Dashboard panel */
+    .requirement-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Requirements Editor */
+    .editor-container {
+      display: flex;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .requirements-list {
+      width: 300px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .requirements-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .requirements-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .add-button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+    
+    .add-button:hover {
+      background-color: #4338ca;
+    }
+    
+    .filter-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    
+    .requirement-group {
+      margin-bottom: 16px;
+    }
+    
+    .group-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding-left: 8px;
+    }
+    
+    .requirement-item {
+      padding: 10px;
+      border-radius: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .requirement-item:hover {
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+    
+    .requirement-item.active {
+      background-color: rgba(79, 70, 229, 0.2);
+      border-left: 3px solid #4f46e5;
+    }
+    
+    .requirement-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: white;
+    }
+    
+    .requirement-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .requirement-status {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .status-draft {
+      background-color: rgba(100, 116, 139, 0.2);
+      color: #94a3b8;
+    }
+    
+    .status-active {
+      background-color: rgba(79, 70, 229, 0.2);
+      color: #a5b4fc;
+    }
+    
+    .status-implemented {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    
+    .status-review {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+    }
+    
+    .status-blocked {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+    
+    .requirement-editor {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .editor-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .editor-action {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .editor-action:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .editor-action.delete {
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .editor-action.delete:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+    
+    .editor-form {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: auto;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .form-group {
+      flex-grow: 1;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-select {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    
+    .tag {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #a5b4fc;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .tag-remove {
+      margin-left: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background-color: rgba(255, 255, 255, 0.1);
+      transition: background-color 0.2s;
+    }
+    
+    .tag-remove:hover {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+    
+    .add-tag {
+      display: flex;
+      margin-top: 8px;
+    }
+    
+    .add-tag input {
+      flex-grow: 1;
+      margin-right: 8px;
+    }
+    
+    .add-tag button {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      padding: 0 12px;
+      cursor: pointer;
+    }
+    
+    .dependencies-section {
+      margin-top: 16px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+    }
+    
+    .dependencies-list {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .dependency-item {
+      padding: 8px 12px;
+      border-radius: 4px;
+      background-color: rgba(15, 23, 42, 0.7);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .dependency-name {
+      color: white;
+    }
+    
+    .dependency-remove {
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+    }
+    
+    .add-dependency {
+      display: flex;
+      margin-top: 12px;
+    }
+    
+    .add-dependency select {
+      flex-grow: 1;
+      margin-right: 8px;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .form-button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .form-cancel {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .form-cancel:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .form-save {
+      background-color: #4f46e5;
+      color: white;
+      border: none;
+    }
+    
+    .form-save:hover {
+      background-color: #4338ca;
+    }
+
+    /* Projects Panel */
+    .projects-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .projects-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .projects-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .project-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+    
+    .project-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-color: rgba(79, 70, 229, 0.3);
+    }
+    
+    .project-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    
+    .project-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .project-status {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .project-description {
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 16px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .project-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .meta-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 2px;
+    }
+    
+    .meta-value {
+      font-size: 14px;
+      color: white;
+      font-weight: 500;
+    }
+    
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    
+    .progress-text {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-percent {
+      font-size: 12px;
+      color: white;
+      font-weight: 500;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #4f46e5;
+      border-radius: 3px;
+    }
+    
+    .project-card-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .project-tags {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .project-tag {
+      background-color: rgba(79, 70, 229, 0.1);
+      color: #a5b4fc;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .project-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .project-action {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background-color: rgba(15, 23, 42, 0.7);
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .project-action:hover {
+      background-color: rgba(79, 70, 229, 0.2);
+      color: white;
+    }
+
+    /* Analysis Panel */
+    .analysis-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .analysis-header {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .analysis-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .analysis-options {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .analysis-section {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .completion-chart {
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 20px 0;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 20px;
+    }
+    
+    .metric-card {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+    
+    .metric-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 8px;
+    }
+    
+    .metric-label {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .analysis-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 16px;
+    }
+    
+    .analysis-table th {
+      text-align: left;
+      padding: 10px 16px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .analysis-table td {
+      padding: 10px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+    
+    .analysis-table tr:hover {
+      background-color: rgba(79, 70, 229, 0.1);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .telos-nav {
+        flex-wrap: wrap;
+      }
+      
+      .editor-container {
+        flex-direction: column;
+      }
+      
+      .requirements-list {
+        width: 100%;
+        max-height: 200px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="telos-container">
+    <!-- Navigation Tabs -->
+    <div class="telos-nav">
+      <div class="telos-nav-item active" data-panel="dashboard">Dashboard</div>
+      <div class="telos-nav-item" data-panel="requirements">Requirements</div>
+      <div class="telos-nav-item" data-panel="projects">Projects</div>
+      <div class="telos-nav-item" data-panel="analysis">Analysis</div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="telos-content">
+      <!-- Dashboard Panel -->
+      <div class="telos-panel active" id="dashboard-panel">
+        <div class="requirement-stats">
+          <div class="stat-card">
+            <div class="stat-title">Total Requirements</div>
+            <div class="stat-value">78</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Active Projects</div>
+            <div class="stat-value">4</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Implemented Requirements</div>
+            <div class="stat-value">36</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Completion Rate</div>
+            <div class="stat-value">46%</div>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+          <!-- First chart: Requirement Status -->
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">Requirements by Status</h3>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7);">
+              Requirement status chart visualization would appear here
+            </div>
+          </div>
+          
+          <!-- Second chart: Project Progress -->
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">Project Progress</h3>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7);">
+              Project progress chart visualization would appear here
+            </div>
+          </div>
+        </div>
+        
+        <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px; margin-top: 20px;">
+          <h3 style="color: white; margin-top: 0;">Recent Activity</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Time</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Activity</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Project</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">User</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Today, 11:42</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Added Requirement</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Tekton Core</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Casey Koons</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Today, 10:15</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Changed Status</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Engram Integration</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">System</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Today, 09:28</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Updated Project</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Athena Knowledge Graph</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Casey Koons</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Yesterday, 16:42</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Marked as Implemented</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Component Registry</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Casey Koons</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Yesterday, 14:17</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Added Dependency</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Hermes Messaging</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">System</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Requirements Editor Panel -->
+      <div class="telos-panel" id="requirements-panel">
+        <div class="editor-container">
+          <div class="requirements-list">
+            <div class="requirements-header">
+              <h3 class="requirements-title">Requirements</h3>
+              <div class="add-button">+</div>
+            </div>
+            
+            <input type="text" class="filter-input" placeholder="Filter requirements...">
+            
+            <div class="requirement-group">
+              <div class="group-name">Core Platform</div>
+              
+              <div class="requirement-item active">
+                <div class="requirement-name">Component Registry</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-implemented">Implemented</div>
+                  <div>REQ-001</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Message Routing</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-active">Active</div>
+                  <div>REQ-002</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Resource Management</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-active">Active</div>
+                  <div>REQ-003</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Graceful Degradation</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-draft">Draft</div>
+                  <div>REQ-004</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="requirement-group">
+              <div class="group-name">Memory System</div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Long-term Storage</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-implemented">Implemented</div>
+                  <div>REQ-005</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Vector Search</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-implemented">Implemented</div>
+                  <div>REQ-006</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Memory Consolidation</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-review">In Review</div>
+                  <div>REQ-007</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="requirement-group">
+              <div class="group-name">Knowledge Graph</div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Entity Management</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-implemented">Implemented</div>
+                  <div>REQ-008</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Relationship Types</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-active">Active</div>
+                  <div>REQ-009</div>
+                </div>
+              </div>
+              
+              <div class="requirement-item">
+                <div class="requirement-name">Graph Visualization</div>
+                <div class="requirement-meta">
+                  <div class="requirement-status status-blocked">Blocked</div>
+                  <div>REQ-010</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="requirement-editor">
+            <div class="editor-header">
+              <div class="editor-title">Component Registry (REQ-001)</div>
+              <div class="editor-actions">
+                <button class="editor-action delete">Delete</button>
+              </div>
+            </div>
+            
+            <div class="editor-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Requirement ID</label>
+                  <input type="text" class="form-input" value="REQ-001" readonly>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-select">
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="review">In Review</option>
+                    <option value="implemented" selected>Implemented</option>
+                    <option value="blocked">Blocked</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Priority</label>
+                  <select class="form-select">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high" selected>High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Name</label>
+                  <input type="text" class="form-input" value="Component Registry">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Category</label>
+                  <select class="form-select">
+                    <option value="core" selected>Core Platform</option>
+                    <option value="memory">Memory System</option>
+                    <option value="knowledge">Knowledge Graph</option>
+                    <option value="planning">Planning System</option>
+                    <option value="ui">User Interface</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea">The system shall provide a centralized component registry for registering, discovering, and managing all Tekton components. The registry must support component status tracking, versioning, and dependency management.</textarea>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Acceptance Criteria</label>
+                  <textarea class="form-textarea">1. Components can register with unique identifiers
+2. Components can update their status (online/offline)
+3. Registry maintains version information
+4. Components can query for dependencies
+5. Registry provides events for component status changes
+6. Registry is resilient to component failures</textarea>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Tags</label>
+                  <div class="tags-container">
+                    <div class="tag">core<span class="tag-remove">×</span></div>
+                    <div class="tag">registry<span class="tag-remove">×</span></div>
+                    <div class="tag">components<span class="tag-remove">×</span></div>
+                    <div class="tag">hermes<span class="tag-remove">×</span></div>
+                  </div>
+                  <div class="add-tag">
+                    <input type="text" class="form-input" placeholder="Add tag...">
+                    <button>Add</button>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="dependencies-section">
+                <div class="section-title">Dependencies</div>
+                <div class="dependencies-list">
+                  <div class="dependency-item">
+                    <div class="dependency-name">Message Routing (REQ-002)</div>
+                    <div class="dependency-remove">×</div>
+                  </div>
+                  <div class="dependency-item">
+                    <div class="dependency-name">Persistent Storage (REQ-015)</div>
+                    <div class="dependency-remove">×</div>
+                  </div>
+                </div>
+                <div class="add-dependency">
+                  <select class="form-select">
+                    <option value="">-- Select Dependency --</option>
+                    <option value="req-003">Resource Management (REQ-003)</option>
+                    <option value="req-004">Graceful Degradation (REQ-004)</option>
+                    <option value="req-011">Security Access Control (REQ-011)</option>
+                  </select>
+                  <button class="editor-action">Add</button>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Notes</label>
+                  <textarea class="form-textarea">Implementation is complete in Hermes component. All tests passing. Documentation has been updated.</textarea>
+                </div>
+              </div>
+              
+              <div class="form-actions">
+                <button class="form-button form-cancel">Cancel</button>
+                <button class="form-button form-save">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Projects Panel -->
+      <div class="telos-panel" id="projects-panel">
+        <div class="projects-container">
+          <div class="projects-header">
+            <h2 class="projects-title">Projects</h2>
+            <button class="editor-action" style="background-color: #4f46e5; color: white;">New Project</button>
+          </div>
+          
+          <div class="projects-grid">
+            <div class="project-card">
+              <div class="project-card-header">
+                <h3 class="project-title">Tekton Core</h3>
+                <div class="project-status status-active">Active</div>
+              </div>
+              <div class="project-description">
+                Core platform services including component registration, messaging, and resource management.
+              </div>
+              <div class="project-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Requirements</div>
+                  <div class="meta-value">15</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Implementation</div>
+                  <div class="meta-value">8 / 15</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Start Date</div>
+                  <div class="meta-value">Feb 15, 2025</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Target Date</div>
+                  <div class="meta-value">May 30, 2025</div>
+                </div>
+              </div>
+              <div class="progress-label">
+                <div class="progress-text">Progress</div>
+                <div class="progress-percent">53%</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 53%;"></div>
+              </div>
+              <div class="project-card-footer">
+                <div class="project-tags">
+                  <div class="project-tag">core</div>
+                  <div class="project-tag">high-priority</div>
+                </div>
+                <div class="project-actions">
+                  <div class="project-action">✏️</div>
+                  <div class="project-action">📊</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="project-card">
+              <div class="project-card-header">
+                <h3 class="project-title">Engram Integration</h3>
+                <div class="project-status status-active">Active</div>
+              </div>
+              <div class="project-description">
+                Memory system integration with persistent storage, vector search, and context management.
+              </div>
+              <div class="project-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Requirements</div>
+                  <div class="meta-value">12</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Implementation</div>
+                  <div class="meta-value">9 / 12</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Start Date</div>
+                  <div class="meta-value">Mar 01, 2025</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Target Date</div>
+                  <div class="meta-value">Jun 15, 2025</div>
+                </div>
+              </div>
+              <div class="progress-label">
+                <div class="progress-text">Progress</div>
+                <div class="progress-percent">75%</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%;"></div>
+              </div>
+              <div class="project-card-footer">
+                <div class="project-tags">
+                  <div class="project-tag">memory</div>
+                  <div class="project-tag">integration</div>
+                </div>
+                <div class="project-actions">
+                  <div class="project-action">✏️</div>
+                  <div class="project-action">📊</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="project-card">
+              <div class="project-card-header">
+                <h3 class="project-title">Athena Knowledge Graph</h3>
+                <div class="project-status status-active">Active</div>
+              </div>
+              <div class="project-description">
+                Knowledge representation system with entity management, relationships, and graph visualization.
+              </div>
+              <div class="project-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Requirements</div>
+                  <div class="meta-value">14</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Implementation</div>
+                  <div class="meta-value">7 / 14</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Start Date</div>
+                  <div class="meta-value">Mar 10, 2025</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Target Date</div>
+                  <div class="meta-value">Jul 01, 2025</div>
+                </div>
+              </div>
+              <div class="progress-label">
+                <div class="progress-text">Progress</div>
+                <div class="progress-percent">50%</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 50%;"></div>
+              </div>
+              <div class="project-card-footer">
+                <div class="project-tags">
+                  <div class="project-tag">knowledge</div>
+                  <div class="project-tag">graph</div>
+                </div>
+                <div class="project-actions">
+                  <div class="project-action">✏️</div>
+                  <div class="project-action">📊</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="project-card">
+              <div class="project-card-header">
+                <h3 class="project-title">User Interface System</h3>
+                <div class="project-status status-active">Active</div>
+              </div>
+              <div class="project-description">
+                Unified UI for monitoring and controlling Tekton components with visualization and interaction.
+              </div>
+              <div class="project-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Requirements</div>
+                  <div class="meta-value">18</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Implementation</div>
+                  <div class="meta-value">6 / 18</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Start Date</div>
+                  <div class="meta-value">Mar 20, 2025</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Target Date</div>
+                  <div class="meta-value">Aug 15, 2025</div>
+                </div>
+              </div>
+              <div class="progress-label">
+                <div class="progress-text">Progress</div>
+                <div class="progress-percent">33%</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 33%;"></div>
+              </div>
+              <div class="project-card-footer">
+                <div class="project-tags">
+                  <div class="project-tag">ui</div>
+                  <div class="project-tag">hephaestus</div>
+                </div>
+                <div class="project-actions">
+                  <div class="project-action">✏️</div>
+                  <div class="project-action">📊</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="project-card">
+              <div class="project-card-header">
+                <h3 class="project-title">Planning & Orchestration</h3>
+                <div class="project-status status-draft">Draft</div>
+              </div>
+              <div class="project-description">
+                Planning, execution, and orchestration capabilities for complex workflows and tasks.
+              </div>
+              <div class="project-meta">
+                <div class="meta-item">
+                  <div class="meta-label">Requirements</div>
+                  <div class="meta-value">19</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Implementation</div>
+                  <div class="meta-value">0 / 19</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Start Date</div>
+                  <div class="meta-value">Jun 01, 2025</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">Target Date</div>
+                  <div class="meta-value">Sep 30, 2025</div>
+                </div>
+              </div>
+              <div class="progress-label">
+                <div class="progress-text">Progress</div>
+                <div class="progress-percent">0%</div>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%;"></div>
+              </div>
+              <div class="project-card-footer">
+                <div class="project-tags">
+                  <div class="project-tag">planning</div>
+                  <div class="project-tag">prometheus</div>
+                </div>
+                <div class="project-actions">
+                  <div class="project-action">✏️</div>
+                  <div class="project-action">📊</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analysis Panel -->
+      <div class="telos-panel" id="analysis-panel">
+        <div class="analysis-container">
+          <div class="analysis-header">
+            <h2 class="analysis-title">Requirements Analysis</h2>
+            <div class="analysis-options">
+              <select class="form-select">
+                <option value="all" selected>All Projects</option>
+                <option value="tekton">Tekton Core</option>
+                <option value="engram">Engram Integration</option>
+                <option value="athena">Athena Knowledge Graph</option>
+                <option value="ui">User Interface System</option>
+              </select>
+              <button class="editor-action" style="background-color: #4f46e5; color: white;">Generate Report</button>
+            </div>
+          </div>
+          
+          <div class="analysis-section">
+            <h3 style="color: white; margin-top: 0;">Completion Status</h3>
+            <div class="completion-chart">
+              Completion status chart visualization would appear here
+            </div>
+            
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-value">78</div>
+                <div class="metric-label">Total Requirements</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value">36</div>
+                <div class="metric-label">Implemented</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value">24</div>
+                <div class="metric-label">Active</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value">11</div>
+                <div class="metric-label">Draft</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value">5</div>
+                <div class="metric-label">In Review</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-value">2</div>
+                <div class="metric-label">Blocked</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="analysis-section">
+            <h3 style="color: white; margin-top: 0;">Priority Distribution</h3>
+            <table class="analysis-table">
+              <thead>
+                <tr>
+                  <th>Priority</th>
+                  <th>Count</th>
+                  <th>Implemented</th>
+                  <th>Completion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Critical</td>
+                  <td>8</td>
+                  <td>6</td>
+                  <td>75%</td>
+                </tr>
+                <tr>
+                  <td>High</td>
+                  <td>22</td>
+                  <td>15</td>
+                  <td>68%</td>
+                </tr>
+                <tr>
+                  <td>Medium</td>
+                  <td>36</td>
+                  <td>12</td>
+                  <td>33%</td>
+                </tr>
+                <tr>
+                  <td>Low</td>
+                  <td>12</td>
+                  <td>3</td>
+                  <td>25%</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="analysis-section">
+            <h3 style="color: white; margin-top: 0;">Implementation Timeline</h3>
+            <div class="completion-chart">
+              Timeline chart visualization would appear here
+            </div>
+            
+            <div style="margin-top: 20px;">
+              <h4 style="color: white;">Recommendations</h4>
+              <ul style="color: rgba(255, 255, 255, 0.7); line-height: 1.5;">
+                <li>Focus on resolving blocked requirements for Athena Graph Visualization</li>
+                <li>Increase resources allocated to User Interface System project</li>
+                <li>Review dependency chains for Planning & Orchestration project</li>
+                <li>Consider prioritizing Memory Consolidation requirement to support future integration needs</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Simple navigation between panels
+    document.addEventListener('DOMContentLoaded', function() {
+      // Panel navigation
+      const navItems = document.querySelectorAll('.telos-nav-item');
+      const panels = document.querySelectorAll('.telos-panel');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove active class from all nav items
+          navItems.forEach(navItem => navItem.classList.remove('active'));
+          
+          // Add active class to clicked nav item
+          item.classList.add('active');
+          
+          // Hide all panels
+          panels.forEach(panel => panel.classList.remove('active'));
+          
+          // Show the panel that corresponds to the clicked nav item
+          const panelId = item.getAttribute('data-panel') + '-panel';
+          document.getElementById(panelId).classList.add('active');
+        });
+      });
+
+      // Requirement selection
+      const requirementItems = document.querySelectorAll('.requirement-item');
+      
+      requirementItems.forEach(item => {
+        item.addEventListener('click', function() {
+          requirementItems.forEach(reqItem => reqItem.classList.remove('active'));
+          item.classList.add('active');
+          
+          // In a real implementation, this would load the selected requirement data
+          const requirementName = item.querySelector('.requirement-name').textContent;
+          const requirementId = item.querySelector('.requirement-meta div:last-child').textContent;
+          document.querySelector('.editor-title').textContent = `${requirementName} (${requirementId})`;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

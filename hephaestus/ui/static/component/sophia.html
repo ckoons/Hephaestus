@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sophia Component</title>
+  <style>
+    /* This CSS only applies to elements within this component */
+    .sophia-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .sophia-nav {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.8);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .sophia-nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .sophia-nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(139, 92, 246, 0.1);
+    }
+    
+    .sophia-nav-item.active {
+      color: white;
+      background-color: rgba(139, 92, 246, 0.2);
+    }
+    
+    .sophia-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #8b5cf6;
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .sophia-content {
+      flex-grow: 1;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .sophia-panel {
+      display: none;
+      height: 100%;
+    }
+    
+    .sophia-panel.active {
+      display: block;
+    }
+
+    /* Dashboard panel */
+    .learning-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+    }
+
+    /* Model Manager */
+    .model-container {
+      display: flex;
+      height: 100%;
+      gap: 16px;
+    }
+    
+    .model-list {
+      width: 280px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      overflow-y: auto;
+    }
+    
+    .model-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .model-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .add-button {
+      background-color: #8b5cf6;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+    
+    .add-button:hover {
+      background-color: #7c3aed;
+    }
+    
+    .filter-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      margin-bottom: 16px;
+    }
+    
+    .model-group {
+      margin-bottom: 16px;
+    }
+    
+    .group-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      padding-left: 8px;
+    }
+    
+    .model-item {
+      padding: 10px;
+      border-radius: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    
+    .model-item:hover {
+      background-color: rgba(139, 92, 246, 0.1);
+    }
+    
+    .model-item.active {
+      background-color: rgba(139, 92, 246, 0.2);
+      border-left: 3px solid #8b5cf6;
+    }
+    
+    .model-name {
+      font-weight: 500;
+      margin-bottom: 4px;
+      color: white;
+    }
+    
+    .model-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .model-type {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    
+    .type-local {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    
+    .type-remote {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+    
+    .type-hybrid {
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+    }
+    
+    .type-experimental {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+    }
+    
+    .model-editor {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .editor-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    
+    .editor-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .editor-action {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .editor-action:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .editor-action.primary {
+      background-color: #8b5cf6;
+      color: white;
+      border-color: #8b5cf6;
+    }
+    
+    .editor-action.primary:hover {
+      background-color: #7c3aed;
+      border-color: #7c3aed;
+    }
+    
+    .editor-action.delete {
+      color: #f87171;
+      border-color: rgba(239, 68, 68, 0.3);
+    }
+    
+    .editor-action.delete:hover {
+      background-color: rgba(239, 68, 68, 0.1);
+    }
+    
+    .editor-form {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      overflow: auto;
+    }
+    
+    .form-row {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .form-group {
+      flex-grow: 1;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .form-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-select {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      min-height: 100px;
+      resize: vertical;
+      font-family: inherit;
+    }
+    
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .form-button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .form-cancel {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .form-cancel:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    .form-save {
+      background-color: #8b5cf6;
+      color: white;
+      border: none;
+    }
+    
+    .form-save:hover {
+      background-color: #7c3aed;
+    }
+
+    /* Model parameters section */
+    .model-params {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .param-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .param-add {
+      font-size: 12px;
+      padding: 4px 8px;
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .param-add:hover {
+      background-color: rgba(139, 92, 246, 0.3);
+    }
+    
+    .param-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .param-table th {
+      text-align: left;
+      padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .param-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .param-name {
+      color: white;
+      font-weight: 500;
+    }
+    
+    .param-value {
+      color: white;
+      font-family: monospace;
+    }
+    
+    .param-description {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+    }
+    
+    .param-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .param-action {
+      color: rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      font-size: 12px;
+      transition: color 0.2s;
+    }
+    
+    .param-action:hover {
+      color: white;
+    }
+
+    /* Training Panel */
+    .training-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .training-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .training-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .training-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .training-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+    
+    .training-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+    
+    .training-card-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    
+    .training-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .training-card-status {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-running {
+      background-color: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+    }
+    
+    .status-completed {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    
+    .status-queued {
+      background-color: rgba(100, 116, 139, 0.2);
+      color: #94a3b8;
+    }
+    
+    .status-failed {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+    
+    .training-card-content {
+      margin-bottom: 16px;
+    }
+    
+    .card-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .meta-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 2px;
+    }
+    
+    .meta-value {
+      font-size: 14px;
+      color: white;
+      font-weight: 500;
+    }
+    
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+    
+    .progress-text {
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .progress-percent {
+      color: white;
+      font-weight: 500;
+    }
+    
+    .progress-bar {
+      height: 6px;
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .progress-fill {
+      height: 100%;
+      background-color: #8b5cf6;
+      border-radius: 3px;
+    }
+    
+    .training-card-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .card-action {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+    
+    .card-action:hover {
+      color: white;
+      border-color: rgba(255, 255, 255, 0.4);
+      background-color: rgba(255, 255, 255, 0.05);
+    }
+    
+    .card-action.primary {
+      background-color: #8b5cf6;
+      color: white;
+      border-color: #8b5cf6;
+    }
+    
+    .card-action.primary:hover {
+      background-color: #7c3aed;
+      border-color: #7c3aed;
+    }
+
+    /* Active session */
+    .active-session {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+    
+    .session-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .session-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin: 0;
+    }
+    
+    .session-metrics {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .metric-box {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      padding: 12px;
+      flex: 1;
+    }
+    
+    .metric-name {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 8px;
+    }
+    
+    .metric-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .live-chart {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      padding: 12px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 16px;
+    }
+
+    /* Evaluation Panel */
+    .evaluation-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .metric-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .metric-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    
+    .large-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 8px;
+    }
+    
+    .trend {
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .trend-up {
+      color: #10b981;
+    }
+    
+    .trend-down {
+      color: #ef4444;
+    }
+    
+    .benchmark-row {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .benchmark-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+    }
+    
+    .benchmark-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+    
+    .benchmark-score {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      background-color: rgba(139, 92, 246, 0.2);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+    
+    .score-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    
+    .score-table th {
+      text-align: left;
+      padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .score-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+    
+    .history-chart {
+      height: 300px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+    
+    .evaluation-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .comparison-table th {
+      text-align: left;
+      padding: 8px 12px;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .comparison-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+    
+    .model-performance {
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    
+    .performance-excellent {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    
+    .performance-good {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+    
+    .performance-average {
+      background-color: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+    }
+    
+    .performance-poor {
+      background-color: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .sophia-nav {
+        flex-wrap: wrap;
+      }
+      
+      .model-container {
+        flex-direction: column;
+      }
+      
+      .model-list {
+        width: 100%;
+        max-height: 200px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+      }
+      
+      .benchmark-row {
+        flex-direction: column;
+      }
+      
+      .session-metrics {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sophia-container">
+    <!-- Navigation Tabs -->
+    <div class="sophia-nav">
+      <div class="sophia-nav-item active" data-panel="dashboard">Dashboard</div>
+      <div class="sophia-nav-item" data-panel="models">Model Manager</div>
+      <div class="sophia-nav-item" data-panel="training">Training</div>
+      <div class="sophia-nav-item" data-panel="evaluation">Evaluation</div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="sophia-content">
+      <!-- Dashboard Panel -->
+      <div class="sophia-panel active" id="dashboard-panel">
+        <div class="learning-stats">
+          <div class="stat-card">
+            <div class="stat-title">Active Models</div>
+            <div class="stat-value">8</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Training Sessions</div>
+            <div class="stat-value">3</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Inference Requests</div>
+            <div class="stat-value">1,243</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Average Performance</div>
+            <div class="stat-value">94.2%</div>
+          </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px;">
+          <!-- First chart: Model Performance -->
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">Model Performance Comparison</h3>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7);">
+              Model performance comparison chart visualization would appear here
+            </div>
+          </div>
+          
+          <!-- Second chart: Resource Usage -->
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: white; margin-top: 0;">Resource Usage</h3>
+            <div style="height: 200px; display: flex; align-items: center; justify-content: center; color: rgba(255, 255, 255, 0.7);">
+              Resource usage chart visualization would appear here
+            </div>
+          </div>
+        </div>
+        
+        <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px; margin-top: 20px;">
+          <h3 style="color: white; margin-top: 0;">Recent Activity</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Time</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Model</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Activity</th>
+                <th style="text-align: left; padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7);">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">14:32:18</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Code Analyzer v2</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Training Completed</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7;">Success</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">14:05:42</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Requirements Parser</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Inference Request</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7;">Success</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">13:42:15</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Bug Prediction</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Evaluation</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(16, 185, 129, 0.2); color: #6ee7b7;">Success</span>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">13:15:36</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">API Designer</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); color: white;">Training Started</td>
+                <td style="padding: 8px 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                  <span style="padding: 2px 6px; border-radius: 4px; font-size: 12px; background-color: rgba(139, 92, 246, 0.2); color: #c4b5fd;">Running</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Model Manager Panel -->
+      <div class="sophia-panel" id="models-panel">
+        <div class="model-container">
+          <div class="model-list">
+            <div class="model-header">
+              <h3 class="model-title">Models</h3>
+              <div class="add-button">+</div>
+            </div>
+            
+            <input type="text" class="filter-input" placeholder="Filter models...">
+            
+            <div class="model-group">
+              <div class="group-name">Code Analysis</div>
+              
+              <div class="model-item active">
+                <div class="model-name">Code Analyzer v2</div>
+                <div class="model-meta">
+                  <div class="model-type type-local">Local</div>
+                  <div>250MB</div>
+                </div>
+              </div>
+              
+              <div class="model-item">
+                <div class="model-name">Bug Prediction</div>
+                <div class="model-meta">
+                  <div class="model-type type-hybrid">Hybrid</div>
+                  <div>350MB</div>
+                </div>
+              </div>
+              
+              <div class="model-item">
+                <div class="model-name">Code Completion</div>
+                <div class="model-meta">
+                  <div class="model-type type-remote">Remote</div>
+                  <div>1.2GB</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="model-group">
+              <div class="group-name">Requirements</div>
+              
+              <div class="model-item">
+                <div class="model-name">Requirements Parser</div>
+                <div class="model-meta">
+                  <div class="model-type type-local">Local</div>
+                  <div>180MB</div>
+                </div>
+              </div>
+              
+              <div class="model-item">
+                <div class="model-name">Requirements Analyzer</div>
+                <div class="model-meta">
+                  <div class="model-type type-hybrid">Hybrid</div>
+                  <div>420MB</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="model-group">
+              <div class="group-name">Design</div>
+              
+              <div class="model-item">
+                <div class="model-name">API Designer</div>
+                <div class="model-meta">
+                  <div class="model-type type-local">Local</div>
+                  <div>320MB</div>
+                </div>
+              </div>
+              
+              <div class="model-item">
+                <div class="model-name">Architecture Planner</div>
+                <div class="model-meta">
+                  <div class="model-type type-remote">Remote</div>
+                  <div>1.8GB</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="model-group">
+              <div class="group-name">Experimental</div>
+              
+              <div class="model-item">
+                <div class="model-name">Test Optimizer</div>
+                <div class="model-meta">
+                  <div class="model-type type-experimental">Experimental</div>
+                  <div>280MB</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="model-editor">
+            <div class="editor-header">
+              <div class="editor-title">Code Analyzer v2</div>
+              <div class="editor-actions">
+                <button class="editor-action">Export</button>
+                <button class="editor-action">Clone</button>
+                <button class="editor-action primary">Deploy</button>
+                <button class="editor-action delete">Delete</button>
+              </div>
+            </div>
+            
+            <div class="editor-form">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Model Name</label>
+                  <input type="text" class="form-input" value="Code Analyzer v2">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Model Type</label>
+                  <select class="form-select">
+                    <option value="local" selected>Local</option>
+                    <option value="remote">Remote</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="experimental">Experimental</option>
+                  </select>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Base Architecture</label>
+                  <select class="form-select">
+                    <option value="transformer">Transformer</option>
+                    <option value="cnn">CNN</option>
+                    <option value="rnn">RNN</option>
+                    <option value="custom" selected>Custom</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea">A specialized model for analyzing code quality, identifying potential bugs, and suggesting improvements. Trained on a large dataset of code with annotations for quality and bug indicators.</textarea>
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Supported Languages</label>
+                  <input type="text" class="form-input" value="Python, JavaScript, TypeScript, Java, C++, Rust">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Version</label>
+                  <input type="text" class="form-input" value="2.3.0">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Status</label>
+                  <select class="form-select">
+                    <option value="development">Development</option>
+                    <option value="training">Training</option>
+                    <option value="testing">Testing</option>
+                    <option value="production" selected>Production</option>
+                    <option value="deprecated">Deprecated</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="model-params">
+                <div class="param-title">
+                  <span>Model Parameters</span>
+                  <span class="param-add">+ Add Parameter</span>
+                </div>
+                
+                <table class="param-table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Value</th>
+                      <th>Description</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="param-name">embedding_size</td>
+                      <td class="param-value">512</td>
+                      <td class="param-description">Size of token embeddings</td>
+                      <td>
+                        <div class="param-actions">
+                          <div class="param-action">Edit</div>
+                          <div class="param-action">Delete</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="param-name">hidden_size</td>
+                      <td class="param-value">1024</td>
+                      <td class="param-description">Size of hidden layers</td>
+                      <td>
+                        <div class="param-actions">
+                          <div class="param-action">Edit</div>
+                          <div class="param-action">Delete</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="param-name">num_layers</td>
+                      <td class="param-value">8</td>
+                      <td class="param-description">Number of transformer layers</td>
+                      <td>
+                        <div class="param-actions">
+                          <div class="param-action">Edit</div>
+                          <div class="param-action">Delete</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="param-name">attention_heads</td>
+                      <td class="param-value">12</td>
+                      <td class="param-description">Number of attention heads</td>
+                      <td>
+                        <div class="param-actions">
+                          <div class="param-action">Edit</div>
+                          <div class="param-action">Delete</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="param-name">dropout</td>
+                      <td class="param-value">0.1</td>
+                      <td class="param-description">Dropout rate</td>
+                      <td>
+                        <div class="param-actions">
+                          <div class="param-action">Edit</div>
+                          <div class="param-action">Delete</div>
+                        </div>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td class="param-name">context_length</td>
+                      <td class="param-value">2048</td>
+                      <td class="param-description">Maximum context length</td>
+                      <td>
+                        <div class="param-actions">
+                          <div class="param-action">Edit</div>
+                          <div class="param-action">Delete</div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              
+              <div class="form-actions">
+                <button class="form-button form-cancel">Cancel</button>
+                <button class="form-button form-save">Save Changes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Training Panel -->
+      <div class="sophia-panel" id="training-panel">
+        <div class="training-container">
+          <div class="training-header">
+            <h2 class="training-title">Training Sessions</h2>
+            <button class="editor-action primary">New Training Session</button>
+          </div>
+          
+          <div class="training-grid">
+            <div class="training-card">
+              <div class="training-card-header">
+                <div class="training-card-title">API Designer</div>
+                <div class="training-card-status status-running">Running</div>
+              </div>
+              
+              <div class="training-card-content">
+                <div class="card-meta">
+                  <div class="meta-item">
+                    <div class="meta-label">Started</div>
+                    <div class="meta-value">Today, 13:15</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">ETA</div>
+                    <div class="meta-value">~2 hours</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Epochs</div>
+                    <div class="meta-value">3 / 10</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Batch Size</div>
+                    <div class="meta-value">32</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">30%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 30%;"></div>
+                </div>
+              </div>
+              
+              <div class="training-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Pause</button>
+                <button class="card-action primary">Monitor</button>
+              </div>
+            </div>
+            
+            <div class="training-card">
+              <div class="training-card-header">
+                <div class="training-card-title">Test Optimizer</div>
+                <div class="training-card-status status-queued">Queued</div>
+              </div>
+              
+              <div class="training-card-content">
+                <div class="card-meta">
+                  <div class="meta-item">
+                    <div class="meta-label">Queued</div>
+                    <div class="meta-value">Today, 12:30</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Est. Duration</div>
+                    <div class="meta-value">~4 hours</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Epochs</div>
+                    <div class="meta-value">0 / 15</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Batch Size</div>
+                    <div class="meta-value">16</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">0%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 0%;"></div>
+                </div>
+              </div>
+              
+              <div class="training-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Cancel</button>
+                <button class="card-action primary">Start Now</button>
+              </div>
+            </div>
+            
+            <div class="training-card">
+              <div class="training-card-header">
+                <div class="training-card-title">Code Analyzer v2</div>
+                <div class="training-card-status status-completed">Completed</div>
+              </div>
+              
+              <div class="training-card-content">
+                <div class="card-meta">
+                  <div class="meta-item">
+                    <div class="meta-label">Started</div>
+                    <div class="meta-value">Today, 09:45</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Completed</div>
+                    <div class="meta-value">Today, 14:32</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Epochs</div>
+                    <div class="meta-value">12 / 12</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Final Loss</div>
+                    <div class="meta-value">0.034</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">100%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+              </div>
+              
+              <div class="training-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">Export</button>
+                <button class="card-action primary">Evaluate</button>
+              </div>
+            </div>
+            
+            <div class="training-card">
+              <div class="training-card-header">
+                <div class="training-card-title">Bug Prediction</div>
+                <div class="training-card-status status-failed">Failed</div>
+              </div>
+              
+              <div class="training-card-content">
+                <div class="card-meta">
+                  <div class="meta-item">
+                    <div class="meta-label">Started</div>
+                    <div class="meta-value">Yesterday, 18:22</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Failed</div>
+                    <div class="meta-value">Yesterday, 19:45</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Epochs</div>
+                    <div class="meta-value">3 / 20</div>
+                  </div>
+                  <div class="meta-item">
+                    <div class="meta-label">Error</div>
+                    <div class="meta-value">OOM</div>
+                  </div>
+                </div>
+                
+                <div class="progress-label">
+                  <div class="progress-text">Progress</div>
+                  <div class="progress-percent">15%</div>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-fill" style="width: 15%;"></div>
+                </div>
+              </div>
+              
+              <div class="training-card-footer">
+                <button class="card-action">View Details</button>
+                <button class="card-action">View Logs</button>
+                <button class="card-action primary">Retry</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="active-session">
+            <div class="session-header">
+              <h3 class="session-title">Active Training: API Designer</h3>
+              <button class="editor-action">Pause Session</button>
+            </div>
+            
+            <div class="session-metrics">
+              <div class="metric-box">
+                <div class="metric-name">Current Epoch</div>
+                <div class="metric-value">3 / 10</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-name">Current Loss</div>
+                <div class="metric-value">0.123</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-name">Learning Rate</div>
+                <div class="metric-value">0.0001</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-name">Batch</div>
+                <div class="metric-value">156 / 520</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-name">GPU Usage</div>
+                <div class="metric-value">86%</div>
+              </div>
+            </div>
+            
+            <div class="live-chart">
+              Live training metrics chart visualization would appear here
+            </div>
+            
+            <div style="display: flex; gap: 16px;">
+              <div style="flex: 1; background-color: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 12px; height: 200px; overflow: auto;">
+                <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 8px;">Training Log</div>
+                <div style="font-family: monospace; font-size: 12px; color: rgba(255, 255, 255, 0.7); line-height: 1.5;">
+                  [13:15:36] Starting training session for model: API Designer<br>
+                  [13:15:38] Loading dataset: api_design_dataset_v3 (10,240 samples)<br>
+                  [13:15:45] Initializing model with parameters: embedding_size=512, hidden_size=1024<br>
+                  [13:16:02] Starting epoch 1/10<br>
+                  [13:22:18] Epoch 1/10 completed. Loss: 0.342, Accuracy: 0.78<br>
+                  [13:22:20] Starting epoch 2/10<br>
+                  [13:28:45] Epoch 2/10 completed. Loss: 0.245, Accuracy: 0.84<br>
+                  [13:28:48] Starting epoch 3/10<br>
+                  [13:32:15] Batch 156/520 completed. Loss: 0.123, Accuracy: 0.89
+                </div>
+              </div>
+              
+              <div style="flex: 1; background-color: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 12px; height: 200px;">
+                <div style="font-size: 14px; font-weight: 600; color: white; margin-bottom: 8px;">Validation Metrics</div>
+                <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255, 255, 255, 0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">Accuracy</td>
+                    <td style="padding: 6px 0; color: white; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">0.86</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255, 255, 255, 0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">Precision</td>
+                    <td style="padding: 6px 0; color: white; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">0.83</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255, 255, 255, 0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">Recall</td>
+                    <td style="padding: 6px 0; color: white; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">0.81</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255, 255, 255, 0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">F1 Score</td>
+                    <td style="padding: 6px 0; color: white; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">0.82</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255, 255, 255, 0.7); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">BLEU Score</td>
+                    <td style="padding: 6px 0; color: white; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">0.79</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 6px 0; color: rgba(255, 255, 255, 0.7);">ROUGE-L</td>
+                    <td style="padding: 6px 0; color: white;">0.84</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Evaluation Panel -->
+      <div class="sophia-panel" id="evaluation-panel">
+        <div class="evaluation-container">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <h2 style="color: white; margin: 0;">Model Evaluation</h2>
+            <div style="display: flex; gap: 8px;">
+              <select class="form-select">
+                <option value="all-models">All Models</option>
+                <option value="code-analyzer" selected>Code Analyzer v2</option>
+                <option value="bug-prediction">Bug Prediction</option>
+                <option value="requirements-parser">Requirements Parser</option>
+              </select>
+              <button class="editor-action primary">Run Benchmark</button>
+            </div>
+          </div>
+          
+          <div class="metric-grid">
+            <div class="metric-card">
+              <div class="metric-title">Accuracy</div>
+              <div class="large-value">92.4%</div>
+              <div class="trend trend-up">↑ 3.2% from previous version</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-title">Precision</div>
+              <div class="large-value">89.7%</div>
+              <div class="trend trend-up">↑ 2.1% from previous version</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-title">Recall</div>
+              <div class="large-value">86.3%</div>
+              <div class="trend trend-down">↓ 0.8% from previous version</div>
+            </div>
+            
+            <div class="metric-card">
+              <div class="metric-title">F1 Score</div>
+              <div class="large-value">88.0%</div>
+              <div class="trend trend-up">↑ 1.5% from previous version</div>
+            </div>
+          </div>
+          
+          <div class="benchmark-row">
+            <div class="benchmark-card">
+              <div class="benchmark-name">
+                <span>Code Quality Assessment</span>
+                <span class="benchmark-score">95.2%</span>
+              </div>
+              
+              <table class="score-table">
+                <tr>
+                  <td>Style Consistency</td>
+                  <td>96.8%</td>
+                </tr>
+                <tr>
+                  <td>Pattern Recognition</td>
+                  <td>94.3%</td>
+                </tr>
+                <tr>
+                  <td>Best Practices</td>
+                  <td>93.7%</td>
+                </tr>
+                <tr>
+                  <td>Documentation Quality</td>
+                  <td>96.0%</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="benchmark-card">
+              <div class="benchmark-name">
+                <span>Bug Detection</span>
+                <span class="benchmark-score">89.4%</span>
+              </div>
+              
+              <table class="score-table">
+                <tr>
+                  <td>Logic Errors</td>
+                  <td>87.2%</td>
+                </tr>
+                <tr>
+                  <td>Type Errors</td>
+                  <td>93.5%</td>
+                </tr>
+                <tr>
+                  <td>Security Vulnerabilities</td>
+                  <td>86.1%</td>
+                </tr>
+                <tr>
+                  <td>Performance Issues</td>
+                  <td>90.8%</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div class="benchmark-card">
+              <div class="benchmark-name">
+                <span>Improvement Suggestions</span>
+                <span class="benchmark-score">87.8%</span>
+              </div>
+              
+              <table class="score-table">
+                <tr>
+                  <td>Refactoring</td>
+                  <td>89.3%</td>
+                </tr>
+                <tr>
+                  <td>Optimization</td>
+                  <td>86.5%</td>
+                </tr>
+                <tr>
+                  <td>Readability</td>
+                  <td>91.2%</td>
+                </tr>
+                <tr>
+                  <td>Maintainability</td>
+                  <td>84.2%</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+          
+          <div class="history-chart">
+            Historical performance chart visualization would appear here
+          </div>
+          
+          <div class="evaluation-card">
+            <h3 style="color: white; margin-top: 0; margin-bottom: 16px;">Model Comparison</h3>
+            
+            <table class="comparison-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Accuracy</th>
+                  <th>F1 Score</th>
+                  <th>Inference Time</th>
+                  <th>Size</th>
+                  <th>Overall</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Code Analyzer v2</td>
+                  <td>92.4%</td>
+                  <td>88.0%</td>
+                  <td>43ms</td>
+                  <td>250MB</td>
+                  <td><span class="model-performance performance-excellent">Excellent</span></td>
+                </tr>
+                <tr>
+                  <td>Code Analyzer v1</td>
+                  <td>89.2%</td>
+                  <td>86.5%</td>
+                  <td>52ms</td>
+                  <td>220MB</td>
+                  <td><span class="model-performance performance-good">Good</span></td>
+                </tr>
+                <tr>
+                  <td>Bug Prediction</td>
+                  <td>86.7%</td>
+                  <td>85.3%</td>
+                  <td>38ms</td>
+                  <td>350MB</td>
+                  <td><span class="model-performance performance-good">Good</span></td>
+                </tr>
+                <tr>
+                  <td>Requirements Parser</td>
+                  <td>91.5%</td>
+                  <td>89.2%</td>
+                  <td>35ms</td>
+                  <td>180MB</td>
+                  <td><span class="model-performance performance-excellent">Excellent</span></td>
+                </tr>
+                <tr>
+                  <td>Test Optimizer</td>
+                  <td>78.3%</td>
+                  <td>76.1%</td>
+                  <td>62ms</td>
+                  <td>280MB</td>
+                  <td><span class="model-performance performance-average">Average</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="evaluation-card">
+            <h3 style="color: white; margin-top: 0; margin-bottom: 16px;">Sample Evaluation Results</h3>
+            
+            <div style="background-color: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+              <div style="font-weight: 600; color: white; margin-bottom: 8px;">Input Code:</div>
+              <pre style="background-color: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 6px; color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 0 0 16px 0; overflow: auto;">
+def calculate_average(numbers):
+    total = 0
+    for num in numbers:
+        total += num
+    return total / len(numbers)
+              </pre>
+              
+              <div style="font-weight: 600; color: white; margin-bottom: 8px;">Model Analysis:</div>
+              <div style="background-color: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 6px; color: rgba(255, 255, 255, 0.9); font-size: 14px; line-height: 1.5;">
+                <p>Potential issue detected: Division by zero risk if the input list is empty.</p>
+                <p>Recommended fix: Add validation to check if the input list has elements before performing division.</p>
+                <p>Style assessment: Function follows standard naming conventions and is well-structured.</p>
+              </div>
+            </div>
+            
+            <div style="background-color: rgba(15, 23, 42, 0.5); border-radius: 8px; padding: 16px;">
+              <div style="font-weight: 600; color: white; margin-bottom: 8px;">Model Suggestion:</div>
+              <pre style="background-color: rgba(15, 23, 42, 0.7); padding: 12px; border-radius: 6px; color: rgba(255, 255, 255, 0.9); font-size: 14px; margin: 0; overflow: auto;">
+def calculate_average(numbers):
+    if not numbers:
+        return 0  # or raise ValueError("Cannot calculate average of empty list")
+    total = 0
+    for num in numbers:
+        total += num
+    return total / len(numbers)
+              </pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Simple navigation between panels
+    document.addEventListener('DOMContentLoaded', function() {
+      // Panel navigation
+      const navItems = document.querySelectorAll('.sophia-nav-item');
+      const panels = document.querySelectorAll('.sophia-panel');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove active class from all nav items
+          navItems.forEach(navItem => navItem.classList.remove('active'));
+          
+          // Add active class to clicked nav item
+          item.classList.add('active');
+          
+          // Hide all panels
+          panels.forEach(panel => panel.classList.remove('active'));
+          
+          // Show the panel that corresponds to the clicked nav item
+          const panelId = item.getAttribute('data-panel') + '-panel';
+          document.getElementById(panelId).classList.add('active');
+        });
+      });
+
+      // Model selection
+      const modelItems = document.querySelectorAll('.model-item');
+      
+      modelItems.forEach(item => {
+        item.addEventListener('click', function() {
+          modelItems.forEach(mdlItem => mdlItem.classList.remove('active'));
+          item.classList.add('active');
+          
+          // In a real implementation, this would load the selected model data
+          const modelName = item.querySelector('.model-name').textContent;
+          document.querySelector('.editor-title').textContent = modelName;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

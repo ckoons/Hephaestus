@@ -335,7 +335,7 @@
     }
     
     #right-panel-content {
-      height: calc(100vh - 145px);
+      height: calc(100vh - 115px);
       overflow: hidden;
     }
   </style>
@@ -449,6 +449,12 @@
               <ul style="list-style-type: disc; padding-left: 20px;">
                 <li><strong>Athena</strong> - Knowledge Graph Management</li>
                 <li><strong>Engram</strong> - Memory System</li>
+                <li><strong>Prometheus</strong> - Planning Engine</li>
+                <li><strong>Hermes</strong> - Messaging and Data</li>
+                <li><strong>Telos</strong> - Requirements Management</li>
+                <li><strong>Rhetor</strong> - Context Management</li>
+                <li><strong>Harmonia</strong> - Orchestration</li>
+                <li><strong>Sophia</strong> - Learning System</li>
               </ul>
               <p style="margin-bottom: 0;">Click on a component in the left sidebar to access its interface.</p>
             </div>
@@ -692,7 +698,7 @@
               const iframe = document.createElement('iframe');
               iframe.src = '/component/athena.html';
               iframe.style.width = '100%';
-              iframe.style.height = 'calc(100vh - 145px)'; // Account for header and chat input
+              iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
               iframe.style.border = 'none';
               iframe.style.overflow = 'auto';
               iframe.style.backgroundColor = '#0f172a';
@@ -762,7 +768,7 @@
               const iframe = document.createElement('iframe');
               iframe.src = '/component/engram.html';
               iframe.style.width = '100%';
-              iframe.style.height = 'calc(100vh - 145px)'; // Account for header and chat input
+              iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
               iframe.style.border = 'none';
               iframe.style.overflow = 'auto';
               iframe.style.backgroundColor = '#0f172a';
@@ -773,6 +779,106 @@
             }
           });
         }
+        
+        // New components that have UIs
+        const prometheusButton = document.querySelector('.component-item[data-component-id="prometheus"]');
+        const hermesButton = document.querySelector('.component-item[data-component-id="hermes"]');
+        const telosButton = document.querySelector('.component-item[data-component-id="telos"]');
+        const rhetorButton = document.querySelector('.component-item[data-component-id="rhetor"]');
+        const harmoniaButton = document.querySelector('.component-item[data-component-id="harmonia"]');
+        const sophiaButton = document.querySelector('.component-item[data-component-id="sophia"]');
+
+        // Component colors (adjust as needed)
+        const componentColors = {
+          "prometheus": "#f97316", // Orange
+          "hermes": "#06b6d4",     // Cyan
+          "telos": "#14b8a6",      // Teal
+          "rhetor": "#a855f7",     // Purple
+          "harmonia": "#ec4899",   // Pink
+          "sophia": "#6366f1"      // Indigo
+        };
+
+        // Function to set up component UI buttons
+        function setupComponentUI(button, componentId, color) {
+          if (button) {
+            button.style.position = 'relative';
+            button.style.boxShadow = `0 0 5px ${color}`;
+            
+            // Add UI indicator
+            const indicator = document.createElement('div');
+            indicator.style.position = 'absolute';
+            indicator.style.right = '10px';
+            indicator.style.top = '50%';
+            indicator.style.transform = 'translateY(-50%)';
+            indicator.style.width = '16px';
+            indicator.style.height = '16px';
+            indicator.style.backgroundColor = color;
+            indicator.style.borderRadius = '50%';
+            indicator.style.display = 'flex';
+            indicator.style.alignItems = 'center';
+            indicator.style.justifyContent = 'center';
+            indicator.style.color = 'white';
+            indicator.style.fontSize = '10px';
+            indicator.innerHTML = '⚙️';
+            indicator.title = `${componentId.charAt(0).toUpperCase() + componentId.slice(1)} UI Available`;
+            button.appendChild(indicator);
+            
+            // Add click handler
+            button.addEventListener('click', async () => {
+              try {
+                // Set active
+                document.querySelectorAll('.component-item').forEach(el => el.classList.remove('active'));
+                button.classList.add('active');
+                
+                // Get component name and specialty for header
+                const nameElement = button.querySelector('.component-name');
+                const componentDisplayName = nameElement.textContent.trim();
+                
+                // Update header title
+                const headerTitle = document.querySelector('.header-title');
+                if (headerTitle) {
+                  headerTitle.textContent = componentDisplayName;
+                }
+                
+                // Hide settings, show content
+                document.getElementById('settings-page').style.display = 'none';
+                const rightPanel = document.getElementById('right-panel-content');
+                rightPanel.style.display = 'block';
+                
+                // Show loading spinner
+                rightPanel.innerHTML = `
+                  <div class="loading-indicator">
+                    <div class="spinner"></div>
+                    <div style="margin-left: 15px;">Loading ${componentId.charAt(0).toUpperCase() + componentId.slice(1)} Component...</div>
+                  </div>
+                `;
+                
+                // Create iframe to load component UI
+                rightPanel.innerHTML = '';
+                
+                const iframe = document.createElement('iframe');
+                iframe.src = `/component/${componentId}.html`;
+                iframe.style.width = '100%';
+                iframe.style.height = 'calc(100vh - 115px)';
+                iframe.style.border = 'none';
+                iframe.style.overflow = 'auto';
+                iframe.style.backgroundColor = '#0f172a';
+                
+                rightPanel.appendChild(iframe);
+              } catch (error) {
+                debugMessage(`Error loading ${componentId} UI`, error.message);
+              }
+            });
+          }
+        }
+
+        // Set up UI for all components
+        setupComponentUI(prometheusButton, "prometheus", componentColors.prometheus);
+        setupComponentUI(hermesButton, "hermes", componentColors.hermes);
+        setupComponentUI(telosButton, "telos", componentColors.telos);
+        setupComponentUI(rhetorButton, "rhetor", componentColors.rhetor);
+        setupComponentUI(harmoniaButton, "harmonia", componentColors.harmonia);
+        setupComponentUI(sophiaButton, "sophia", componentColors.sophia);
         
       } catch (error) {
         debugMessage('Error in component loader', error.message);

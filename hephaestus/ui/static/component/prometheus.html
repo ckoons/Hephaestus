@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prometheus Component</title>
+  <style>
+    /* This CSS only applies to elements within this component */
+    .prometheus-container {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .prometheus-nav {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.8);
+      border-radius: 8px;
+      margin-bottom: 16px;
+      overflow: hidden;
+    }
+    
+    .prometheus-nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .prometheus-nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(234, 88, 12, 0.1);
+    }
+    
+    .prometheus-nav-item.active {
+      color: white;
+      background-color: rgba(234, 88, 12, 0.2);
+    }
+    
+    .prometheus-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #ea580c;
+      border-radius: 3px 3px 0 0;
+    }
+    
+    .prometheus-content {
+      flex-grow: 1;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .prometheus-panel {
+      display: none;
+      height: 100%;
+    }
+    
+    .prometheus-panel.active {
+      display: block;
+    }
+
+    /* Dashboard panel */
+    .plan-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    
+    .stat-card {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      min-width: 200px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .stat-title {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 24px;
+      font-weight: 600;
+      color: white;
+    }
+    
+    .timeline-container {
+      height: 250px;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      margin-bottom: 20px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Timeline */
+    .plan-timeline {
+      width: 100%;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 24px;
+      margin-top: 20px;
+      position: relative;
+    }
+
+    .timeline-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      align-items: center;
+    }
+
+    .timeline-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .timeline-control {
+      background-color: rgba(234, 88, 12, 0.1);
+      color: rgba(255, 255, 255, 0.8);
+      border: 1px solid rgba(234, 88, 12, 0.3);
+      border-radius: 4px;
+      padding: 4px 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .timeline-control:hover {
+      background-color: rgba(234, 88, 12, 0.3);
+      color: white;
+    }
+
+    .timeline-track {
+      height: 6px;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
+      position: relative;
+      margin: 30px 0;
+    }
+
+    .timeline-progress {
+      position: absolute;
+      height: 100%;
+      background-color: #ea580c;
+      border-radius: 3px;
+      width: 35%;
+    }
+
+    .timeline-markers {
+      position: relative;
+      height: 20px;
+      margin-top: -23px;
+    }
+
+    .timeline-marker {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background-color: rgba(30, 41, 59, 0.8);
+      border: 2px solid rgba(234, 88, 12, 0.8);
+      border-radius: 50%;
+      transform: translateX(-50%);
+      cursor: pointer;
+    }
+
+    .timeline-marker.completed {
+      background-color: rgba(234, 88, 12, 0.8);
+    }
+
+    .timeline-marker.current {
+      background-color: rgba(234, 88, 12, 0.8);
+      box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.2);
+    }
+
+    .timeline-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 8px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+    }
+
+    /* Plan Editor */
+    .plan-editor {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .plan-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .plan-form-row {
+      display: flex;
+      gap: 16px;
+    }
+
+    .plan-form-group {
+      flex: 1;
+    }
+
+    .plan-form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .plan-form-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+
+    .plan-form-textarea {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    .plan-form-select {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 8px 12px;
+      color: white;
+      outline: none;
+    }
+
+    .plan-steps {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      flex: 1;
+      margin-bottom: 16px;
+      overflow: auto;
+    }
+
+    .plan-step-title {
+      color: white;
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .add-step-button {
+      background-color: #10b981;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 18px;
+      transition: background-color 0.2s;
+    }
+
+    .add-step-button:hover {
+      background-color: #059669;
+    }
+
+    .plan-step {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+      border-left: 3px solid rgba(234, 88, 12, 0.5);
+    }
+
+    .plan-step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .plan-step-name {
+      color: white;
+      font-weight: 500;
+    }
+
+    .plan-step-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .step-action {
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.6);
+      transition: all 0.2s;
+    }
+
+    .step-action:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    .plan-step-description {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .plan-step-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .plan-form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .plan-form-button {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .plan-form-cancel {
+      background-color: transparent;
+      color: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .plan-form-cancel:hover {
+      background-color: rgba(255, 255, 255, 0.05);
+      color: white;
+    }
+
+    .plan-form-save {
+      background-color: #ea580c;
+      color: white;
+      border: none;
+    }
+
+    .plan-form-save:hover {
+      background-color: #c2410c;
+    }
+
+    /* Analysis Panel */
+    .analysis-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      gap: 16px;
+    }
+
+    .analysis-tools {
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .analysis-tabs {
+      display: flex;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .analysis-tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      border-bottom: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .analysis-tab.active {
+      color: white;
+      border-bottom-color: #ea580c;
+    }
+
+    .analysis-content {
+      flex-grow: 1;
+      background-color: rgba(30, 41, 59, 0.7);
+      border-radius: 8px;
+      padding: 16px;
+      overflow: auto;
+    }
+
+    .analysis-graph {
+      background-color: rgba(15, 23, 42, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      height: 100%;
+      min-height: 400px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .prometheus-nav {
+        flex-wrap: wrap;
+      }
+      
+      .plan-form-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="prometheus-container">
+    <!-- Navigation Tabs -->
+    <div class="prometheus-nav">
+      <div class="prometheus-nav-item active" data-panel="dashboard">Dashboard</div>
+      <div class="prometheus-nav-item" data-panel="editor">Plan Editor</div>
+      <div class="prometheus-nav-item" data-panel="analysis">Analysis</div>
+      <div class="prometheus-nav-item" data-panel="integration">Integrations</div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="prometheus-content">
+      <!-- Dashboard Panel -->
+      <div class="prometheus-panel active" id="dashboard-panel">
+        <div class="plan-stats">
+          <div class="stat-card">
+            <div class="stat-title">Active Plans</div>
+            <div class="stat-value">3</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Completed Plans</div>
+            <div class="stat-value">12</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Total Steps</div>
+            <div class="stat-value">127</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Success Rate</div>
+            <div class="stat-value">92%</div>
+          </div>
+        </div>
+        
+        <div class="timeline-container">
+          <p>Timeline visualization would appear here</p>
+        </div>
+        
+        <div class="plan-timeline">
+          <div class="timeline-header">
+            <h3 style="color: #fff; margin: 0;">Current Project Progress</h3>
+            <div class="timeline-controls">
+              <div class="timeline-control">Day</div>
+              <div class="timeline-control">Week</div>
+              <div class="timeline-control">Month</div>
+              <div class="timeline-control">Quarter</div>
+            </div>
+          </div>
+          
+          <div class="timeline-track">
+            <div class="timeline-progress"></div>
+          </div>
+          
+          <div class="timeline-markers">
+            <div class="timeline-marker completed" style="left: 10%"></div>
+            <div class="timeline-marker completed" style="left: 25%"></div>
+            <div class="timeline-marker current" style="left: 35%"></div>
+            <div class="timeline-marker" style="left: 50%"></div>
+            <div class="timeline-marker" style="left: 65%"></div>
+            <div class="timeline-marker" style="left: 80%"></div>
+            <div class="timeline-marker" style="left: 95%"></div>
+          </div>
+          
+          <div class="timeline-labels">
+            <div>Project Start</div>
+            <div>Requirements</div>
+            <div>Design</div>
+            <div>Development</div>
+            <div>Testing</div>
+            <div>Deployment</div>
+            <div>Complete</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Plan Editor Panel -->
+      <div class="prometheus-panel" id="editor-panel">
+        <div class="plan-editor">
+          <div class="plan-form">
+            <div class="plan-form-row">
+              <div class="plan-form-group">
+                <label class="plan-form-label">Plan Name</label>
+                <input type="text" class="plan-form-input" value="Tekton Core Development Plan">
+              </div>
+              
+              <div class="plan-form-group">
+                <label class="plan-form-label">Status</label>
+                <select class="plan-form-select">
+                  <option value="active" selected>Active</option>
+                  <option value="draft">Draft</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              
+              <div class="plan-form-group">
+                <label class="plan-form-label">Priority</label>
+                <select class="plan-form-select">
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high" selected>High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="plan-form-row">
+              <div class="plan-form-group">
+                <label class="plan-form-label">Description</label>
+                <textarea class="plan-form-textarea">Development plan for the core Tekton framework including component integration, resource management and fallback mechanisms.</textarea>
+              </div>
+            </div>
+            
+            <div class="plan-form-row">
+              <div class="plan-form-group">
+                <label class="plan-form-label">Start Date</label>
+                <input type="date" class="plan-form-input" value="2025-02-15">
+              </div>
+              
+              <div class="plan-form-group">
+                <label class="plan-form-label">Target Completion Date</label>
+                <input type="date" class="plan-form-input" value="2025-05-30">
+              </div>
+              
+              <div class="plan-form-group">
+                <label class="plan-form-label">Assigned To</label>
+                <input type="text" class="plan-form-input" value="Casey Koons">
+              </div>
+            </div>
+          </div>
+          
+          <div class="plan-steps">
+            <div class="plan-step-title">
+              <h3 style="margin: 0;">Plan Steps</h3>
+              <div class="add-step-button">+</div>
+            </div>
+            
+            <div class="plan-step">
+              <div class="plan-step-header">
+                <div class="plan-step-name">1. Initial Framework Setup</div>
+                <div class="plan-step-actions">
+                  <div class="step-action">✏️</div>
+                  <div class="step-action">🗑️</div>
+                </div>
+              </div>
+              <div class="plan-step-description">Create the basic project structure and core interfaces for Tekton framework.</div>
+              <div class="plan-step-meta">
+                <div>Status: Completed</div>
+                <div>Deadline: Feb 28, 2025</div>
+              </div>
+            </div>
+            
+            <div class="plan-step">
+              <div class="plan-step-header">
+                <div class="plan-step-name">2. Component Registration System</div>
+                <div class="plan-step-actions">
+                  <div class="step-action">✏️</div>
+                  <div class="step-action">🗑️</div>
+                </div>
+              </div>
+              <div class="plan-step-description">Implement the component registration system for dynamically adding and removing Tekton components.</div>
+              <div class="plan-step-meta">
+                <div>Status: Completed</div>
+                <div>Deadline: Mar 15, 2025</div>
+              </div>
+            </div>
+            
+            <div class="plan-step">
+              <div class="plan-step-header">
+                <div class="plan-step-name">3. Resource Management</div>
+                <div class="plan-step-actions">
+                  <div class="step-action">✏️</div>
+                  <div class="step-action">🗑️</div>
+                </div>
+              </div>
+              <div class="plan-step-description">Develop resource management and allocation system for component orchestration.</div>
+              <div class="plan-step-meta">
+                <div>Status: In Progress (35%)</div>
+                <div>Deadline: Apr 10, 2025</div>
+              </div>
+            </div>
+            
+            <div class="plan-step">
+              <div class="plan-step-header">
+                <div class="plan-step-name">4. Fallback Mechanisms</div>
+                <div class="plan-step-actions">
+                  <div class="step-action">✏️</div>
+                  <div class="step-action">🗑️</div>
+                </div>
+              </div>
+              <div class="plan-step-description">Implement graceful degradation and fallback mechanisms for component failures.</div>
+              <div class="plan-step-meta">
+                <div>Status: Not Started</div>
+                <div>Deadline: May 5, 2025</div>
+              </div>
+            </div>
+            
+            <div class="plan-step">
+              <div class="plan-step-header">
+                <div class="plan-step-name">5. Testing & Integration</div>
+                <div class="plan-step-actions">
+                  <div class="step-action">✏️</div>
+                  <div class="step-action">🗑️</div>
+                </div>
+              </div>
+              <div class="plan-step-description">Comprehensive testing of all components working together with integration tests.</div>
+              <div class="plan-step-meta">
+                <div>Status: Not Started</div>
+                <div>Deadline: May 25, 2025</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="plan-form-actions">
+            <button class="plan-form-button plan-form-cancel">Cancel</button>
+            <button class="plan-form-button plan-form-save">Save Plan</button>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Analysis Panel -->
+      <div class="prometheus-panel" id="analysis-panel">
+        <div class="analysis-container">
+          <div class="analysis-tools">
+            <div class="analysis-tabs">
+              <div class="analysis-tab active">Dependencies</div>
+              <div class="analysis-tab">Timeline</div>
+              <div class="analysis-tab">Resources</div>
+              <div class="analysis-tab">Critical Path</div>
+            </div>
+            
+            <div class="plan-form-row" style="margin-top: 16px;">
+              <div class="plan-form-group">
+                <label class="plan-form-label">Project</label>
+                <select class="plan-form-select">
+                  <option value="tekton-core" selected>Tekton Core Development</option>
+                  <option value="engram-integration">Engram Integration</option>
+                  <option value="athena-onboarding">Athena Onboarding</option>
+                </select>
+              </div>
+              
+              <div class="plan-form-group">
+                <label class="plan-form-label">Analysis Type</label>
+                <select class="plan-form-select">
+                  <option value="dependencies" selected>Dependency Graph</option>
+                  <option value="critical">Critical Path</option>
+                  <option value="resource">Resource Allocation</option>
+                  <option value="forecast">Forecast Completion</option>
+                </select>
+              </div>
+              
+              <div class="plan-form-group">
+                <label class="plan-form-label">&nbsp;</label>
+                <button class="plan-form-button plan-form-save" style="width: 100%;">Generate Analysis</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="analysis-content">
+            <div class="analysis-graph">
+              <p>Dependency graph analysis would appear here</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Integration Panel -->
+      <div class="prometheus-panel" id="integration-panel">
+        <h2 style="color: #fff; margin-top: 0;">Integrations</h2>
+        
+        <p style="color: rgba(255, 255, 255, 0.7);">Connect Prometheus planning engine with other Tekton components:</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px;">
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: #fff; margin-top: 0;">Telos</h3>
+            <p style="color: rgba(255, 255, 255, 0.7);">Sync plans with Telos requirements to ensure alignment with project goals.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+              <span style="color: #10b981; display: flex; align-items: center;">
+                <span style="width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; margin-right: 8px;"></span>
+                Connected
+              </span>
+              <label style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ea580c; transition: .4s; border-radius: 20px;">
+                  <span style="position: absolute; content: ''; height: 16px; width: 16px; left: 22px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: #fff; margin-top: 0;">Hermes</h3>
+            <p style="color: rgba(255, 255, 255, 0.7);">Register with Hermes for component communication and plan distribution.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+              <span style="color: #10b981; display: flex; align-items: center;">
+                <span style="width: 8px; height: 8px; background-color: #10b981; border-radius: 50%; margin-right: 8px;"></span>
+                Connected
+              </span>
+              <label style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                <input type="checkbox" checked style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ea580c; transition: .4s; border-radius: 20px;">
+                  <span style="position: absolute; content: ''; height: 16px; width: 16px; left: 22px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: #fff; margin-top: 0;">Engram</h3>
+            <p style="color: rgba(255, 255, 255, 0.7);">Store planning history and analysis in Engram for persistent memory.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+              <span style="color: #ef4444; display: flex; align-items: center;">
+                <span style="width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; margin-right: 8px;"></span>
+                Disconnected
+              </span>
+              <label style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.2); transition: .4s; border-radius: 20px;">
+                  <span style="position: absolute; content: ''; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+          
+          <div style="background-color: rgba(30, 41, 59, 0.7); border-radius: 8px; padding: 16px;">
+            <h3 style="color: #fff; margin-top: 0;">Athena</h3>
+            <p style="color: rgba(255, 255, 255, 0.7);">Leverage knowledge graph for more intelligent planning and dependencies.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+              <span style="color: #ef4444; display: flex; align-items: center;">
+                <span style="width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; margin-right: 8px;"></span>
+                Disconnected
+              </span>
+              <label style="position: relative; display: inline-block; width: 40px; height: 20px;">
+                <input type="checkbox" style="opacity: 0; width: 0; height: 0;">
+                <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255, 255, 255, 0.2); transition: .4s; border-radius: 20px;">
+                  <span style="position: absolute; content: ''; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%;"></span>
+                </span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Simple navigation between panels
+    document.addEventListener('DOMContentLoaded', function() {
+      // Panel navigation
+      const navItems = document.querySelectorAll('.prometheus-nav-item');
+      const panels = document.querySelectorAll('.prometheus-panel');
+      
+      navItems.forEach(item => {
+        item.addEventListener('click', function() {
+          // Remove active class from all nav items
+          navItems.forEach(navItem => navItem.classList.remove('active'));
+          
+          // Add active class to clicked nav item
+          item.classList.add('active');
+          
+          // Hide all panels
+          panels.forEach(panel => panel.classList.remove('active'));
+          
+          // Show the panel that corresponds to the clicked nav item
+          const panelId = item.getAttribute('data-panel') + '-panel';
+          document.getElementById(panelId).classList.add('active');
+        });
+      });
+    });
+  </script>
+</body>
+</html>
