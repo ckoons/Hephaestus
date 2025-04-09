@@ -5,19 +5,41 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Synthesis - Execution Engine</title>
   <style>
-    body {
+    html, body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       padding: 0;
       color: #f8fafc;
       background-color: #0f172a;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      box-sizing: border-box;
     }
     
     /* Embedded mode styles - activated when in iframe */
+    html.embedded,
     body.embedded {
       margin: 0 !important;
       padding: 0 !important;
       overflow: hidden !important;
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    body.embedded * {
+      box-sizing: border-box !important;
     }
     
     body.embedded header {
@@ -42,6 +64,7 @@
     body.embedded .tabs {
       padding: 0 !important;
       border-radius: 0 !important;
+      width: 100% !important;
     }
     
     body.embedded .tab {
@@ -57,8 +80,14 @@
       margin: 0 !important;
       padding: 0 !important;
       width: 100% !important;
-      height: 100vh !important;
+      height: 100% !important;
       border-radius: 0 !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      overflow: hidden !important;
     }
     
     body.embedded .section {
@@ -72,7 +101,12 @@
     body.embedded .main-content {
       padding: 0 !important;
       margin: 0 !important;
-      height: calc(100vh - 100px) !important;
+      height: calc(100% - 45px) !important;
+      width: 100% !important;
+      position: absolute !important;
+      left: 0 !important;
+      right: 0 !important;
+      overflow: auto !important;
     }
     
     .container {
@@ -138,10 +172,10 @@
     }
     
     .tab {
-      padding: 12px 20px;
-      margin-right: 5px;
+      padding: 10px 20px;
+      margin-right: 8px;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
+      border-radius: 8px 8px 0 0;
       font-weight: 500;
       color: #94a3b8;
       transition: all 0.2s;
@@ -154,7 +188,8 @@
     
     .tab.active {
       color: #a855f7;
-      border-bottom-color: #a855f7;
+      background-color: rgba(107, 33, 168, 0.1);
+      border-bottom: 2px solid #a855f7;
     }
     
     .tab-content {
@@ -501,24 +536,17 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <div class="header-content">
-        <div class="header-title">
-          <div class="logo">Synthesis</div>
-          <div>Execution Engine</div>
-        </div>
-        <div class="status">
-          <div class="status-indicator"></div>
-          <div class="status-text">Online - Ready</div>
-        </div>
-      </div>
-    </header>
-    
     <div class="tabs">
       <div class="tab active" data-tab="dashboard">Dashboard</div>
       <div class="tab" data-tab="phases">Phases</div>
       <div class="tab" data-tab="executions">Executions</div>
       <div class="tab" data-tab="integration">Integration</div>
+      <div class="tab" style="margin-left: auto;">
+        <div class="status" style="display: flex; align-items: center;">
+          <div class="status-indicator"></div>
+          <div class="status-text">Online</div>
+        </div>
+      </div>
     </div>
     
     <div class="main-content">
@@ -1010,58 +1038,103 @@
     document.addEventListener('DOMContentLoaded', function() {
       // Check if we're in an iframe/embedded mode
       const urlParams = new URLSearchParams(window.location.search);
-      const isEmbedded = urlParams.get('embedded') === 'true';
+      const isEmbedded = urlParams.get('embedded') === 'true' || window !== window.parent;
       
       if (isEmbedded) {
         document.documentElement.classList.add('embedded');
         document.body.classList.add('embedded');
         
         // Force the container to take the full width and height of the iframe
-        document.querySelector('.container').style.margin = '0';
-        document.querySelector('.container').style.padding = '0';
-        document.querySelector('.container').style.width = '100%';
-        document.querySelector('.container').style.height = '100vh';
+        const container = document.querySelector('.container');
+        container.style.margin = '0';
+        container.style.padding = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.position = 'absolute';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.right = '0';
+        container.style.bottom = '0';
+        container.style.overflow = 'hidden';
         
-        // Adjust header padding
-        document.querySelector('header').style.padding = '10px 0';
-        document.querySelector('.header-content').style.paddingLeft = '10px';
-        document.querySelector('.header-content').style.paddingRight = '10px';
+        // Adjust tabs
+        const tabs = document.querySelector('.tabs');
+        if (tabs) {
+          tabs.style.padding = '0 10px';
+          tabs.style.width = '100%';
+          tabs.style.boxSizing = 'border-box';
+          tabs.style.margin = '0';
+        }
         
-        // Adjust tab padding
-        document.querySelector('.tabs').style.padding = '0 10px';
+        // Adjust main content padding and height
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+          mainContent.style.padding = '0';
+          mainContent.style.margin = '0';
+          mainContent.style.height = 'calc(100% - 45px)';
+          mainContent.style.position = 'absolute';
+          mainContent.style.left = '0';
+          mainContent.style.right = '0';
+          mainContent.style.bottom = '0';
+          mainContent.style.width = '100%';
+          mainContent.style.overflow = 'auto';
+        }
         
-        // Adjust main content padding
-        document.querySelector('.main-content').style.padding = '0';
+        // Add resize handler to make sure the component stays properly sized
+        window.addEventListener('resize', function() {
+          // Force redrawing for proper sizing
+          if (container) {
+            container.style.width = '100%';
+            container.style.height = '100%';
+          }
+        });
       }
       
-      const tabs = document.querySelectorAll('.tab');
+      // Make sure all navigation tabs work properly
+      const tabs = document.querySelectorAll('.tab:not([style*="margin-left: auto"])');
       const tabContents = document.querySelectorAll('.tab-content');
       
-      tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-          const tabId = tab.getAttribute('data-tab');
+      // Ensure tabs are visible and working (add delay to ensure DOM is ready)
+      setTimeout(() => {
+        tabs.forEach(tab => {
+          // Ensure tab styles are properly applied
+          tab.style.borderRadius = '8px 8px 0 0';
           
-          // Update active tab
-          tabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          
-          // Show the selected tab content
-          tabContents.forEach(content => {
-            content.classList.add('hidden');
-            if (content.id === tabId) {
-              content.classList.remove('hidden');
-            }
+          tab.addEventListener('click', () => {
+            const tabId = tab.getAttribute('data-tab');
+            if (!tabId) return;
+            
+            console.log('Tab clicked:', tabId);
+            
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Show the selected tab content
+            tabContents.forEach(content => {
+              content.classList.add('hidden');
+              if (content.id === tabId) {
+                content.classList.remove('hidden');
+                console.log('Showing tab content:', tabId);
+              }
+            });
           });
         });
-      });
+      }, 100);
       
       // Simulate loading data and activity
       setTimeout(() => {
-        document.querySelector('.status-text').textContent = 'Online - Processing';
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+          statusText.textContent = 'Online - Processing';
+        }
       }, 3000);
       
       setTimeout(() => {
-        document.querySelector('.status-text').textContent = 'Online - Ready';
+        const statusText = document.querySelector('.status-text');
+        if (statusText) {
+          statusText.textContent = 'Online - Ready';
+        }
       }, 6000);
     });
   </script>

@@ -5,6 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Prometheus Component</title>
   <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Embedded mode styles - activated when in iframe */
+    body.embedded {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
+    
+    body.embedded .prometheus-container {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: 100vh !important;
+      border-radius: 0 !important;
+    }
+    
+    body.embedded .prometheus-nav {
+      padding: 0 !important;
+      margin-bottom: 0 !important;
+      border-radius: 0 !important;
+    }
+    
+    body.embedded .prometheus-content {
+      padding: 10px !important;
+      margin: 0 !important;
+      border-radius: 0 !important;
+    }
+    
+    body.embedded .stat-card, 
+    body.embedded .timeline-container,
+    body.embedded .plan-timeline,
+    body.embedded .section {
+      margin-bottom: 10px !important;
+      border-radius: 4px !important;
+    }
+    
     /* This CSS only applies to elements within this component */
     .prometheus-container {
       height: 100%;

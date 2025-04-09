@@ -133,6 +133,7 @@
       border-bottom: 1px solid #334155;
       display: flex;
       align-items: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     
     .header-title {
@@ -142,11 +143,14 @@
     
     .main-content {
       flex-grow: 1;
-      padding: 30px;
+      padding: 0;
       background-color: #0f0f0f;
       height: calc(100vh - 115px);
       overflow: hidden;
       position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
     
     .landing-page {
@@ -177,16 +181,32 @@
     
     .chat-input {
       border-top: 1px solid #334155;
-      padding: 20px;
+      padding: 10px 8px;
+      background-color: #1e293b;
+      display: flex;
+      align-items: center;
     }
     
     input {
-      width: 100%;
-      padding: 12px;
-      border-radius: 8px;
+      width: calc(100% - 16px);
+      max-width: 100%;
+      margin: 0 8px;
+      padding: 10px 16px;
+      border-radius: 20px;
       border: 1px solid #475569;
-      background-color: #1e293b;
+      background-color: #0f172a;
       color: #f8fafc;
+      font-size: 14px;
+      overflow-x: auto;
+      white-space: nowrap;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      transition: all 0.2s ease;
+    }
+    
+    input:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
     }
     
     ul {
@@ -339,6 +359,14 @@
       height: calc(100vh - 115px);
       overflow: hidden;
       position: relative;
+      padding: 0 !important;
+      margin: 12px !important;
+      border: none !important;
+      display: block !important;
+      width: calc(100% - 24px) !important;
+      box-sizing: border-box !important;
+      border-radius: 8px !important;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
     }
   </style>
 </head>
@@ -445,6 +473,37 @@
             <p>Welcome to the Tekton Multi-AI Engineering Platform</p>
             <p id="status-message">Connecting to components...</p>
             
+            <!-- Color palette for selection -->
+            <div style="margin-top: 30px; text-align: center;">
+              <h3 style="color: #64748b; margin-bottom: 15px;">Choose a color theme for the header and footer</h3>
+              <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 800px; margin: 0 auto;">
+                <div onclick="applyColor('#1e293b', '#334155')" style="width: 80px; height: 80px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Blue Gray</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1e293b</div>
+                </div>
+                <div onclick="applyColor('#1c2536', '#334155')" style="width: 80px; height: 80px; background-color: #1c2536; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Dark Blue</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1c2536</div>
+                </div>
+                <div onclick="applyColor('#212938', '#334155')" style="width: 80px; height: 80px; background-color: #212938; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Navy Slate</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#212938</div>
+                </div>
+                <div onclick="applyColor('#1a202c', '#334155')" style="width: 80px; height: 80px; background-color: #1a202c; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Dark Slate</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1a202c</div>
+                </div>
+                <div onclick="applyColor('#2d3748', '#475569')" style="width: 80px; height: 80px; background-color: #2d3748; border: 1px solid #475569; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Slate Gray</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#2d3748</div>
+                </div>
+                <div onclick="applyColor('#374151', '#475569')" style="width: 80px; height: 80px; background-color: #374151; border: 1px solid #475569; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Gray</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#374151</div>
+                </div>
+              </div>
+            </div>
+            
           </div>
         </div>
 
@@ -491,9 +550,48 @@
   </div>
 
   <script>
+    // Function to apply the selected color theme
+    function applyColor(headerColor, borderColor) {
+      const header = document.querySelector('.header');
+      const chatInput = document.querySelector('.chat-input');
+      
+      // Update header
+      header.style.backgroundColor = headerColor;
+      header.style.borderBottomColor = borderColor;
+      
+      // Update chat input
+      chatInput.style.backgroundColor = headerColor;
+      chatInput.style.borderTopColor = borderColor;
+      
+      // Save selection to localStorage for persistence
+      localStorage.setItem('tektonHeaderColor', headerColor);
+      localStorage.setItem('tektonBorderColor', borderColor);
+      
+      // Show feedback
+      const statusMsg = document.getElementById('status-message');
+      statusMsg.textContent = `Theme updated to ${headerColor}`;
+      setTimeout(() => {
+        statusMsg.textContent = 'Connected to components. Ready to go!';
+      }, 2000);
+    }
+    
     // Simple JavaScript to handle basic interactions
     document.addEventListener('DOMContentLoaded', function() {
       const statusMessage = document.getElementById('status-message');
+      
+      // Apply saved color theme if any
+      const savedHeaderColor = localStorage.getItem('tektonHeaderColor');
+      const savedBorderColor = localStorage.getItem('tektonBorderColor');
+      if (savedHeaderColor && savedBorderColor) {
+        const header = document.querySelector('.header');
+        const chatInput = document.querySelector('.chat-input');
+        
+        header.style.backgroundColor = savedHeaderColor;
+        header.style.borderBottomColor = savedBorderColor;
+        
+        chatInput.style.backgroundColor = savedHeaderColor;
+        chatInput.style.borderTopColor = savedBorderColor;
+      }
       const componentItems = document.querySelectorAll('.component-item');
       const headerTitle = document.querySelector('.header-title');
       const input = document.querySelector('input');
@@ -683,9 +781,11 @@
               rightPanel.innerHTML = '';
               
               const iframe = document.createElement('iframe');
-              iframe.src = '/component/athena.html?embedded=true';
+              // Add cache-busting timestamp parameter to prevent caching
+              const timestamp = new Date().getTime();
+              iframe.src = `/component/athena.html?embedded=true&t=${timestamp}`;
               iframe.style.width = '100%';
-              iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
+              iframe.style.height = '100%';
               iframe.style.border = 'none';
               iframe.style.overflow = 'hidden';
               iframe.style.backgroundColor = '#0f172a';
@@ -694,6 +794,9 @@
               iframe.style.left = '0';
               iframe.style.right = '0';
               iframe.style.bottom = '0';
+              iframe.style.margin = '0';
+              iframe.style.padding = '0';
+              iframe.style.borderRadius = '8px';
               
               rightPanel.appendChild(iframe);
             } catch (error) {
@@ -758,9 +861,11 @@
               rightPanel.innerHTML = '';
               
               const iframe = document.createElement('iframe');
-              iframe.src = '/component/engram.html?embedded=true';
+              // Add cache-busting timestamp parameter to prevent caching
+              const timestamp = new Date().getTime();
+              iframe.src = `/component/engram.html?embedded=true&t=${timestamp}`;
               iframe.style.width = '100%';
-              iframe.style.height = 'calc(100vh - 115px)'; // Account for header and chat input, full height of right panel
+              iframe.style.height = '100%';
               iframe.style.border = 'none';
               iframe.style.overflow = 'hidden';
               iframe.style.backgroundColor = '#0f172a';
@@ -769,6 +874,9 @@
               iframe.style.left = '0';
               iframe.style.right = '0';
               iframe.style.bottom = '0';
+              iframe.style.margin = '0';
+              iframe.style.padding = '0';
+              iframe.style.borderRadius = '8px';
               
               rightPanel.appendChild(iframe);
             } catch (error) {
@@ -856,9 +964,11 @@
                 rightPanel.innerHTML = '';
                 
                 const iframe = document.createElement('iframe');
-                iframe.src = `/component/${componentId}.html?embedded=true`;
+                // Add cache-busting timestamp parameter to prevent caching
+                const timestamp = new Date().getTime();
+                iframe.src = `/component/${componentId}.html?embedded=true&t=${timestamp}`;
                 iframe.style.width = '100%';
-                iframe.style.height = 'calc(100vh - 115px)';
+                iframe.style.height = '100%';
                 iframe.style.border = 'none';
                 iframe.style.overflow = 'hidden';
                 iframe.style.backgroundColor = '#0f172a';
@@ -867,6 +977,9 @@
                 iframe.style.left = '0';
                 iframe.style.right = '0';
                 iframe.style.bottom = '0';
+                iframe.style.margin = '0';
+                iframe.style.padding = '0';
+                iframe.style.borderRadius = '8px';
                 
                 rightPanel.appendChild(iframe);
               } catch (error) {
