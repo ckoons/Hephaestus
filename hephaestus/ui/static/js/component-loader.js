@@ -12,6 +12,7 @@ class ComponentLoader {
     this.container = document.getElementById('right-panel-content');
     this.currentComponent = null;
     this.componentList = {};
+    this.currentIframe = null;
     
     // Initialize the loader
     this.init();
@@ -145,42 +146,104 @@ class ComponentLoader {
     `;
     
     try {
-      // Fetch the component's HTML
-      const response = await fetch(this.componentList[componentId].url);
-      const html = await response.text();
+      // Use iframe to load the component without script interference
+      this.container.innerHTML = '';
+      const iframe = document.createElement('iframe');
+      iframe.id = `component-iframe-${componentId}`;
+      iframe.src = `${this.componentList[componentId].url}?embedded=true`;
       
-      // Create a temporary container to parse the HTML
-      const temp = document.createElement('div');
-      temp.innerHTML = html;
+      // Set iframe styling
+      iframe.style.width = '100%';
+      iframe.style.height = '100%';
+      iframe.style.border = 'none';
+      iframe.style.margin = '0';
+      iframe.style.padding = '0';
+      iframe.style.overflow = 'hidden';
+      iframe.style.position = 'absolute';
+      iframe.style.top = '0';
+      iframe.style.left = '0';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
       
-      // Find the body content
-      const bodyContent = temp.querySelector('body');
-      if (bodyContent) {
-        // Set the container's content to the body content
-        this.container.innerHTML = bodyContent.innerHTML;
-        
-        // Execute any scripts in the HTML
-        const scripts = temp.querySelectorAll('script');
-        scripts.forEach(script => {
-          const newScript = document.createElement('script');
+      // Store current iframe
+      this.currentIframe = iframe;
+      
+      // Apply styling to container for iframe
+      this.container.style.position = 'relative';
+      this.container.style.overflow = 'hidden';
+      
+      // Add iframe to container
+      this.container.appendChild(iframe);
+      
+      // Add an event listener for iframe load events
+      iframe.addEventListener('load', () => {
+        // Try to add embedded mode class to iframe content
+        try {
+          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
           
-          // Copy attributes
-          Array.from(script.attributes).forEach(attr => {
-            newScript.setAttribute(attr.name, attr.value);
-          });
+          // Add embedded class to root elements
+          iframeDoc.documentElement.classList.add('embedded');
+          iframeDoc.body.classList.add('embedded');
           
-          // Set the script content
-          newScript.textContent = script.textContent;
-          
-          // Append to document to execute
-          document.body.appendChild(newScript);
-          
-          // Remove after execution to avoid cluttering the DOM
-          // setTimeout(() => newScript.remove(), 100);
-        });
-      } else {
-        this.container.innerHTML = 'Failed to load component interface';
-      }
+          // Force embedded mode parameters if not already set
+          // This helps ensure component sizing is correct
+          const urlParams = new URLSearchParams(iframeDoc.location.search);
+          if (!urlParams.has('embedded')) {
+            // Force embedded mode through script injection
+            const script = iframeDoc.createElement('script');
+            script.textContent = `
+              document.documentElement.classList.add('embedded');
+              document.body.classList.add('embedded');
+              
+              // Force container to take full size
+              document.querySelectorAll('.container, .athena-container, .telos-container, .hermes-container, .harmonia-container, .sophia-container, .rhetor-container').forEach(container => {
+                if (container) {
+                  container.style.margin = '0';
+                  container.style.padding = '0';
+                  container.style.width = '100%';
+                  container.style.height = '100%';
+                  container.style.position = 'absolute';
+                  container.style.top = '0';
+                  container.style.left = '0';
+                  container.style.right = '0';
+                  container.style.bottom = '0';
+                  container.style.overflow = 'hidden';
+                }
+              });
+              
+              // Adjust navigation elements consistently
+              document.querySelectorAll('.tabs, .athena-tabs, .hermes-nav, .telos-nav, .sophia-nav, .harmonia-nav, .rhetor-nav').forEach(nav => {
+                if (nav) {
+                  nav.style.padding = '0 10px';
+                  nav.style.width = '100%';
+                  nav.style.boxSizing = 'border-box';
+                  nav.style.margin = '0';
+                  nav.style.borderRadius = '0';
+                }
+              });
+              
+              // Adjust content areas consistently
+              document.querySelectorAll('.main-content, .athena-content, .hermes-content, .telos-content, .sophia-content, .harmonia-content, .rhetor-content').forEach(content => {
+                if (content) {
+                  content.style.padding = '10px';
+                  content.style.margin = '0';
+                  content.style.position = 'absolute';
+                  content.style.top = '46px';
+                  content.style.left = '0';
+                  content.style.right = '0';
+                  content.style.bottom = '0';
+                  content.style.width = '100%';
+                  content.style.borderRadius = '0';
+                  content.style.overflow = 'auto';
+                }
+              });
+            `;
+            iframeDoc.body.appendChild(script);
+          }
+        } catch (e) {
+          console.warn('Could not access iframe contents due to security restrictions:', e);
+        }
+      });
     } catch (error) {
       console.error(`Failed to load component ${componentId}:`, error);
       this.container.innerHTML = `Error loading component: ${error.message}`;
