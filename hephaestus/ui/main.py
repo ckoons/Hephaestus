@@ -41,7 +41,7 @@ async def initialize_lifecycle_manager():
         lifecycle_manager = HephaestusLifecycleManager()
         
         # Register Hephaestus as a component
-        lifecycle_manager.register_component(
+        await lifecycle_manager.register_component(
             component_id="hephaestus",
             dependencies=["hermes"],  # Depends on Hermes for communication
             metadata={

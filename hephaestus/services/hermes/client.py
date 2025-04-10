@@ -193,28 +193,78 @@ class HephaestusHermesAdapter:
             List of component information
         """
         try:
-            # In a real implementation, this would make a request to Hermes
-            # For now, return a placeholder list
-            return [
-                {
-                    "id": "athena",
-                    "name": "Athena",
-                    "description": "Knowledge Graph",
-                    "status": "active"
-                },
-                {
-                    "id": "engram",
-                    "name": "Engram",
-                    "description": "Memory Management",
-                    "status": "active"
-                },
-                {
-                    "id": "hermes",
-                    "name": "Hermes",
-                    "description": "Message Bus",
-                    "status": "active"
-                }
-            ]
+            # Check registrations directory
+            import os
+            import json
+            
+            components = []
+            
+            # Find the parent directory (Tekton root)
+            hermes_dir = os.path.abspath(os.path.join(
+                os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))),
+                "..",
+                "Hermes"
+            ))
+            
+            # Check registration files
+            registrations_dir = os.path.join(hermes_dir, "registrations")
+            
+            if os.path.exists(registrations_dir):
+                for filename in os.listdir(registrations_dir):
+                    if filename.endswith(".json"):
+                        try:
+                            with open(os.path.join(registrations_dir, filename), "r") as f:
+                                reg_data = json.load(f)
+                                
+                                # Extract UI component info if available
+                                metadata = reg_data.get("metadata", {})
+                                ui_component = reg_data.get("ui_component")
+                                
+                                component_info = {
+                                    "id": reg_data.get("service_id"),
+                                    "name": reg_data.get("name"),
+                                    "description": metadata.get("description", ""),
+                                    "status": reg_data.get("status", "unknown"),
+                                    "ui_enabled": metadata.get("ui_enabled", False),
+                                    "ui_component": ui_component
+                                }
+                                
+                                components.append(component_info)
+                        except Exception as e:
+                            logger.error(f"Error reading registration file {filename}: {e}")
+                            
+            # If no components found, return default list
+            if not components:
+                components = [
+                    {
+                        "id": "athena",
+                        "name": "Athena",
+                        "description": "Knowledge Graph",
+                        "status": "active",
+                        "ui_enabled": True,
+                        "ui_component": "athena"
+                    },
+                    {
+                        "id": "engram",
+                        "name": "Engram",
+                        "description": "Memory Management",
+                        "status": "active",
+                        "ui_enabled": True,
+                        "ui_component": "engram"
+                    },
+                    {
+                        "id": "hermes",
+                        "name": "Hermes",
+                        "description": "Message Bus",
+                        "status": "active",
+                        "ui_enabled": True,
+                        "ui_component": "hermes"
+                    }
+                ]
+                
+            logger.info(f"Found {len(components)} components from Hermes registrations")
+            return components
+            
         except Exception as e:
             logger.error(f"Error getting component list: {e}")
             return []

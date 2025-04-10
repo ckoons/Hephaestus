@@ -122,10 +122,12 @@ class TektonRegistrationManager:
             """Send periodic heartbeats."""
             while True:
                 try:
-                    await self.registry.update_component_heartbeat(
+                    # Update state to READY, which acts as a heartbeat
+                    await self.registry.update_component_state(
                         component_id="hephaestus",
                         instance_uuid=self.instance_uuid,
-                        metadata={"timestamp": time.time()}
+                        state=ComponentState.READY.value,
+                        metadata={"timestamp": time.time(), "heartbeat": True}
                     )
                     logger.debug("Sent heartbeat to Tekton")
                 except Exception as e:

@@ -893,6 +893,7 @@
         const harmoniaButton = document.querySelector('.component-item[data-component-id="harmonia"]');
         const sophiaButton = document.querySelector('.component-item[data-component-id="sophia"]');
         const synthesisButton = document.querySelector('.component-item[data-component-id="synthesis"]');
+        const ergonButton = document.querySelector('.component-item[data-component-id="ergon"]');
 
         // Component colors (adjust as needed)
         const componentColors = {
@@ -902,7 +903,8 @@
           "rhetor": "#a855f7",     // Purple
           "harmonia": "#ec4899",   // Pink
           "sophia": "#6366f1",     // Indigo
-          "synthesis": "#7c3aed"   // Violet
+          "synthesis": "#7c3aed",  // Violet
+          "ergon": "#22c55e"       // Green
         };
 
         // Function to set up component UI buttons
@@ -997,6 +999,7 @@
         setupComponentUI(harmoniaButton, "harmonia", componentColors.harmonia);
         setupComponentUI(sophiaButton, "sophia", componentColors.sophia);
         setupComponentUI(synthesisButton, "synthesis", componentColors.synthesis);
+        setupComponentUI(ergonButton, "ergon", componentColors.ergon);
         
       } catch (error) {
         debugMessage('Error in component loader', error.message);

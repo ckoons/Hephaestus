@@ -1,0 +1,1708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ergon Agent Builder</title>
+  <style>
+    /* Base styles */
+    html, body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+      box-sizing: border-box;
+      color: #f8fafc;
+      background-color: #0f172a;
+    }
+    
+    /* Embedded mode styles - activated when in iframe */
+    html.embedded,
+    body.embedded {
+      margin: 0 !important;
+      padding: 0 !important;
+      overflow: hidden !important;
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      box-sizing: border-box !important;
+    }
+    
+    body.embedded * {
+      box-sizing: border-box !important;
+    }
+    
+    /* Main container */
+    .component-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+    }
+    
+    body.embedded .component-container {
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      position: absolute !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      overflow: hidden !important;
+    }
+    
+    /* Navigation tabs */
+    .component-nav {
+      display: flex;
+      background-color: rgba(30, 41, 59, 0.8);
+      border-radius: 8px 8px 0 0;
+      margin-bottom: 0;
+      overflow: hidden;
+      width: 100%;
+    }
+    
+    body.embedded .component-nav {
+      width: 100% !important;
+      margin: 0 !important;
+      padding: 0 10px !important;
+      box-sizing: border-box !important;
+      border-radius: 0 !important;
+    }
+    
+    .component-nav-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    
+    .component-nav-item:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(124, 58, 237, 0.1);
+    }
+    
+    .component-nav-item.active {
+      color: white;
+      background-color: rgba(124, 58, 237, 0.2);
+    }
+    
+    .component-nav-item.active::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: #7c3aed;
+      border-radius: 3px 3px 0 0;
+    }
+    
+    /* Content area */
+    .component-content {
+      flex-grow: 1;
+      overflow: auto;
+      background-color: rgba(15, 23, 42, 0.3);
+      padding: 16px;
+      box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+      height: calc(100% - 45px);
+    }
+    
+    body.embedded .component-content {
+      margin: 0 !important;
+      position: absolute !important;
+      top: 45px !important; /* Height of nav */
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      padding: 10px !important;
+      overflow: auto !important;
+    }
+    
+    /* Panel tabs */
+    .component-panel {
+      display: none;
+      height: 100%;
+    }
+    
+    .component-panel.active {
+      display: block;
+    }
+    
+    /* Card elements */
+    .card {
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin-top: 0;
+      margin-bottom: 16px;
+    }
+    
+    /* Agent cards */
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+    
+    .agent-card {
+      background-color: rgba(30, 41, 59, 0.5);
+      border-radius: 8px;
+      padding: 16px;
+      transition: all 0.2s ease;
+      border-left: 3px solid #7c3aed;
+    }
+    
+    .agent-card:hover {
+      background-color: rgba(30, 41, 59, 0.7);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .agent-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: white;
+      margin-top: 0;
+      margin-bottom: 8px;
+    }
+    
+    .agent-description {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 16px;
+    }
+    
+    .agent-tools {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    
+    .agent-controls {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+    
+    /* Form styles */
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .form-input {
+      width: 100%;
+      background-color: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      padding: 8px 12px;
+      color: white;
+      font-size: 14px;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: rgba(124, 58, 237, 0.5);
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
+    
+    textarea.form-input {
+      min-height: 100px;
+      resize: vertical;
+    }
+    
+    /* Button styles */
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+    
+    .btn-primary {
+      background-color: #7c3aed;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: #6d28d9;
+    }
+    
+    .btn-secondary {
+      background-color: rgba(30, 41, 59, 0.8);
+      color: white;
+    }
+    
+    .btn-secondary:hover {
+      background-color: rgba(30, 41, 59, 1);
+    }
+    
+    .btn-danger {
+      background-color: #ef4444;
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: #dc2626;
+    }
+    
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+    
+    th {
+      text-align: left;
+      padding: 12px;
+      background-color: rgba(30, 41, 59, 0.7);
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+    }
+    
+    td {
+      padding: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    tr:hover {
+      background-color: rgba(124, 58, 237, 0.1);
+    }
+    
+    /* Tag styles */
+    .tag {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: 500;
+      margin-right: 4px;
+      margin-bottom: 4px;
+    }
+    
+    .tag-purple {
+      background-color: rgba(124, 58, 237, 0.2);
+      color: #c4b5fd;
+    }
+    
+    .tag-blue {
+      background-color: rgba(59, 130, 246, 0.2);
+      color: #93c5fd;
+    }
+    
+    .tag-green {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #6ee7b7;
+    }
+    
+    /* Loading and status indicators */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #7c3aed;
+      animation: spin 1s ease-in-out infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    .status-indicator {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+    
+    .status-active {
+      background-color: #10b981;
+      box-shadow: 0 0 5px #10b981;
+    }
+    
+    .status-inactive {
+      background-color: #ef4444;
+      box-shadow: 0 0 5px #ef4444;
+    }
+    
+    .status-pending {
+      background-color: #f59e0b;
+      box-shadow: 0 0 5px #f59e0b;
+    }
+    
+    /* Documentation panel styles */
+    .doc-tabs {
+      display: flex;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .doc-tabs .tab {
+      padding: 8px 16px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.7);
+      position: relative;
+    }
+    
+    .doc-tabs .tab:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .doc-tabs .tab.active {
+      color: white;
+    }
+    
+    .doc-tabs .tab.active::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background-color: #7c3aed;
+    }
+    
+    .doc-panel {
+      display: none;
+    }
+    
+    .doc-panel.active {
+      display: block;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .component-nav {
+        flex-wrap: wrap;
+      }
+      
+      .agent-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="component-container">
+    <!-- Navigation Tabs -->
+    <div class="component-nav">
+      <div class="component-nav-item active" data-target="agents-panel">Agents</div>
+      <div class="component-nav-item" data-target="create-panel">Create Agent</div>
+      <div class="component-nav-item" data-target="executions-panel">Executions</div>
+      <div class="component-nav-item" data-target="documentation-panel">Documentation</div>
+      <div class="component-nav-item" data-target="settings-panel">Settings</div>
+    </div>
+    
+    <!-- Content Area -->
+    <div class="component-content">
+      <!-- Agents Panel -->
+      <div class="component-panel active" id="agents-panel">
+        <div class="card">
+          <h2 class="section-title">My Agents</h2>
+          <div class="agent-grid">
+            <div class="agent-card">
+              <h3 class="agent-title">Research Assistant</h3>
+              <div class="agent-description">Helps with internet research, documents, and summarization.</div>
+              <div class="agent-tools">
+                <span class="tag tag-purple">Browser</span>
+                <span class="tag tag-blue">Search</span>
+                <span class="tag tag-green">Memory</span>
+              </div>
+              <div class="agent-controls">
+                <button class="btn btn-secondary btn-sm">Edit</button>
+                <button class="btn btn-primary btn-sm" style="margin-left: 8px;">Run</button>
+              </div>
+            </div>
+            
+            <div class="agent-card">
+              <h3 class="agent-title">Email Manager</h3>
+              <div class="agent-description">Handles email organization, drafts responses, and schedules follow-ups.</div>
+              <div class="agent-tools">
+                <span class="tag tag-purple">Email</span>
+                <span class="tag tag-blue">Calendar</span>
+                <span class="tag tag-green">Drafting</span>
+              </div>
+              <div class="agent-controls">
+                <button class="btn btn-secondary btn-sm">Edit</button>
+                <button class="btn btn-primary btn-sm" style="margin-left: 8px;">Run</button>
+              </div>
+            </div>
+            
+            <div class="agent-card">
+              <h3 class="agent-title">Codebase Assistant</h3>
+              <div class="agent-description">Analyzes repositories, generates test cases, and helps with code reviews.</div>
+              <div class="agent-tools">
+                <span class="tag tag-purple">Git</span>
+                <span class="tag tag-blue">Code Analysis</span>
+                <span class="tag tag-green">Testing</span>
+              </div>
+              <div class="agent-controls">
+                <button class="btn btn-secondary btn-sm">Edit</button>
+                <button class="btn btn-primary btn-sm" style="margin-left: 8px;">Run</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Create Agent Panel -->
+      <div class="component-panel" id="create-panel">
+        <div class="card">
+          <h2 class="section-title">Create New Agent</h2>
+          <div class="form-group">
+            <label class="form-label" for="agent-name">Agent Name</label>
+            <input type="text" id="agent-name" class="form-input" placeholder="Enter agent name">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="agent-description">Description</label>
+            <textarea id="agent-description" class="form-input" placeholder="Describe what your agent should do"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Tools</label>
+            <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <input type="checkbox" id="tool-browser" checked>
+                <label for="tool-browser">Browser Access</label>
+              </div>
+              <div>
+                <input type="checkbox" id="tool-email">
+                <label for="tool-email">Email Management</label>
+              </div>
+              <div>
+                <input type="checkbox" id="tool-memory" checked>
+                <label for="tool-memory">Persistent Memory</label>
+              </div>
+              <div>
+                <input type="checkbox" id="tool-github">
+                <label for="tool-github">GitHub Integration</label>
+              </div>
+              <div>
+                <input type="checkbox" id="tool-calendar">
+                <label for="tool-calendar">Calendar Access</label>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="agent-model">Model</label>
+            <select id="agent-model" class="form-input">
+              <option value="gpt-4">GPT-4 (Remote)</option>
+              <option value="claude-3-sonnet">Claude 3 Sonnet (Remote)</option>
+              <option value="gpt-4-turbo">GPT-4 Turbo (Remote)</option>
+              <option value="claude-3-haiku">Claude 3 Haiku (Remote)</option>
+              <option value="llama-3-70b">Llama 3 70B (Local)</option>
+            </select>
+          </div>
+          
+          <button class="btn btn-primary" id="create-agent-btn" style="margin-top: 16px;">Create Agent</button>
+        </div>
+      </div>
+      
+      <!-- Executions Panel -->
+      <div class="component-panel" id="executions-panel">
+        <div class="card">
+          <h2 class="section-title">Recent Executions</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Started</th>
+                <th>Duration</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="executions-table-body">
+              <tr>
+                <td>Research Assistant</td>
+                <td>Today, 3:45 PM</td>
+                <td>2 min 30 sec</td>
+                <td>
+                  <span class="status-indicator status-active"></span>
+                  Completed
+                </td>
+                <td>
+                  <button class="btn btn-secondary btn-sm">View</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Email Manager</td>
+                <td>Today, 2:12 PM</td>
+                <td>5 min 47 sec</td>
+                <td>
+                  <span class="status-indicator status-active"></span>
+                  Completed
+                </td>
+                <td>
+                  <button class="btn btn-secondary btn-sm">View</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Codebase Assistant</td>
+                <td>Yesterday, 4:30 PM</td>
+                <td>12 min 19 sec</td>
+                <td>
+                  <span class="status-indicator status-inactive"></span>
+                  Failed
+                </td>
+                <td>
+                  <button class="btn btn-secondary btn-sm">View</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Documentation Panel -->
+      <div class="component-panel" id="documentation-panel">
+        <div class="card">
+          <h2 class="section-title">Documentation Management</h2>
+          <div class="doc-controls">
+            <button class="btn btn-primary" id="preload-docs-btn">Preload Essential Documentation</button>
+
+            <div class="doc-search" style="margin-top: 16px;">
+              <div class="form-group">
+                <label class="form-label" for="doc-search-input">Search Documentation</label>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="doc-search-input" class="form-input" placeholder="Search documentation...">
+                  <button class="btn btn-secondary" id="search-docs-btn">Search</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="doc-tabs">
+            <div class="tab active" data-target="doc-sources-panel">Sources</div>
+            <div class="tab" data-target="doc-browser-panel">Web Browser</div>
+            <div class="tab" data-target="doc-results-panel">Search Results</div>
+          </div>
+
+          <div class="doc-panel active" id="doc-sources-panel">
+            <h3 class="section-title">Documentation Sources</h3>
+            <div class="source-list" id="doc-sources-list">
+              <!-- Documentation sources will be listed here -->
+              <div class="empty-state" style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5);">
+                No documentation sources loaded yet. Use the Web Browser tab to crawl documentation.
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-panel" id="doc-browser-panel">
+            <h3 class="section-title">Load Documentation from Web</h3>
+            <div class="url-form">
+              <div class="form-group">
+                <label class="form-label" for="doc-url">URL to Crawl</label>
+                <input type="text" id="doc-url" class="form-input" placeholder="Enter URL to crawl...">
+              </div>
+              
+              <div class="crawl-options" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                <div class="form-group">
+                  <label class="form-label" for="max-pages">Max Pages</label>
+                  <input type="number" id="max-pages" class="form-input" value="100" min="1" max="1000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="max-depth">Max Depth</label>
+                  <input type="number" id="max-depth" class="form-input" value="3" min="1" max="10">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="timeout">Timeout (seconds)</label>
+                  <input type="number" id="timeout" class="form-input" value="300" min="30" max="1800">
+                </div>
+              </div>
+              
+              <button class="btn btn-primary" id="start-crawl-btn">Start Crawling</button>
+            </div>
+
+            <div class="crawl-status" id="crawl-status" style="display: none; margin-top: 16px; padding: 16px; background: rgba(30, 41, 59, 0.7); border-radius: 4px;">
+              <h4 style="margin-top: 0;">Crawling in Progress</h4>
+              <div class="progress-bar" style="height: 8px; background: rgba(255, 255, 255, 0.1); border-radius: 4px; overflow: hidden; margin: 8px 0;">
+                <div class="progress" id="crawl-progress" style="width: 0%; height: 100%; background: #7c3aed;"></div>
+              </div>
+              <div class="status-text" id="crawl-status-text">Initializing...</div>
+            </div>
+
+            <div class="recent-crawls" style="margin-top: 16px;">
+              <h4 style="margin-bottom: 8px;">Recent Crawls</h4>
+              <div class="crawl-list" id="recent-crawls">
+                <!-- Recent crawls will be listed here -->
+                <div class="empty-state" style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5);">
+                  No recent crawls found.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="doc-panel" id="doc-results-panel">
+            <h3 class="section-title">Search Results</h3>
+            <div class="results-list" id="search-results">
+              <!-- Search results will appear here -->
+              <div class="empty-state" style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5);">
+                No search results yet. Use the search bar above to find documentation.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Settings Panel -->
+      <div class="component-panel" id="settings-panel">
+        <div class="card">
+          <h2 class="section-title">API Configuration</h2>
+          <div class="form-group">
+            <label class="form-label" for="api-key">API Key</label>
+            <input type="password" id="api-key" class="form-input" value="sk-••••••••••••••••••••••••">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="endpoint-url">Endpoint URL</label>
+            <input type="text" id="endpoint-url" class="form-input" value="https://api.example.com/v1">
+          </div>
+          
+          <button class="btn btn-primary" style="margin-top: 16px;">Save Settings</button>
+        </div>
+        
+        <div class="card">
+          <h2 class="section-title">Memory Management</h2>
+          <div class="form-group">
+            <label class="form-label" for="memory-vector-store">Vector Store</label>
+            <select id="memory-vector-store" class="form-input">
+              <option value="faiss">FAISS (Local)</option>
+              <option value="pinecone">Pinecone (Remote)</option>
+              <option value="engram">Engram Integration</option>
+            </select>
+          </div>
+          
+          <div style="display: flex; align-items: center;">
+            <span style="margin-right: 16px;">Document Index Size: 256MB</span>
+            <button class="btn btn-secondary btn-sm">Clear Cache</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Define a single, self-contained app object to avoid scope conflicts
+    const ErgonApp = {
+      // API endpoints
+      apiUrl: window.location.origin + '/api',
+      ergonApi: window.location.origin + '/api/ergon',
+
+      // Elements
+      elements: {
+        // Main navigation
+        navItems: null,
+        panels: null,
+        
+        // Agent panel
+        agentGrid: null,
+        
+        // Create panel
+        createAgentBtn: null,
+        agentNameInput: null,
+        agentDescInput: null,
+        agentModelSelect: null,
+        
+        // Executions panel
+        executionsTableBody: null,
+        
+        // Documentation panel
+        docTabs: null,
+        docPanels: null,
+        preloadDocsBtn: null,
+        searchDocsBtn: null,
+        docSearchInput: null,
+        docUrl: null,
+        maxPages: null,
+        maxDepth: null,
+        timeout: null,
+        startCrawlBtn: null,
+        crawlStatus: null,
+        crawlProgress: null,
+        crawlStatusText: null,
+        recentCrawls: null,
+        docSourcesList: null,
+        searchResults: null
+      },
+      
+      // State
+      state: {
+        activeCrawlId: null
+      },
+      
+      // Initialize the app
+      init: function() {
+        console.log('Initializing Ergon App');
+        
+        // Check if in embedded mode
+        this.configureEmbeddedMode();
+        
+        // Initialize elements
+        this.initElements();
+        
+        // Set up event listeners
+        this.initEventListeners();
+        
+        // Initial data loading
+        this.loadInitialData();
+      },
+      
+      // Configure embedded mode
+      configureEmbeddedMode: function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const isEmbedded = urlParams.get('embedded') === 'true' || window !== window.parent;
+        
+        if (isEmbedded) {
+          document.documentElement.classList.add('embedded');
+          document.body.classList.add('embedded');
+          
+          // Force container to take full size
+          const container = document.querySelector('.component-container');
+          if (container) {
+            container.style.margin = '0';
+            container.style.padding = '0';
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.position = 'absolute';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.right = '0';
+            container.style.bottom = '0';
+            container.style.overflow = 'hidden';
+          }
+          
+          // Adjust navigation
+          const nav = document.querySelector('.component-nav');
+          if (nav) {
+            nav.style.width = '100%';
+            nav.style.margin = '0';
+            nav.style.padding = '0 10px';
+            nav.style.boxSizing = 'border-box';
+            nav.style.borderRadius = '0';
+          }
+          
+          // Adjust content area
+          const content = document.querySelector('.component-content');
+          if (content) {
+            content.style.margin = '0';
+            content.style.position = 'absolute';
+            content.style.top = '45px'; // Height of nav
+            content.style.left = '0';
+            content.style.right = '0';
+            content.style.bottom = '0';
+            content.style.width = '100%';
+            content.style.padding = '10px';
+            content.style.overflow = 'auto';
+          }
+          
+          // Add resize handler
+          window.addEventListener('resize', function() {
+            if (container) {
+              container.style.width = '100%';
+              container.style.height = '100%';
+            }
+          });
+        }
+      },
+      
+      // Initialize all elements
+      initElements: function() {
+        // Main navigation
+        this.elements.navItems = document.querySelectorAll('.component-nav-item');
+        this.elements.panels = document.querySelectorAll('.component-panel');
+        
+        // Agent panel
+        this.elements.agentGrid = document.querySelector('.agent-grid');
+        
+        // Create panel
+        this.elements.createAgentBtn = document.getElementById('create-agent-btn');
+        this.elements.agentNameInput = document.getElementById('agent-name');
+        this.elements.agentDescInput = document.getElementById('agent-description');
+        this.elements.agentModelSelect = document.getElementById('agent-model');
+        
+        // Executions panel
+        this.elements.executionsTableBody = document.getElementById('executions-table-body');
+        
+        // Documentation panel
+        this.elements.docTabs = document.querySelectorAll('.doc-tabs .tab');
+        this.elements.docPanels = document.querySelectorAll('.doc-panel');
+        this.elements.preloadDocsBtn = document.getElementById('preload-docs-btn');
+        this.elements.searchDocsBtn = document.getElementById('search-docs-btn');
+        this.elements.docSearchInput = document.getElementById('doc-search-input');
+        this.elements.docUrl = document.getElementById('doc-url');
+        this.elements.maxPages = document.getElementById('max-pages');
+        this.elements.maxDepth = document.getElementById('max-depth');
+        this.elements.timeout = document.getElementById('timeout');
+        this.elements.startCrawlBtn = document.getElementById('start-crawl-btn');
+        this.elements.crawlStatus = document.getElementById('crawl-status');
+        this.elements.crawlProgress = document.getElementById('crawl-progress');
+        this.elements.crawlStatusText = document.getElementById('crawl-status-text');
+        this.elements.recentCrawls = document.getElementById('recent-crawls');
+        this.elements.docSourcesList = document.getElementById('doc-sources-list');
+        this.elements.searchResults = document.getElementById('search-results');
+      },
+      
+      // Set up event listeners
+      initEventListeners: function() {
+        console.log('Setting up event listeners');
+        
+        // Main navigation tabs
+        this.elements.navItems.forEach(item => {
+          item.addEventListener('click', this.handleMainTabClick.bind(this));
+        });
+        
+        // Documentation tabs
+        this.elements.docTabs.forEach(tab => {
+          tab.addEventListener('click', this.handleDocTabClick.bind(this));
+        });
+        
+        // Create agent button
+        if (this.elements.createAgentBtn) {
+          this.elements.createAgentBtn.addEventListener('click', this.handleCreateAgent.bind(this));
+        }
+        
+        // Preload docs button
+        if (this.elements.preloadDocsBtn) {
+          this.elements.preloadDocsBtn.addEventListener('click', this.handlePreloadDocs.bind(this));
+        }
+        
+        // Search docs button
+        if (this.elements.searchDocsBtn) {
+          this.elements.searchDocsBtn.addEventListener('click', this.handleSearchDocs.bind(this));
+        }
+        
+        // Start crawl button
+        if (this.elements.startCrawlBtn) {
+          this.elements.startCrawlBtn.addEventListener('click', this.handleStartCrawl.bind(this));
+        }
+      },
+      
+      // Load initial data
+      loadInitialData: function() {
+        this.fetchAgents();
+        this.fetchAgentTypes();
+        this.fetchDocumentationSources();
+        this.fetchRecentCrawls();
+      },
+      
+      // Handle main tab click
+      handleMainTabClick: function(event) {
+        console.log('Main tab clicked:', event.currentTarget.dataset.target);
+        
+        // Remove active class from all nav items
+        this.elements.navItems.forEach(navItem => navItem.classList.remove('active'));
+        
+        // Add active class to clicked nav item
+        event.currentTarget.classList.add('active');
+        
+        // Hide all panels
+        this.elements.panels.forEach(panel => panel.classList.remove('active'));
+        
+        // Show the panel that corresponds to the clicked nav item
+        const panelId = event.currentTarget.dataset.target;
+        const panel = document.getElementById(panelId);
+        
+        if (panel) {
+          panel.classList.add('active');
+          
+          // Load data for the panel if needed
+          if (panelId === 'agents-panel') {
+            this.fetchAgents();
+          } else if (panelId === 'executions-panel') {
+            this.fetchExecutions();
+          } else if (panelId === 'documentation-panel') {
+            this.fetchDocumentationSources();
+          }
+        } else {
+          console.error('Panel not found:', panelId);
+        }
+      },
+      
+      // Handle doc tab click
+      handleDocTabClick: function(event) {
+        console.log('Doc tab clicked:', event.currentTarget.dataset.target);
+        
+        // Remove active class from all doc tabs
+        this.elements.docTabs.forEach(tab => tab.classList.remove('active'));
+        
+        // Add active class to clicked tab
+        event.currentTarget.classList.add('active');
+        
+        // Hide all doc panels
+        this.elements.docPanels.forEach(panel => panel.classList.remove('active'));
+        
+        // Show the panel that corresponds to the clicked tab
+        const panelId = event.currentTarget.dataset.target;
+        const panel = document.getElementById(panelId);
+        
+        if (panel) {
+          panel.classList.add('active');
+        } else {
+          console.error('Doc panel not found:', panelId);
+        }
+      },
+      
+      // API Functions
+      
+      // Fetch agents
+      async fetchAgents() {
+        try {
+          const response = await fetch(`${this.ergonApi}/agents`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch agents');
+          }
+          const data = await response.json();
+          
+          // Clear the container
+          if (this.elements.agentGrid) {
+            this.elements.agentGrid.innerHTML = '';
+            
+            // Render agents
+            if (data.agents && data.agents.length > 0) {
+              data.agents.forEach(agent => this.renderAgentCard(agent));
+            } else {
+              this.elements.agentGrid.innerHTML = '<p>No agents found. Create one using the "Create Agent" tab.</p>';
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching agents:', error);
+          if (this.elements.agentGrid) {
+            this.elements.agentGrid.innerHTML = `<p>Error loading agents: ${error.message}</p>`;
+          }
+        }
+      },
+      
+      // Render an agent card
+      renderAgentCard(agent) {
+        const agentCard = document.createElement('div');
+        agentCard.className = 'agent-card';
+        agentCard.innerHTML = `
+          <h3 class="agent-title">${agent.name}</h3>
+          <div class="agent-description">${agent.description || 'No description'}</div>
+          <div class="agent-tools">
+            <span class="tag tag-blue">${agent.model_name || 'Default Model'}</span>
+            <span class="tag tag-green">${agent.agent_type || 'Standard'}</span>
+          </div>
+          <div class="agent-controls">
+            <button class="btn btn-danger btn-sm" onclick="ErgonApp.deleteAgent(${agent.id})">Delete</button>
+            <button class="btn btn-secondary btn-sm" style="margin-left: 8px;" onclick="ErgonApp.showRunAgent(${agent.id}, '${agent.name}')">Run</button>
+          </div>
+        `;
+        
+        this.elements.agentGrid.appendChild(agentCard);
+      },
+      
+      // Delete an agent
+      async deleteAgent(agentId) {
+        if (!confirm('Are you sure you want to delete this agent?')) {
+          return;
+        }
+        
+        try {
+          const response = await fetch(`${this.ergonApi}/agents/${agentId}`, {
+            method: 'DELETE'
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to delete agent');
+          }
+          
+          // Refresh agent list
+          this.fetchAgents();
+        } catch (error) {
+          console.error('Error deleting agent:', error);
+          alert('Error deleting agent: ' + error.message);
+        }
+      },
+      
+      // Show run agent dialog
+      showRunAgent(agentId, agentName) {
+        const input = prompt(`Enter input for agent "${agentName}":`);
+        if (input !== null) {
+          this.runAgent(agentId, input);
+        }
+      },
+      
+      // Run an agent
+      async runAgent(agentId, inputText) {
+        try {
+          const response = await fetch(`${this.ergonApi}/agents/${agentId}/run`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ input_text: inputText })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to run agent');
+          }
+          
+          const result = await response.json();
+          
+          // Show result in a modal or alert
+          alert(`Agent Response: ${result.response || 'No response'}`);
+          
+          // Refresh executions list
+          this.fetchExecutions();
+        } catch (error) {
+          console.error('Error running agent:', error);
+          alert('Error running agent: ' + error.message);
+        }
+      },
+      
+      // Fetch agent types and tools for dropdown
+      async fetchAgentTypes() {
+        try {
+          const response = await fetch(`${this.ergonApi}/tools`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch agent tools');
+          }
+          
+          const data = await response.json();
+          
+          // Populate tools checkboxes
+          const toolsContainer = document.querySelector('#create-panel .form-group:nth-child(3) div');
+          
+          if (toolsContainer && data.tools && data.tools.length > 0) {
+            toolsContainer.innerHTML = '';
+            
+            data.tools.forEach(tool => {
+              const toolCheckbox = document.createElement('div');
+              toolCheckbox.innerHTML = `
+                <input type="checkbox" id="tool-${tool.name}" name="tools" value="${tool.name}">
+                <label for="tool-${tool.name}">${tool.name}</label>
+              `;
+              toolsContainer.appendChild(toolCheckbox);
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching agent types:', error);
+        }
+      },
+      
+      // Handle create agent
+      async handleCreateAgent() {
+        const name = this.elements.agentNameInput.value;
+        const description = this.elements.agentDescInput.value;
+        const model = this.elements.agentModelSelect.value;
+        let agentType = 'standard'; // Default
+        
+        // Validate
+        if (!name) {
+          alert('Please enter a name for the agent');
+          return;
+        }
+        
+        try {
+          const response = await fetch(`${this.ergonApi}/agents`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name,
+              description,
+              agent_type: agentType,
+              model
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to create agent');
+          }
+          
+          // Clear form
+          this.elements.agentNameInput.value = '';
+          this.elements.agentDescInput.value = '';
+          
+          // Switch to agents panel
+          this.elements.navItems[0].click();
+        } catch (error) {
+          console.error('Error creating agent:', error);
+          alert('Error creating agent: ' + error.message);
+        }
+      },
+      
+      // Fetch executions
+      async fetchExecutions() {
+        try {
+          const response = await fetch(`${this.ergonApi}/executions`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch executions');
+          }
+          
+          const data = await response.json();
+          
+          // Render executions
+          if (this.elements.executionsTableBody) {
+            this.elements.executionsTableBody.innerHTML = '';
+            
+            if (data.executions && data.executions.length > 0) {
+              data.executions.forEach(execution => {
+                // Format date
+                const startedDate = execution.started_at ? new Date(execution.started_at) : null;
+                const formattedDate = startedDate ? 
+                  `${startedDate.toLocaleDateString()} ${startedDate.toLocaleTimeString()}` : 'Unknown';
+                
+                // Calculate duration
+                let duration = 'N/A';
+                if (execution.started_at && execution.completed_at) {
+                  const start = new Date(execution.started_at);
+                  const end = new Date(execution.completed_at);
+                  const durationMs = end - start;
+                  const durationSec = Math.floor(durationMs / 1000);
+                  const min = Math.floor(durationSec / 60);
+                  const sec = durationSec % 60;
+                  duration = `${min} min ${sec} sec`;
+                }
+                
+                // Determine status
+                const status = execution.completed_at ? 
+                  (execution.success ? 'Completed' : 'Failed') : 'Running';
+                const statusClass = execution.success ? 'status-active' : 'status-inactive';
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                  <td>${execution.agent_name || `Agent #${execution.agent_id}`}</td>
+                  <td>${formattedDate}</td>
+                  <td>${duration}</td>
+                  <td>
+                    <span class="status-indicator ${statusClass}"></span>
+                    ${status}
+                  </td>
+                  <td>
+                    <button class="btn btn-secondary btn-sm" onclick="ErgonApp.viewExecution(${execution.id})">View</button>
+                  </td>
+                `;
+                
+                this.elements.executionsTableBody.appendChild(row);
+              });
+            } else {
+              this.elements.executionsTableBody.innerHTML = '<tr><td colspan="5">No executions found</td></tr>';
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching executions:', error);
+          if (this.elements.executionsTableBody) {
+            this.elements.executionsTableBody.innerHTML = 
+              `<tr><td colspan="5">Error loading executions: ${error.message}</td></tr>`;
+          }
+        }
+      },
+      
+      // View execution details
+      viewExecution(executionId) {
+        alert(`Viewing execution details for ID: ${executionId}`);
+        // Implement execution details view
+      },
+      
+      // Documentation panel functions
+      
+      // Fetch documentation sources
+      async fetchDocumentationSources() {
+        try {
+          const response = await fetch(`${this.ergonApi}/docs/sources`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch documentation sources');
+          }
+          
+          const data = await response.json();
+          const sources = data.sources || [];
+          
+          if (this.elements.docSourcesList) {
+            if (sources.length === 0) {
+              this.elements.docSourcesList.innerHTML = 
+                '<div class="empty-state" style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5);">' +
+                'No documentation sources loaded yet. Use the Web Browser tab to crawl documentation.' +
+                '</div>';
+            } else {
+              this.elements.docSourcesList.innerHTML = '';
+              
+              sources.forEach(source => {
+                const sourceItem = document.createElement('div');
+                sourceItem.className = 'source-item';
+                sourceItem.style.cssText = 
+                  'background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 4px; margin-bottom: 8px;';
+                  
+                sourceItem.innerHTML = `
+                  <div class="source-header" style="display: flex; justify-content: space-between; align-items: center;">
+                    <h4 style="margin: 0;">${source.name}</h4>
+                    <div class="source-actions">
+                      <button class="btn btn-secondary btn-sm" onclick="ErgonApp.searchInSource(${source.id})">
+                        Search
+                      </button>
+                    </div>
+                  </div>
+                  <div class="source-meta" style="font-size: 12px; margin-top: 4px; color: rgba(255, 255, 255, 0.7);">
+                    <span>URL: <a href="${source.url}" target="_blank" style="color: #93c5fd;">${source.url}</a></span>
+                    <span style="margin-left: 8px;">Pages: ${source.count}</span>
+                    <span style="margin-left: 8px;">
+                      Last updated: ${new Date(source.last_updated).toLocaleString()}
+                    </span>
+                  </div>
+                `;
+                
+                this.elements.docSourcesList.appendChild(sourceItem);
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching documentation sources:', error);
+          if (this.elements.docSourcesList) {
+            this.elements.docSourcesList.innerHTML = 
+              '<div class="error" style="text-align: center; padding: 20px; color: #ef4444;">' +
+              `Error loading documentation sources: ${error.message}` +
+              '</div>';
+          }
+        }
+      },
+      
+      // Fetch recent crawls
+      async fetchRecentCrawls() {
+        try {
+          const response = await fetch(`${this.ergonApi}/docs/crawls`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch crawls');
+          }
+          
+          const data = await response.json();
+          const crawls = data.crawls || [];
+          
+          if (this.elements.recentCrawls) {
+            if (crawls.length === 0) {
+              this.elements.recentCrawls.innerHTML = 
+                '<div class="empty-state" style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5);">' +
+                'No recent crawls found.' +
+                '</div>';
+            } else {
+              this.elements.recentCrawls.innerHTML = '';
+              
+              crawls.forEach(crawl => {
+                const crawlItem = document.createElement('div');
+                crawlItem.className = 'crawl-item';
+                crawlItem.style.cssText = 
+                  'background: rgba(30, 41, 59, 0.5); padding: 12px; border-radius: 4px; ' + 
+                  'margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;';
+                  
+                crawlItem.innerHTML = `
+                  <div class="crawl-info">
+                    <div class="crawl-url" style="font-weight: 500;">${crawl.url}</div>
+                    <div class="crawl-meta" style="font-size: 12px; margin-top: 4px; color: rgba(255, 255, 255, 0.7);">
+                      <span>Pages: ${crawl.pages_crawled}/${crawl.max_pages}</span>
+                      <span style="margin-left: 8px;">Status: ${crawl.status}</span>
+                      <span style="margin-left: 8px;">
+                        Date: ${new Date(crawl.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                  <button class="btn btn-secondary btn-sm" onclick="ErgonApp.viewCrawlDetails(${crawl.id})">
+                    View
+                  </button>
+                `;
+                
+                this.elements.recentCrawls.appendChild(crawlItem);
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching crawls:', error);
+          if (this.elements.recentCrawls) {
+            this.elements.recentCrawls.innerHTML = 
+              '<div class="error" style="text-align: center; padding: 20px; color: #ef4444;">' +
+              `Error loading crawls: ${error.message}` +
+              '</div>';
+          }
+        }
+      },
+      
+      // Search in a specific source
+      searchInSource(sourceId) {
+        // Focus the search input and populate it with a source filter
+        if (this.elements.docSearchInput) {
+          this.elements.docSearchInput.value = `source:${sourceId} `;
+          this.elements.docSearchInput.focus();
+          
+          // Switch to the search tab
+          this.elements.docTabs[2].click();
+        }
+      },
+      
+      // Handle search docs
+      async handleSearchDocs() {
+        const query = this.elements.docSearchInput.value.trim();
+        if (!query) {
+          alert('Please enter a search query');
+          return;
+        }
+        
+        try {
+          // Extract source ID from query if it starts with "source:"
+          let sourceId = null;
+          let cleanQuery = query;
+          
+          const sourceMatch = query.match(/^source:(\d+)\s+(.*)/);
+          if (sourceMatch) {
+            sourceId = sourceMatch[1];
+            cleanQuery = sourceMatch[2];
+          }
+          
+          // Switch to results tab
+          this.elements.docTabs[2].click();
+          
+          // Show loading indicator
+          if (this.elements.searchResults) {
+            this.elements.searchResults.innerHTML = `
+              <div style="text-align: center; padding: 20px;">
+                <div class="loading-spinner"></div>
+                <p>Searching for "${query}"...</p>
+              </div>
+            `;
+          }
+          
+          // Search using the API
+          const response = await fetch(`${this.ergonApi}/docs/search`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              query: cleanQuery,
+              source_id: sourceId
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to search documentation');
+          }
+          
+          const data = await response.json();
+          const results = data.results || [];
+          
+          // Display results
+          if (this.elements.searchResults) {
+            if (results.length === 0) {
+              this.elements.searchResults.innerHTML = `
+                <div class="empty-state" style="text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.5);">
+                  No results found for "${query}". Try a different search term.
+                </div>
+              `;
+            } else {
+              const resultsHtml = results.map(result => `
+                <div class="result-item" style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 4px; margin-bottom: 12px;">
+                  <h4 style="margin-top: 0;">
+                    <a href="${result.url}" target="_blank" style="color: #93c5fd; text-decoration: none;">
+                      ${result.title}
+                    </a>
+                  </h4>
+                  <div class="result-meta" style="font-size: 12px; margin: 4px 0; color: rgba(255, 255, 255, 0.7);">
+                    <span>Source: ${result.source}</span>
+                  </div>
+                  <p class="result-snippet" style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.8);">
+                    ${result.snippet}
+                  </p>
+                </div>
+              `).join('');
+              
+              this.elements.searchResults.innerHTML = `
+                <div style="margin-bottom: 16px;">
+                  <h3 style="margin-top: 0;">Search Results for "${query}"</h3>
+                  <p style="font-size: 14px; color: rgba(255, 255, 255, 0.7);">
+                    Found ${results.length} result${results.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <div class="results-list">
+                  ${resultsHtml}
+                </div>
+              `;
+            }
+          }
+        } catch (error) {
+          console.error('Error searching documentation:', error);
+          if (this.elements.searchResults) {
+            this.elements.searchResults.innerHTML = `
+              <div class="error" style="text-align: center; padding: 20px; color: #ef4444;">
+                Error searching documentation: ${error.message}
+              </div>
+            `;
+          }
+        }
+      },
+      
+      // Handle preload docs
+      async handlePreloadDocs() {
+        try {
+          // Disable button
+          if (this.elements.preloadDocsBtn) {
+            this.elements.preloadDocsBtn.disabled = true;
+            this.elements.preloadDocsBtn.textContent = 'Loading essential documentation...';
+          }
+          
+          // Call the API
+          const response = await fetch(`${this.ergonApi}/docs/preload`, {
+            method: 'POST'
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to preload documentation');
+          }
+          
+          const result = await response.json();
+          
+          // Update UI
+          if (this.elements.preloadDocsBtn) {
+            if (result.success) {
+              this.elements.preloadDocsBtn.textContent = 
+                `${result.message} (${result.sources_added} sources, ${result.pages_added} pages)`;
+              
+              // Re-enable after a delay
+              setTimeout(() => {
+                this.elements.preloadDocsBtn.disabled = false;
+                this.elements.preloadDocsBtn.textContent = 'Preload Essential Documentation';
+                
+                // Refresh documentation sources
+                this.fetchDocumentationSources();
+              }, 3000);
+            } else {
+              throw new Error(result.error || 'Failed to preload documentation');
+            }
+          }
+        } catch (error) {
+          console.error('Error preloading documentation:', error);
+          if (this.elements.preloadDocsBtn) {
+            this.elements.preloadDocsBtn.textContent = `Error: ${error.message}`;
+            
+            // Re-enable after a delay
+            setTimeout(() => {
+              this.elements.preloadDocsBtn.disabled = false;
+              this.elements.preloadDocsBtn.textContent = 'Preload Essential Documentation';
+            }, 3000);
+          }
+        }
+      },
+      
+      // Handle start crawl
+      async handleStartCrawl() {
+        const url = this.elements.docUrl.value.trim();
+        if (!url) {
+          alert('Please enter a URL to crawl');
+          return;
+        }
+        
+        try {
+          // Show status panel
+          if (this.elements.crawlStatus) {
+            this.elements.crawlStatus.style.display = 'block';
+          }
+          
+          if (this.elements.crawlProgress) {
+            this.elements.crawlProgress.style.width = '0%';
+          }
+          
+          if (this.elements.crawlStatusText) {
+            this.elements.crawlStatusText.textContent = 'Starting crawl...';
+          }
+          
+          // Disable start button
+          if (this.elements.startCrawlBtn) {
+            this.elements.startCrawlBtn.disabled = true;
+          }
+          
+          // Collect parameters
+          const maxPages = parseInt(this.elements.maxPages.value);
+          const maxDepth = parseInt(this.elements.maxDepth.value);
+          const timeout = parseInt(this.elements.timeout.value);
+          
+          // Start crawl
+          const response = await fetch(`${this.ergonApi}/docs/crawl`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              url,
+              max_pages: maxPages,
+              max_depth: maxDepth,
+              timeout
+            })
+          });
+          
+          if (!response.ok) {
+            throw new Error('Failed to start crawl');
+          }
+          
+          const result = await response.json();
+          
+          // Update UI with crawl ID
+          this.state.activeCrawlId = result.crawl_id;
+          
+          if (this.elements.crawlStatusText) {
+            this.elements.crawlStatusText.textContent = `Crawl started for ${url}`;
+          }
+          
+          // Simulate progress (will be replaced with actual updates)
+          this.simulateCrawlProgress();
+        } catch (error) {
+          console.error('Error starting crawl:', error);
+          
+          // Show error
+          if (this.elements.crawlStatusText) {
+            this.elements.crawlStatusText.textContent = `Error: ${error.message || "Failed to start crawl"}`;
+          }
+          
+          // Re-enable start button
+          if (this.elements.startCrawlBtn) {
+            this.elements.startCrawlBtn.disabled = false;
+          }
+        }
+      },
+      
+      // View crawl details
+      async viewCrawlDetails(crawlId) {
+        try {
+          // Fetch crawl details
+          const response = await fetch(`${this.ergonApi}/docs/crawls/${crawlId}`);
+          
+          if (!response.ok) {
+            throw new Error('Failed to fetch crawl details');
+          }
+          
+          const details = await response.json();
+          
+          // Navigate to results tab
+          this.elements.docTabs[2].click();
+          
+          // Display results
+          if (this.elements.searchResults) {
+            const pagesHtml = details.pages.map(page => `
+              <div class="result-item" style="background: rgba(30, 41, 59, 0.5); padding: 16px; border-radius: 4px; margin-bottom: 12px;">
+                <h4 style="margin-top: 0;">
+                  <a href="${page.url}" target="_blank" style="color: #93c5fd; text-decoration: none;">
+                    ${page.title}
+                  </a>
+                </h4>
+                <div class="result-meta" style="font-size: 12px; margin: 4px 0; color: rgba(255, 255, 255, 0.7);">
+                  <span>Crawled: ${new Date(page.crawled_at).toLocaleString()}</span>
+                  <span style="margin-left: 8px;">
+                    Content size: ${Math.round(page.content_length / 1024)}KB
+                  </span>
+                </div>
+                <p class="result-snippet" style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.8);">
+                  ${page.snippet}
+                </p>
+              </div>
+            `).join('');
+            
+            this.elements.searchResults.innerHTML = `
+              <div class="crawl-details" style="margin-bottom: 16px;">
+                <h3 style="margin-top: 0;">Crawl Results for ${details.url}</h3>
+                <div class="crawl-summary" style="font-size: 14px; color: rgba(255, 255, 255, 0.7);">
+                  <span>Started: ${new Date(details.created_at).toLocaleString()}</span>
+                  <span style="margin-left: 12px;">Pages: ${details.pages.length}</span>
+                  <span style="margin-left: 12px;">Status: ${details.status}</span>
+                </div>
+              </div>
+              <div class="results-list">
+                ${pagesHtml}
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error('Error viewing crawl details:', error);
+          if (this.elements.searchResults) {
+            this.elements.searchResults.innerHTML = `
+              <div class="error" style="text-align: center; padding: 20px; color: #ef4444;">
+                Error loading crawl details: ${error.message}
+              </div>
+            `;
+          }
+        }
+      },
+      
+      // Simulate crawl progress (temporary)
+      simulateCrawlProgress() {
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 5;
+          
+          if (this.elements.crawlProgress) {
+            this.elements.crawlProgress.style.width = `${progress}%`;
+          }
+          
+          if (progress >= 100) {
+            clearInterval(interval);
+            
+            if (this.elements.crawlStatusText) {
+              this.elements.crawlStatusText.textContent = 'Crawl completed successfully.';
+            }
+            
+            if (this.elements.startCrawlBtn) {
+              this.elements.startCrawlBtn.disabled = false;
+            }
+            
+            // Refresh the crawls list
+            setTimeout(() => {
+              this.fetchRecentCrawls();
+            }, 1000);
+          }
+        }, 1000);
+      }
+    };
+
+    // Initialize the app when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize Ergon App
+      ErgonApp.init();
+    });
+  </script>
+</body>
+</html>
