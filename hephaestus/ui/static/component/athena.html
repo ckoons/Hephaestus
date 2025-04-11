@@ -5,6 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Athena Component</title>
   <style>
+    /* CSS Variables for theme support */
+    :root {
+      --header-color: #1e293b;
+      --footer-color: #1e293b;
+      --background-color: #000000;
+      --sidebar-color: #0f0f0f;
+      --paper-color: #1a1a1a;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.1);
+    }
+    
     /* Base styles */
     html, body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -19,6 +31,8 @@
       bottom: 0;
       overflow: hidden;
       box-sizing: border-box;
+      color: var(--text-primary, #f8fafc);
+      background-color: var(--paper-color, #1a1a1a);
     }
     
     /* Embedded mode styles - activated when in iframe */
@@ -88,7 +102,7 @@
     
     .athena-nav {
       display: flex;
-      background-color: rgba(30, 41, 59, 0.8);
+      background-color: var(--header-color, #1e293b);
       border-radius: 8px;
       margin-bottom: 16px;
       overflow: hidden;
@@ -127,7 +141,7 @@
     .athena-content {
       flex-grow: 1;
       overflow: auto;
-      background-color: rgba(15, 23, 42, 0.3);
+      background-color: var(--paper-color, #1a1a1a);
       border-radius: 8px;
       padding: 16px;
       box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
@@ -151,7 +165,7 @@
     }
     
     .stat-card {
-      background-color: rgba(30, 41, 59, 0.7);
+      background-color: var(--header-color, #1e293b);
       border-radius: 8px;
       padding: 16px;
       flex: 1;
@@ -161,30 +175,30 @@
     
     .stat-title {
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary, #94a3b8);
       margin-bottom: 8px;
     }
     
     .stat-value {
       font-size: 24px;
       font-weight: 600;
-      color: white;
+      color: var(--text-primary, #f8fafc);
     }
     
     .graph-container {
       height: 250px;
-      background-color: rgba(30, 41, 59, 0.7);
+      background-color: var(--header-color, #1e293b);
       border-radius: 8px;
       margin-bottom: 20px;
       padding: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--text-secondary, #94a3b8);
     }
     
     .recent-facts {
-      background-color: rgba(30, 41, 59, 0.7);
+      background-color: var(--header-color, #1e293b);
       border-radius: 8px;
       padding: 16px;
     }
@@ -192,7 +206,7 @@
     .section-title {
       font-size: 16px;
       font-weight: 600;
-      color: white;
+      color: var(--text-primary, #f8fafc);
       margin-bottom: 16px;
       display: flex;
       justify-content: space-between;
@@ -207,7 +221,7 @@
     .fact-item {
       padding: 12px;
       border-radius: 6px;
-      background-color: rgba(15, 23, 42, 0.5);
+      background-color: var(--sidebar-color, #0f0f0f);
       margin-bottom: 8px;
       transition: background-color 0.2s;
     }
@@ -237,7 +251,7 @@
     
     .fact-content {
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.9);
+      color: var(--text-primary, #f8fafc);
       line-height: 1.4;
     }
     
@@ -1880,6 +1894,26 @@
       // Check if we're in an iframe/embedded mode
       const urlParams = new URLSearchParams(window.location.search);
       const isEmbedded = urlParams.get('embedded') === 'true' || window !== window.parent;
+      
+      // Listen for theme updates from parent
+      window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'TEKTON_THEME_UPDATE') {
+          const colors = event.data.colors;
+          if (colors) {
+            // Update CSS variables
+            document.documentElement.style.setProperty('--header-color', colors.headerColor);
+            document.documentElement.style.setProperty('--footer-color', colors.footerColor || colors.headerColor);
+            document.documentElement.style.setProperty('--background-color', colors.backgroundColor);
+            document.documentElement.style.setProperty('--sidebar-color', colors.sidebarColor);
+            document.documentElement.style.setProperty('--paper-color', colors.paperColor);
+            document.documentElement.style.setProperty('--text-primary', colors.textPrimaryColor);
+            document.documentElement.style.setProperty('--text-secondary', colors.textSecondaryColor);
+            document.documentElement.style.setProperty('--border-color', 'rgba(255, 255, 255, 0.1)');
+            
+            console.log('Applied theme update from parent');
+          }
+        }
+      });
       
       if (isEmbedded) {
         document.documentElement.classList.add('embedded');
