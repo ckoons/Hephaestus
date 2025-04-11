@@ -5,6 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TEKTON & Multi-AI Engineering Platform</title>
   <style>
+    :root {
+      /* Default theme colors - will be updated by settings */
+      --header-color: #1e293b;
+      --footer-color: #1e293b;
+      --background-color: #000000;
+      --sidebar-color: #0f0f0f;
+      --paper-color: #1a1a1a;
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --border-color: rgba(255, 255, 255, 0.1);
+    }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
@@ -227,16 +238,31 @@
     }
 
     .setting-group {
-      background-color: #1a1a1a;
+      background-color: var(--paper-color, #1a1a1a);
       border-radius: 8px;
       padding: 20px;
       margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .setting-title {
       font-size: 18px;
       font-weight: bold;
       margin-bottom: 15px;
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    /* Settings page styles */
+    .settings-page h2 {
+      font-size: 28px;
+      margin-bottom: 20px;
+      color: var(--text-primary, #f8fafc);
+    }
+    
+    .settings-page .setting-group {
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .setting-item {
@@ -473,43 +499,187 @@
             <p>Welcome to the Tekton Multi-AI Engineering Platform</p>
             <p id="status-message">Connecting to components...</p>
             
-            <!-- Color palette for selection -->
+            <!-- Note about settings page -->
             <div style="margin-top: 30px; text-align: center;">
-              <h3 style="color: #64748b; margin-bottom: 15px;">Choose a color theme for the header and footer</h3>
-              <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 800px; margin: 0 auto;">
-                <div onclick="applyColor('#1e293b', '#334155')" style="width: 80px; height: 80px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                  <div style="color: white; font-size: 12px;">Blue Gray</div>
-                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1e293b</div>
-                </div>
-                <div onclick="applyColor('#1c2536', '#334155')" style="width: 80px; height: 80px; background-color: #1c2536; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                  <div style="color: white; font-size: 12px;">Dark Blue</div>
-                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1c2536</div>
-                </div>
-                <div onclick="applyColor('#212938', '#334155')" style="width: 80px; height: 80px; background-color: #212938; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                  <div style="color: white; font-size: 12px;">Navy Slate</div>
-                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#212938</div>
-                </div>
-                <div onclick="applyColor('#1a202c', '#334155')" style="width: 80px; height: 80px; background-color: #1a202c; border: 1px solid #334155; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                  <div style="color: white; font-size: 12px;">Dark Slate</div>
-                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1a202c</div>
-                </div>
-                <div onclick="applyColor('#2d3748', '#475569')" style="width: 80px; height: 80px; background-color: #2d3748; border: 1px solid #475569; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                  <div style="color: white; font-size: 12px;">Slate Gray</div>
-                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#2d3748</div>
-                </div>
-                <div onclick="applyColor('#374151', '#475569')" style="width: 80px; height: 80px; background-color: #374151; border: 1px solid #475569; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                  <div style="color: white; font-size: 12px;">Gray</div>
-                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#374151</div>
-                </div>
-              </div>
+              <p style="color: #64748b;">You can customize the theme colors in the Settings page</p>
             </div>
             
           </div>
         </div>
 
         <!-- Settings page (hidden by default) -->
-        <div class="settings-page" id="settings-page" style="display: none;">
+        <div class="settings-page" id="settings-page" style="display: none; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--background-color, #000000); overflow-y: auto; padding: 30px; z-index: 100;">
           <h2>Settings</h2>
+          
+          <!-- Color Theme Settings -->
+          <div class="setting-group">
+            <div class="setting-title">Colors & Theme</div>
+            
+            <!-- Theme Mode Selection -->
+            <div class="setting-item" style="margin-bottom: 20px;">
+              <div class="setting-label">
+                <div style="font-size: 16px; font-weight: 600; color: var(--text-primary, #f8fafc);">Theme Mode</div>
+                <div class="setting-description" style="color: var(--text-secondary, #94a3b8); margin-top: 5px;">Choose between dark and light theme</div>
+              </div>
+              <div style="display: flex; gap: 15px; margin-top: 10px;">
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 16px; background-color: rgba(59, 130, 246, 0.1); border-radius: 6px; border: 1px solid rgba(59, 130, 246, 0.3); color: var(--text-primary, #f8fafc);">
+                  <input type="radio" name="theme-mode" value="dark" checked 
+                         onchange="updateThemeMode(this.value)" style="margin-right: 8px; accent-color: #3b82f6;">
+                  Dark Mode
+                </label>
+                <label style="display: flex; align-items: center; cursor: pointer; padding: 8px 16px; background-color: rgba(255, 255, 255, 0.05); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1); color: var(--text-primary, #f8fafc);">
+                  <input type="radio" name="theme-mode" value="light" 
+                         onchange="updateThemeMode(this.value)" style="margin-right: 8px; accent-color: #3b82f6;">
+                  Light Mode
+                </label>
+              </div>
+            </div>
+            
+            <!-- Color Presets -->
+            <div class="color-presets" style="margin-top: 20px;">
+              <div style="margin-bottom: 15px; font-weight: 600; font-size: 16px; color: var(--text-primary, #f8fafc);">Color Presets</div>
+              <div id="dark-theme-presets" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                <!-- Dark theme color presets -->
+                <div onclick="applyPreset('blueGray')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Blue Gray</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1e293b</div>
+                </div>
+                <div onclick="applyPreset('darkBlue')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #1c2536; border: 1px solid #334155; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Dark Blue</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1c2536</div>
+                </div>
+                <div onclick="applyPreset('navySlate')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #212938; border: 1px solid #334155; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Navy Slate</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#212938</div>
+                </div>
+                <div onclick="applyPreset('darkSlate')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #1a202c; border: 1px solid #334155; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Dark Slate</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#1a202c</div>
+                </div>
+                <div onclick="applyPreset('slateGray')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #2d3748; border: 1px solid #475569; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Slate Gray</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#2d3748</div>
+                </div>
+                <div onclick="applyPreset('gray')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #374151; border: 1px solid #475569; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Gray</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#374151</div>
+                </div>
+                <div onclick="applyPreset('black')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #111111; border: 1px solid #222; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: white; font-size: 12px;">Black</div>
+                  <div style="color: #94a3b8; font-size: 10px; margin-top: 5px;">#111111</div>
+                </div>
+              </div>
+              
+              <div id="light-theme-presets" style="display: none; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
+                <!-- Light theme color presets -->
+                <div onclick="applyPreset('white')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: #1e293b; font-size: 12px;">White</div>
+                  <div style="color: #64748b; font-size: 10px; margin-top: 5px;">#ffffff</div>
+                </div>
+                <div onclick="applyPreset('slate50')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: #1e293b; font-size: 12px;">Slate 50</div>
+                  <div style="color: #64748b; font-size: 10px; margin-top: 5px;">#f8fafc</div>
+                </div>
+                <div onclick="applyPreset('slate200')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #e2e8f0; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: #1e293b; font-size: 12px;">Slate 200</div>
+                  <div style="color: #64748b; font-size: 10px; margin-top: 5px;">#e2e8f0</div>
+                </div>
+                <div onclick="applyPreset('slate300')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #cbd5e1; border: 1px solid #94a3b8; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: #1e293b; font-size: 12px;">Slate 300</div>
+                  <div style="color: #64748b; font-size: 10px; margin-top: 5px;">#cbd5e1</div>
+                </div>
+                <div onclick="applyPreset('sky100')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #e0f2fe; border: 1px solid #bae6fd; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: #1e293b; font-size: 12px;">Sky 100</div>
+                  <div style="color: #64748b; font-size: 10px; margin-top: 5px;">#e0f2fe</div>
+                </div>
+                <div onclick="applyPreset('blue100')" class="color-preset" 
+                     style="width: 70px; height: 70px; background-color: #dbeafe; border: 1px solid #bfdbfe; border-radius: 8px; cursor: pointer; 
+                            display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                  <div style="color: #1e293b; font-size: 12px;">Blue 100</div>
+                  <div style="color: #64748b; font-size: 10px; margin-top: 5px;">#dbeafe</div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Custom colors -->
+            <div style="margin-top: 30px;">
+              <div style="margin-bottom: 15px; font-weight: 600; font-size: 16px; color: var(--text-primary, #f8fafc);">Custom Colors</div>
+              
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                <div>
+                  <label for="header-color" style="display: block; margin-bottom: 8px; color: var(--text-primary, #f8fafc);">Header Color</label>
+                  <div style="display: flex; align-items: center;">
+                    <input type="color" id="header-color" value="#1e293b" onchange="updateCustomColor('headerColor', this.value)"
+                           style="width: 40px; height: 40px; border: none; padding: 0; margin-right: 10px;">
+                    <input type="text" id="header-color-hex" value="#1e293b" 
+                           onchange="updateCustomColorHex('headerColor', this.value)"
+                           style="background-color: var(--paper-color, #1a1a1a); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
+                                  color: var(--text-primary, #f8fafc); padding: 8px 12px; width: 120px; font-family: monospace;">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="background-color" style="display: block; margin-bottom: 8px; color: var(--text-primary, #f8fafc);">Background Color</label>
+                  <div style="display: flex; align-items: center;">
+                    <input type="color" id="background-color" value="#000000" onchange="updateCustomColor('backgroundColor', this.value)"
+                           style="width: 40px; height: 40px; border: none; padding: 0; margin-right: 10px;">
+                    <input type="text" id="background-color-hex" value="#000000" 
+                           onchange="updateCustomColorHex('backgroundColor', this.value)"
+                           style="background-color: var(--paper-color, #1a1a1a); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
+                                  color: var(--text-primary, #f8fafc); padding: 8px 12px; width: 120px; font-family: monospace;">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="sidebar-color" style="display: block; margin-bottom: 8px; color: var(--text-primary, #f8fafc);">Sidebar Color</label>
+                  <div style="display: flex; align-items: center;">
+                    <input type="color" id="sidebar-color" value="#0f0f0f" onchange="updateCustomColor('sidebarColor', this.value)"
+                           style="width: 40px; height: 40px; border: none; padding: 0; margin-right: 10px;">
+                    <input type="text" id="sidebar-color-hex" value="#0f0f0f" 
+                           onchange="updateCustomColorHex('sidebarColor', this.value)"
+                           style="background-color: var(--paper-color, #1a1a1a); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
+                                  color: var(--text-primary, #f8fafc); padding: 8px 12px; width: 120px; font-family: monospace;">
+                  </div>
+                </div>
+                
+                <div>
+                  <label for="text-color" style="display: block; margin-bottom: 8px; color: var(--text-primary, #f8fafc);">Text Color</label>
+                  <div style="display: flex; align-items: center;">
+                    <input type="color" id="text-color" value="#f8fafc" onchange="updateCustomColor('textPrimaryColor', this.value)"
+                           style="width: 40px; height: 40px; border: none; padding: 0; margin-right: 10px;">
+                    <input type="text" id="text-color-hex" value="#f8fafc" 
+                           onchange="updateCustomColorHex('textPrimaryColor', this.value)"
+                           style="background-color: var(--paper-color, #1a1a1a); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px; 
+                                  color: var(--text-primary, #f8fafc); padding: 8px 12px; width: 120px; font-family: monospace;">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           
           <div class="setting-group">
             <div class="setting-title">Display</div>
@@ -550,47 +720,386 @@
   </div>
 
   <script>
+    // Color preset definitions
+    const colorPresets = {
+      dark: {
+        blueGray: {
+          headerColor: '#1e293b',
+          footerColor: '#1e293b',
+          backgroundColor: '#000000',
+          sidebarColor: '#0f0f0f',
+          paperColor: '#1a1a1a',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+        darkBlue: {
+          headerColor: '#1c2536',
+          footerColor: '#1c2536',
+          backgroundColor: '#000000',
+          sidebarColor: '#0c1425',
+          paperColor: '#161e2e',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+        navySlate: {
+          headerColor: '#212938',
+          footerColor: '#212938',
+          backgroundColor: '#000000',
+          sidebarColor: '#111827',
+          paperColor: '#1a202c',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+        darkSlate: {
+          headerColor: '#1a202c',
+          footerColor: '#1a202c',
+          backgroundColor: '#000000',
+          sidebarColor: '#0f1420',
+          paperColor: '#171923',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+        slateGray: {
+          headerColor: '#2d3748',
+          footerColor: '#2d3748',
+          backgroundColor: '#1a202c',
+          sidebarColor: '#1e2533',
+          paperColor: '#252d3d',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+        gray: {
+          headerColor: '#374151',
+          footerColor: '#374151',
+          backgroundColor: '#1f2937',
+          sidebarColor: '#252f3f',
+          paperColor: '#2d3748',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+        black: {
+          headerColor: '#111111',
+          footerColor: '#111111',
+          backgroundColor: '#000000',
+          sidebarColor: '#0a0a0a',
+          paperColor: '#151515',
+          textPrimaryColor: '#f8fafc',
+          textSecondaryColor: '#94a3b8',
+        },
+      },
+      light: {
+        white: {
+          headerColor: '#ffffff',
+          footerColor: '#ffffff',
+          backgroundColor: '#f8fafc',
+          sidebarColor: '#f1f5f9',
+          paperColor: '#ffffff',
+          textPrimaryColor: '#0f172a',
+          textSecondaryColor: '#475569',
+        },
+        slate50: {
+          headerColor: '#f8fafc',
+          footerColor: '#f8fafc',
+          backgroundColor: '#f1f5f9',
+          sidebarColor: '#e2e8f0',
+          paperColor: '#ffffff',
+          textPrimaryColor: '#0f172a',
+          textSecondaryColor: '#475569',
+        },
+        slate200: {
+          headerColor: '#e2e8f0',
+          footerColor: '#e2e8f0',
+          backgroundColor: '#f1f5f9',
+          sidebarColor: '#cbd5e1',
+          paperColor: '#f8fafc',
+          textPrimaryColor: '#0f172a',
+          textSecondaryColor: '#475569',
+        },
+        slate300: {
+          headerColor: '#cbd5e1',
+          footerColor: '#cbd5e1',
+          backgroundColor: '#e2e8f0',
+          sidebarColor: '#94a3b8',
+          paperColor: '#f1f5f9',
+          textPrimaryColor: '#0f172a',
+          textSecondaryColor: '#475569',
+        },
+        sky100: {
+          headerColor: '#e0f2fe',
+          footerColor: '#e0f2fe',
+          backgroundColor: '#f1f5f9',
+          sidebarColor: '#bae6fd',
+          paperColor: '#f8fafc',
+          textPrimaryColor: '#0f172a',
+          textSecondaryColor: '#475569',
+        },
+        blue100: {
+          headerColor: '#dbeafe',
+          footerColor: '#dbeafe',
+          backgroundColor: '#eff6ff',
+          sidebarColor: '#bfdbfe',
+          paperColor: '#ffffff',
+          textPrimaryColor: '#1e3a8a',
+          textSecondaryColor: '#3b82f6',
+        },
+      },
+    };
+    
+    // Current theme type
+    let currentThemeType = 'dark';
+    
+    // Current theme settings
+    let currentThemeSettings = {
+      headerColor: '#1e293b',
+      footerColor: '#1e293b',
+      backgroundColor: '#000000',
+      sidebarColor: '#0f0f0f',
+      paperColor: '#1a1a1a',
+      textPrimaryColor: '#f8fafc',
+      textSecondaryColor: '#94a3b8',
+    };
+    
+    // Function to update theme mode (dark/light)
+    function updateThemeMode(mode) {
+      currentThemeType = mode;
+      
+      // Show/hide appropriate presets
+      if (mode === 'dark') {
+        document.getElementById('dark-theme-presets').style.display = 'flex';
+        document.getElementById('light-theme-presets').style.display = 'none';
+        // Apply default dark theme
+        applyPreset('blueGray');
+      } else {
+        document.getElementById('dark-theme-presets').style.display = 'none';
+        document.getElementById('light-theme-presets').style.display = 'flex';
+        // Apply default light theme
+        applyPreset('white');
+      }
+      
+      // Update the UI elements with the new theme colors
+      updateColorInputs();
+    }
+    
+    // Function to apply a color preset
+    function applyPreset(presetName) {
+      const preset = colorPresets[currentThemeType][presetName];
+      if (preset) {
+        // Update current theme settings
+        currentThemeSettings = { ...preset };
+        
+        // Apply the colors
+        applyThemeColors(currentThemeSettings);
+        
+        // Update the UI elements with the new colors
+        updateColorInputs();
+        
+        // Save to localStorage
+        saveThemeSettings();
+      }
+    }
+    
+    // Function to update custom color from color picker
+    function updateCustomColor(colorKey, value) {
+      // Update the hex input field
+      document.getElementById(`${colorKey.replace(/([A-Z])/g, '-$1').toLowerCase()}-hex`).value = value;
+      
+      // Update current theme settings
+      currentThemeSettings[colorKey] = value;
+      
+      // Apply the colors
+      applyThemeColors(currentThemeSettings);
+      
+      // Save to localStorage
+      saveThemeSettings();
+    }
+    
+    // Function to update custom color from hex input
+    function updateCustomColorHex(colorKey, value) {
+      // Make sure it starts with #
+      if (!value.startsWith('#')) {
+        value = '#' + value;
+      }
+      
+      // Validate hex format
+      if (/^#([0-9A-F]{3}){1,2}$/i.test(value)) {
+        // Update the color picker
+        document.getElementById(colorKey.replace(/([A-Z])/g, '-$1').toLowerCase()).value = value;
+        
+        // Update current theme settings
+        currentThemeSettings[colorKey] = value;
+        
+        // Apply the colors
+        applyThemeColors(currentThemeSettings);
+        
+        // Save to localStorage
+        saveThemeSettings();
+      }
+    }
+    
+    // Function to update color input elements to match current theme
+    function updateColorInputs() {
+      // Update color inputs
+      document.getElementById('header-color').value = currentThemeSettings.headerColor;
+      document.getElementById('header-color-hex').value = currentThemeSettings.headerColor;
+      
+      document.getElementById('background-color').value = currentThemeSettings.backgroundColor;
+      document.getElementById('background-color-hex').value = currentThemeSettings.backgroundColor;
+      
+      document.getElementById('sidebar-color').value = currentThemeSettings.sidebarColor;
+      document.getElementById('sidebar-color-hex').value = currentThemeSettings.sidebarColor;
+      
+      document.getElementById('text-color').value = currentThemeSettings.textPrimaryColor;
+      document.getElementById('text-color-hex').value = currentThemeSettings.textPrimaryColor;
+    }
+    
+    // Function to save theme settings to localStorage
+    function saveThemeSettings() {
+      localStorage.setItem('tektonTheme', JSON.stringify(currentThemeSettings));
+      localStorage.setItem('tektonThemeType', currentThemeType);
+    }
+    
     // Function to apply the selected color theme
-    function applyColor(headerColor, borderColor) {
+    function applyThemeColors(settings) {
       const header = document.querySelector('.header');
       const chatInput = document.querySelector('.chat-input');
+      const mainContent = document.querySelector('.main-content');
+      const sidebar = document.querySelector('.sidebar');
       
-      // Update header
-      header.style.backgroundColor = headerColor;
-      header.style.borderBottomColor = borderColor;
+      if (header && chatInput) {
+        // Update header
+        header.style.backgroundColor = settings.headerColor;
+        header.style.borderBottomColor = 'rgba(255, 255, 255, 0.1)';
+        
+        // Update chat input
+        chatInput.style.backgroundColor = settings.footerColor || settings.headerColor;
+        chatInput.style.borderTopColor = 'rgba(255, 255, 255, 0.1)';
+      }
       
-      // Update chat input
-      chatInput.style.backgroundColor = headerColor;
-      chatInput.style.borderTopColor = borderColor;
+      if (mainContent) {
+        // Update main content background
+        mainContent.style.backgroundColor = settings.backgroundColor;
+      }
       
-      // Save selection to localStorage for persistence
-      localStorage.setItem('tektonHeaderColor', headerColor);
-      localStorage.setItem('tektonBorderColor', borderColor);
+      if (sidebar) {
+        // Update sidebar
+        sidebar.style.backgroundColor = settings.sidebarColor;
+      }
       
-      // Show feedback
-      const statusMsg = document.getElementById('status-message');
-      statusMsg.textContent = `Theme updated to ${headerColor}`;
-      setTimeout(() => {
-        statusMsg.textContent = 'Connected to components. Ready to go!';
-      }, 2000);
+      // Update CSS variables
+      document.documentElement.style.setProperty('--header-color', settings.headerColor);
+      document.documentElement.style.setProperty('--footer-color', settings.footerColor || settings.headerColor);
+      document.documentElement.style.setProperty('--background-color', settings.backgroundColor);
+      document.documentElement.style.setProperty('--sidebar-color', settings.sidebarColor);
+      document.documentElement.style.setProperty('--paper-color', settings.paperColor);
+      
+      // Update text colors
+      if (settings.textPrimaryColor) {
+        document.documentElement.style.setProperty('--text-primary', settings.textPrimaryColor);
+        document.body.style.color = settings.textPrimaryColor;
+      }
+      
+      if (settings.textSecondaryColor) {
+        document.documentElement.style.setProperty('--text-secondary', settings.textSecondaryColor);
+      }
     }
+    
+    // Listen for theme updates from other components
+    window.addEventListener('message', function(event) {
+      // Verify the message is from our app and has the correct type
+      if (event.data && event.data.type === 'TEKTON_THEME_UPDATE') {
+        const colors = event.data.colors;
+        currentThemeSettings = { ...colors };
+        applyThemeColors(colors);
+        
+        // Save theme settings to localStorage
+        saveThemeSettings();
+        
+        // Remove old color settings
+        localStorage.removeItem('tektonHeaderColor');
+        localStorage.removeItem('tektonBorderColor');
+        
+        // Update UI controls
+        updateColorInputs();
+      }
+    });
     
     // Simple JavaScript to handle basic interactions
     document.addEventListener('DOMContentLoaded', function() {
       const statusMessage = document.getElementById('status-message');
       
-      // Apply saved color theme if any
-      const savedHeaderColor = localStorage.getItem('tektonHeaderColor');
-      const savedBorderColor = localStorage.getItem('tektonBorderColor');
-      if (savedHeaderColor && savedBorderColor) {
-        const header = document.querySelector('.header');
-        const chatInput = document.querySelector('.chat-input');
-        
-        header.style.backgroundColor = savedHeaderColor;
-        header.style.borderBottomColor = savedBorderColor;
-        
-        chatInput.style.backgroundColor = savedHeaderColor;
-        chatInput.style.borderTopColor = savedBorderColor;
+      // Load saved theme settings
+      const savedTheme = localStorage.getItem('tektonTheme');
+      const savedThemeType = localStorage.getItem('tektonThemeType');
+      
+      if (savedTheme) {
+        try {
+          // Parse saved theme settings
+          const themeSettings = JSON.parse(savedTheme);
+          
+          // Update current settings
+          currentThemeSettings = themeSettings;
+          
+          // Apply the theme
+          applyThemeColors(themeSettings);
+          
+          // Set the theme type radio button
+          if (savedThemeType) {
+            currentThemeType = savedThemeType;
+            const radioButtons = document.querySelectorAll('input[name="theme-mode"]');
+            radioButtons.forEach(radio => {
+              if (radio.value === savedThemeType) {
+                radio.checked = true;
+              }
+            });
+            
+            // Show/hide appropriate presets
+            if (savedThemeType === 'dark') {
+              document.getElementById('dark-theme-presets').style.display = 'flex';
+              document.getElementById('light-theme-presets').style.display = 'none';
+            } else {
+              document.getElementById('dark-theme-presets').style.display = 'none';
+              document.getElementById('light-theme-presets').style.display = 'flex';
+            }
+          }
+          
+          // Update color inputs
+          updateColorInputs();
+          
+        } catch (e) {
+          console.error('Error parsing saved theme:', e);
+        }
+      } else {
+        // Legacy color settings
+        const savedHeaderColor = localStorage.getItem('tektonHeaderColor');
+        const savedBorderColor = localStorage.getItem('tektonBorderColor');
+        if (savedHeaderColor && savedBorderColor) {
+          // Create theme settings from legacy values
+          const themeSettings = {
+            headerColor: savedHeaderColor,
+            footerColor: savedHeaderColor,
+            backgroundColor: '#000000',
+            sidebarColor: '#0f0f0f',
+            paperColor: '#1a1a1a',
+            textPrimaryColor: '#f8fafc',
+            textSecondaryColor: '#94a3b8',
+          };
+          
+          // Update current settings
+          currentThemeSettings = themeSettings;
+          
+          // Apply the theme
+          applyThemeColors(themeSettings);
+          
+          // Update color inputs
+          updateColorInputs();
+          
+          // Save in new format
+          saveThemeSettings();
+          
+          // Remove legacy settings
+          localStorage.removeItem('tektonHeaderColor');
+          localStorage.removeItem('tektonBorderColor');
+        }
       }
       const componentItems = document.querySelectorAll('.component-item');
       const headerTitle = document.querySelector('.header-title');
@@ -626,11 +1135,45 @@
             
             // Show appropriate page
             if (componentName === 'Settings') {
+              // Hide all other content and show settings fullscreen
               document.getElementById('right-panel-content').style.display = 'none';
+              document.querySelector('.main-content').style.overflow = 'hidden';
               settingsPage.style.display = 'block';
+              
+              // Add a back button at the top of settings
+              if (!document.getElementById('settings-back-button')) {
+                const backButton = document.createElement('button');
+                backButton.id = 'settings-back-button';
+                backButton.innerHTML = '&larr; Back to Dashboard';
+                backButton.style.marginBottom = '20px';
+                backButton.style.padding = '8px 16px';
+                backButton.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                backButton.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+                backButton.style.borderRadius = '8px';
+                backButton.style.color = 'var(--text-primary, #f8fafc)';
+                backButton.style.cursor = 'pointer';
+                backButton.style.fontSize = '14px';
+                
+                backButton.addEventListener('click', function() {
+                  // Hide settings and show dashboard
+                  settingsPage.style.display = 'none';
+                  document.getElementById('right-panel-content').style.display = 'flex';
+                  document.querySelector('.main-content').style.overflow = 'auto';
+                  
+                  // Update active item in sidebar
+                  componentItems.forEach(i => i.classList.remove('active'));
+                  componentItems[0].classList.add('active');
+                  
+                  // Update header title
+                  headerTitle.textContent = 'Tekton - Projects';
+                });
+                
+                settingsPage.insertBefore(backButton, settingsPage.firstChild);
+              }
             } else {
               // This would show Budget page in the future
               document.getElementById('right-panel-content').style.display = 'flex';
+              document.querySelector('.main-content').style.overflow = 'auto';
               settingsPage.style.display = 'none';
             }
           });
