@@ -1,4 +1,5 @@
 #!/bin/bash
+# DEPRECATED: Use launch-tekton.sh instead
 
 # Colors for output
 GREEN='\033[0;32m'

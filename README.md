@@ -63,6 +63,12 @@ npm install
 
 # Or, with the integrated launcher
 ./tekton_launch --gui
+
+# Using the unified component launcher (recommended)
+./launch-tekton.sh --components hephaestus
+
+# To stop all Tekton components including the GUI
+./kill-tekton.sh
 ```
 
 ## Architecture
