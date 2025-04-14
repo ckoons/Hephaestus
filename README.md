@@ -1,37 +1,44 @@
 # Hephaestus
 
-Hephaestus is the UI component for the Tekton system. This is a complete redesign focusing on simplicity and ease of maintenance.
+Hephaestus is the UI component for the Tekton system. This is a complete redesign focusing on simplicity, maintainability, and integration with all Tekton components.
+
+![Tekton UI](../../images/Tekton.png)
 
 ## Purpose
 
-The Hephaestus component provides a unified user interface for interacting with all Tekton system components. It serves as the main dashboard and control center for the entire system.
+The Hephaestus component provides a unified user interface for interacting with all Tekton system components. It serves as the main dashboard and control center for the entire Tekton orchestration system.
 
 ## Development Status
 
-Implementation is in progress. The redesign uses a simpler architecture with vanilla JavaScript, HTML, and CSS instead of complex frameworks.
+Implementation is in progress. The redesign uses a simpler architecture with vanilla JavaScript, HTML, and CSS instead of complex frameworks for better maintainability.
 
-Current status:
+### Current Status:
 - ✅ Core UI framework implemented
 - ✅ Basic component integration pattern established
-- ✅ Sample Ergon component UI implemented
-- ⏳ Other component UIs to be implemented
-- ⏳ WebSocket backend integration to be completed
+- ✅ Ergon component UI fully implemented
+- ✅ WebSocket communication infrastructure built
+- ✅ Terminal and HTML panel switching implemented
+- ✅ Dark/light theme support added
+- ⏳ Additional component UIs to be implemented
+- ⏳ Backend integration to be completed
 
-**See [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) for detailed information about current progress and next steps.**
+**See [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) for detailed information about current progress, architecture, and next steps.**
 
 ## Architecture
 
-- **Simple HTML/CSS/JS**: No complex frameworks or build systems
-- **Component-based**: Each Tekton component has its own UI module
-- **WebSocket Communication**: Real-time updates from backend services
+- **Vanilla Web Technologies**: Simple HTML/CSS/JS with no complex frameworks or build systems
+- **Component-Based Design**: Each Tekton component has its own UI module
+- **Real-Time Communication**: WebSocket-based communication with backend services
 - **Persistent State**: Client-side storage for user preferences and context
+- **Dual Interface**: Support for both terminal and graphical interfaces
 
 ## Integration Points
 
-- Connects with Hermes for service discovery
-- Provides UI interfaces for all Tekton components
-- Visualizes system status and component health
-- Uses WebSockets for real-time communication
+- **Hermes Integration**: Connects with Hermes for service discovery
+- **Component Interfaces**: Provides UI for all Tekton components
+- **System Monitoring**: Visualizes system status and component health 
+- **AI Communication**: Interfaces with component-specific AI models
+- **WebSocket Protocol**: Standardized message format for all communication
 
 ## Running the UI
 
@@ -45,16 +52,27 @@ Current status:
 
 ## Adding New Components
 
-Follow the pattern established by the Ergon component:
+Follow the established pattern to add new component UIs:
 
 1. Create an HTML template in `/ui/components/`
 2. Add CSS styling in `/ui/styles/`
 3. Implement JavaScript functionality in `/ui/scripts/`
 4. Add component to the navigation in `index.html`
+5. Register the component in the UI system
+
+Detailed component integration instructions are available in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md#component-integration-guide).
+
+## Component Structure
+
+```
+/ui/components/component-name.html   # HTML template
+/ui/styles/component-name.css        # Component-specific styles
+/ui/scripts/component-name.js        # Component functionality
+```
 
 ## Technical Design
 
 For more details on the UI implementation, see:
-- [HephaestusRedesign.md](./HephaestusRedesign.md) - Overall design approach
+- [HephaestusRedesign.md](./HephaestusRedesign.md) - Overall design approach and goals
 - [TektonUIOperation.md](./TektonUIOperation.md) - AI integration details
-- [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) - Current status and next steps
+- [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) - Current status and implementation details
