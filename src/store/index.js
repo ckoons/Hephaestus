@@ -4,6 +4,7 @@ import websocketReducer from './slices/websocketSlice';
 import chatReducer from './slices/chatSlice';
 import budgetReducer from './slices/budgetSlice';
 import settingsReducer from './slices/settingsSlice';
+import footerReducer from './slices/footerSlice';
 
 const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ const store = configureStore({
     chat: chatReducer,
     budget: budgetReducer,
     settings: settingsReducer,
+    footer: footerReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

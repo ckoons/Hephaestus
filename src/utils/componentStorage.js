@@ -51,7 +51,7 @@ export const clearInputContext = (componentId) => {
 export const getAllInputContexts = () => {
   try {
     const contexts = {};
-    
+
     // Iterate through localStorage keys
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -60,7 +60,7 @@ export const getAllInputContexts = () => {
         contexts[componentId] = localStorage.getItem(key) || '';
       }
     }
-    
+
     console.log(`[Storage] Got all input contexts:`, Object.keys(contexts));
     return contexts;
   } catch (e) {
@@ -68,4 +68,3 @@ export const getAllInputContexts = () => {
     return {};
   }
 };
-EOF < /dev/null

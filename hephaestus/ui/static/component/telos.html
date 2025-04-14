@@ -244,6 +244,15 @@
         </div>
     </div>
 
+    <div style="padding: 1rem; margin-top: 1rem; background-color: rgba(0, 0, 0, 0.3); border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.1);">
+        <h3 style="font-size: 0.9rem; margin: 0 0 0.5rem 0; color: #a0a0a0;">localStorage Debug Panel</h3>
+        <div id="debug-content" style="font-family: monospace; font-size: 0.8rem; white-space: pre-wrap; color: #c0c0c0; background-color: rgba(0, 0, 0, 0.2); padding: 0.5rem; border-radius: 4px; max-height: 200px; overflow-y: auto;">No data yet...</div>
+        <div style="display: flex; justify-content: flex-end; margin-top: 1rem; gap: 0.5rem;">
+            <button id="refreshDebug" style="background-color: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.4); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Refresh</button>
+            <button id="clearStorage" style="background-color: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.9rem;">Clear Storage</button>
+        </div>
+    </div>
+
     <script>
         // Dynamic theme handling for UI consistency
         window.addEventListener('message', (event) => {
@@ -269,6 +278,38 @@
                 }
             }
         });
+
+        // Debug localStorage functions
+        document.getElementById('refreshDebug').addEventListener('click', () => {
+            const debugContent = document.getElementById('debug-content');
+            let output = '';
+            
+            // Get all localStorage items
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('tekton_input_')) {
+                    const value = localStorage.getItem(key);
+                    output += `${key}: "${value}"\n`;
+                }
+            }
+            
+            debugContent.textContent = output || 'No tekton_input_* keys found';
+        });
+        
+        document.getElementById('clearStorage').addEventListener('click', () => {
+            // Clear only tekton_input_* keys
+            for (let i = localStorage.length - 1; i >= 0; i--) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('tekton_input_')) {
+                    localStorage.removeItem(key);
+                }
+            }
+            
+            document.getElementById('debug-content').textContent = 'Storage cleared!';
+        });
+        
+        // Initialize on load
+        document.getElementById('refreshDebug').click();
     </script>
 </body>
 </html>

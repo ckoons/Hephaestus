@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   Box,
@@ -11,12 +11,15 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
+  Typography
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import MicIcon from '@mui/icons-material/Mic';
 
 import { addMessage, setTyping } from '../../store/slices/chatSlice';
+import { saveInputContext as saveToRedux } from '../../store/slices/footerSlice';
 import { sendMessage } from '../../services/websocketService';
+import { getInputContext, saveInputContext } from '../../utils/componentStorage';
 
 const ChatInput = () => {
   const dispatch = useDispatch();
@@ -33,6 +36,22 @@ const ChatInput = () => {
   const activeComponent = activeComponentId 
     ? components.find(c => c.id === activeComponentId) 
     : null;
+  
+  // Load saved input context when active component changes
+  useEffect(() => {
+    if (activeComponentId) {
+      const savedInput = getInputContext(activeComponentId);
+      if (savedInput) {
+        console.log(`[UI-Footer] Restoring input context for component: ${activeComponentId}`);
+        setInputValue(savedInput);
+      } else {
+        console.log(`[UI-Footer] No saved input context for component: ${activeComponentId}`);
+        setInputValue('');
+      }
+    } else {
+      setInputValue('');
+    }
+  }, [activeComponentId]);
   
   const handleSendMessage = () => {
     if (!inputValue.trim()) return;
@@ -60,12 +79,30 @@ const ChatInput = () => {
       dispatch(setTyping(true));
     }
     
-    // Clear input
+    // Clear input and storage for this component
     setInputValue('');
+    if (activeComponentId) {
+      saveInputContext(activeComponentId, '');
+    }
   };
   
   const handleInputChange = (e) => {
-    setInputValue(e.target.value);
+    const newValue = e.target.value;
+    setInputValue(newValue);
+    
+    // Save input context for the active component using both methods
+    if (activeComponentId) {
+      console.log(`[UI-Footer] Saving input context for component: ${activeComponentId}`);
+      
+      // Save to localStorage
+      saveInputContext(activeComponentId, newValue);
+      
+      // Also save to Redux for backward compatibility
+      dispatch(saveToRedux({ 
+        componentId: activeComponentId, 
+        inputText: newValue 
+      }));
+    }
   };
   
   const handleKeyDown = (e) => {
