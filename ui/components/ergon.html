@@ -1,0 +1,267 @@
+<!-- Ergon Component UI Template -->
+<div class="ergon-container">
+  <!-- Tabbed Navigation -->
+  <div class="ergon-tabs">
+    <div class="tab-button active" data-tab="agents">Agents</div>
+    <div class="tab-button" data-tab="memory">Memory</div>
+    <div class="tab-button" data-tab="tools">Tools</div>
+    <div class="tab-button" data-tab="settings">Settings</div>
+  </div>
+
+  <!-- Agents Tab Content -->
+  <div class="tab-content active" id="agents-content">
+    <div class="ergon-section-header">
+      <h2>Available Agents</h2>
+      <div class="ergon-controls">
+        <button class="control-button primary-button" id="create-agent-button">Create Agent</button>
+        <select id="agent-type-filter" class="ergon-select">
+          <option value="all">All Types</option>
+          <option value="nexus">Memory</option>
+          <option value="github">GitHub</option>
+          <option value="mail">Mail</option>
+          <option value="browser">Browser</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="agent-list">
+      <!-- Agent Card Template - Repeated for each agent -->
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-name">GitHubAgent</div>
+          <div class="agent-type-badge github">github</div>
+          <div class="agent-status active"></div>
+        </div>
+        <div class="agent-description">
+          Monitors GitHub repositories and handles actions and events.
+        </div>
+        <div class="agent-footer">
+          <button class="agent-action-button">Run</button>
+          <button class="agent-action-button">Edit</button>
+          <button class="agent-action-button danger">Delete</button>
+        </div>
+      </div>
+      
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-name">MailAgent</div>
+          <div class="agent-type-badge mail">mail</div>
+          <div class="agent-status inactive"></div>
+        </div>
+        <div class="agent-description">
+          Processes email communications and manages responses.
+        </div>
+        <div class="agent-footer">
+          <button class="agent-action-button">Run</button>
+          <button class="agent-action-button">Edit</button>
+          <button class="agent-action-button danger">Delete</button>
+        </div>
+      </div>
+      
+      <div class="agent-card">
+        <div class="agent-header">
+          <div class="agent-name">BrowserAgent</div>
+          <div class="agent-type-badge browser">browser</div>
+          <div class="agent-status active"></div>
+        </div>
+        <div class="agent-description">
+          Performs web browsing and research activities.
+        </div>
+        <div class="agent-footer">
+          <button class="agent-action-button">Run</button>
+          <button class="agent-action-button">Edit</button>
+          <button class="agent-action-button danger">Delete</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Agent Creation Form -->
+    <div class="agent-creation-form" id="agent-creation-form" style="display: none;">
+      <h3>Create New Agent</h3>
+      <div class="form-row">
+        <label for="agent-name">Agent Name</label>
+        <input type="text" id="agent-name" placeholder="Enter agent name">
+      </div>
+      <div class="form-row">
+        <label for="agent-type">Agent Type</label>
+        <select id="agent-type">
+          <option value="nexus">Memory Agent</option>
+          <option value="github">GitHub Agent</option>
+          <option value="mail">Mail Agent</option>
+          <option value="browser">Browser Agent</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="agent-description">Description</label>
+        <textarea id="agent-description" placeholder="Describe agent purpose"></textarea>
+      </div>
+      <div class="form-actions">
+        <button class="control-button secondary-button" id="cancel-creation">Cancel</button>
+        <button class="control-button primary-button" id="submit-creation">Create Agent</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Memory Tab Content (initially hidden) -->
+  <div class="tab-content" id="memory-content" style="display: none;">
+    <div class="ergon-section-header">
+      <h2>Agent Memory</h2>
+      <div class="ergon-controls">
+        <select id="memory-agent-selector" class="ergon-select">
+          <option value="">Select Agent</option>
+          <option value="1">GitHubAgent</option>
+          <option value="2">MailAgent</option>
+        </select>
+        <button class="control-button" id="refresh-memory">Refresh</button>
+      </div>
+    </div>
+    
+    <div class="memory-stats">
+      <div class="memory-stat-card">
+        <div class="stat-label">Memory Items</div>
+        <div class="stat-value">42</div>
+      </div>
+      <div class="memory-stat-card">
+        <div class="stat-label">Last Updated</div>
+        <div class="stat-value">2 min ago</div>
+      </div>
+      <div class="memory-stat-card">
+        <div class="stat-label">Context Size</div>
+        <div class="stat-value">15.2 KB</div>
+      </div>
+    </div>
+      
+    <div class="memory-items">
+      <div class="memory-item">
+        <div class="memory-timestamp">2025-04-14 10:22</div>
+        <div class="memory-text">
+          User requested repository statistics for Q1 2025
+        </div>
+        <div class="memory-category">Request</div>
+      </div>
+      <div class="memory-item">
+        <div class="memory-timestamp">2025-04-14 10:24</div>
+        <div class="memory-text">
+          Found 157 commits across 3 repositories during Q1 2025
+        </div>
+        <div class="memory-category">Data</div>
+      </div>
+      <div class="memory-item">
+        <div class="memory-timestamp">2025-04-14 10:25</div>
+        <div class="memory-text">
+          Generated quarterly report in markdown format
+        </div>
+        <div class="memory-category">Action</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tools Tab Content (initially hidden) -->
+  <div class="tab-content" id="tools-content" style="display: none;">
+    <div class="ergon-section-header">
+      <h2>Available Tools</h2>
+      <div class="ergon-controls">
+        <input type="text" class="tool-search" placeholder="Search tools...">
+        <select class="ergon-select">
+          <option value="all">All Categories</option>
+          <option value="github">GitHub</option>
+          <option value="email">Email</option>
+          <option value="browser">Browser</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="tool-category">
+      <div class="category-header">GitHub Tools</div>
+      
+      <div class="tool-cards">
+        <div class="tool-card">
+          <div class="tool-name">github_create_issue</div>
+          <div class="tool-description">
+            Creates a new issue in a GitHub repository
+          </div>
+          <div class="tool-parameters">
+            <span class="parameter-tag">repo</span>
+            <span class="parameter-tag">title</span>
+            <span class="parameter-tag">body</span>
+          </div>
+          <button class="tool-docs-button">View Docs</button>
+        </div>
+        
+        <div class="tool-card">
+          <div class="tool-name">github_list_prs</div>
+          <div class="tool-description">
+            Lists open pull requests for a repository
+          </div>
+          <div class="tool-parameters">
+            <span class="parameter-tag">repo</span>
+            <span class="parameter-tag">state</span>
+          </div>
+          <button class="tool-docs-button">View Docs</button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tool-category">
+      <div class="category-header">Email Tools</div>
+      
+      <div class="tool-cards">
+        <div class="tool-card">
+          <div class="tool-name">mail_send_message</div>
+          <div class="tool-description">
+            Sends an email message to specified recipients
+          </div>
+          <div class="tool-parameters">
+            <span class="parameter-tag">to</span>
+            <span class="parameter-tag">subject</span>
+            <span class="parameter-tag">body</span>
+          </div>
+          <button class="tool-docs-button">View Docs</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Tab Content (initially hidden) -->
+  <div class="tab-content" id="settings-content" style="display: none;">
+    <div class="ergon-section-header">
+      <h2>Ergon Settings</h2>
+      <div class="ergon-controls">
+        <button class="control-button primary-button" id="save-settings">Save Settings</button>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>Agent Defaults</h3>
+      
+      <div class="form-row">
+        <label for="default-model">Default LLM Model</label>
+        <select id="default-model">
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="claude-3-opus">Claude 3 Opus</option>
+          <option value="llama3-70b">Llama 3 70B</option>
+        </select>
+      </div>
+      
+      <div class="form-row">
+        <label for="default-memory-enabled">Memory Enabled</label>
+        <input type="checkbox" id="default-memory-enabled" checked>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>API Credentials</h3>
+      
+      <div class="form-row">
+        <label for="github-token">GitHub Token</label>
+        <input type="password" id="github-token" placeholder="Enter GitHub token">
+      </div>
+      
+      <div class="form-row">
+        <label for="gmail-oauth">Gmail OAuth</label>
+        <div class="oauth-status connected">Connected</div>
+        <button class="small-button">Disconnect</button>
+      </div>
+    </div>
+  </div>
+</div>

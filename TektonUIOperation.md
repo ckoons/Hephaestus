@@ -411,3 +411,110 @@ To verify AI-UI integration:
 5. Validate terminal command processing
 6. Verify HTML control updates
 7. Test cross-component interaction
+
+## UI Element Reference
+
+This section provides a reference of HTML element IDs, classes, and selectors for interacting with the Tekton UI programmatically.
+
+### Navigation and Component Selection
+
+**Component Navigation Items**:
+- Selector: `.nav-item[data-component="COMPONENT_ID"]`
+- Example: `.nav-item[data-component="tekton"]`
+- Attributes: `data-component` - Contains the component identifier
+
+**Status Indicators**:
+- Selector: `.nav-item[data-component="COMPONENT_ID"] .status-indicator`
+- Classes:
+  - `.active` - Green indicator showing active status
+  - `.attention` - Orange indicator for items needing attention
+  - `.alert` - Red pulsing indicator for urgent matters
+
+### Main UI Sections
+
+**Left Panel**:
+- ID: N/A
+- Class: `.left-panel`
+
+**Header Section**:
+- Class: `.content-header`
+- Child Elements:
+  - `.component-title` - Title of the current component
+  - `.component-controls` - Container for component-specific controls
+
+**Main Content Area**:
+- Class: `.content-main`
+- Panels:
+  - `#terminal-panel` - Contains the terminal interface
+  - `#html-panel` - Contains HTML-based component UI
+
+**Terminal**:
+- ID: `#terminal`
+- Class: `.terminal`
+
+**Footer Chat Input**:
+- ID: `#chat-input` - Textarea for user input
+- ID: `#send-button` - Button to send messages
+
+### Control Elements
+
+**Settings Buttons**:
+- ID: `#budget-button` - Opens budget information
+- ID: `#profile-button` - Opens user profile
+- ID: `#settings-button` - Opens settings dialog
+
+**Modal Dialog**:
+- ID: `#system-modal` - Container for modal dialogs
+- ID: `#modal-title` - Title area of modal
+- ID: `#modal-body` - Content area of modal
+
+**Error Container**:
+- ID: `#error-container` - Element for displaying error messages
+
+### Component UI Integration Points
+
+When creating a component-specific UI, register these functions:
+
+```javascript
+window.COMPONENT_ID_Component = {
+  // Called when component is first activated
+  initialize: function() {
+    // Setup code
+  },
+  
+  // Called to handle messages from AI
+  receiveMessage: function(message) {
+    // Process message from AI
+  },
+  
+  // Called when component is being deactivated
+  cleanup: function() {
+    // Cleanup code
+  }
+};
+```
+
+### WebSocket Message Structure
+
+When sending commands to the AI:
+
+```javascript
+// Send command to the active component
+tektonUI.sendCommand("command_name", {
+  // Command parameters
+  param1: "value1",
+  param2: "value2"
+});
+```
+
+Component status indicators can be set via CSS classes:
+
+```javascript
+// Get the status indicator for a component
+const indicator = document.querySelector('.nav-item[data-component="tekton"] .status-indicator');
+
+// Set status (active, attention, alert)
+indicator.classList.add('active');  // Green
+indicator.classList.add('attention');  // Orange
+indicator.classList.add('alert');  // Red, pulsing
+```
