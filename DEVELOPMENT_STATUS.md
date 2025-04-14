@@ -2,7 +2,26 @@
 
 ## Current State (April 14, 2025)
 
-The Hephaestus UI has been redesigned with a focus on simplicity, maintainability, and ease of use. We've moved away from complex frameworks like React to a vanilla JavaScript, HTML, and CSS approach that offers better long-term sustainability.
+The Hephaestus UI has been completely redesigned with a focus on simplicity, maintainability, and ease of use. We've moved away from complex frameworks like React to a vanilla JavaScript, HTML, and CSS approach that offers better long-term sustainability.
+
+### Next Development Session Focus
+
+The next development session should focus on:
+
+1. **Implementing the Ergon and AWT-Team tab functionality**:
+   - Create a terminal-like interface inside the Ergon and AWT-Team tabs
+   - Implement message handling between these interfaces and their respective AI assistants
+   - Add visual cues for active conversations (typing indicators, etc.)
+
+2. **Expanding other component UIs**:
+   - Implement the Tekton component UI (dashboard view)
+   - Add the Prometheus component UI (planning visualization)
+   - Develop the Telos component UI (requirements management)
+
+3. **Enhancing existing UI features**:
+   - Add animations for smoother transitions
+   - Implement drag-and-drop for card elements
+   - Create a unified color system across all components
 
 ### Accomplishments
 
@@ -48,13 +67,26 @@ Each UI component follows this structure:
 4. **Registration** - Component is registered with the UI system at runtime
 
 #### Implemented Components
-- **Ergon Component (Agent Management)**
-  - Tabbed interface with Agents, Memory, Tools, and Settings sections
-  - Agent cards with status indicators and action buttons
-  - Agent creation form with validation
-  - Memory visualization with filtering options
-  - Tool browser with categorization and search
-  - Settings management with configuration options
+- **Ergon Component (Agents/Workflows/Tools)**
+  - **Tab Navigation**:
+    - **Clean tabbed interface** with consistent styling
+    - **AI Assistant tabs**: Ergon, AWT-Team (placeholder for future implementation)
+    - **Core functionality tabs**: Agents, Memory, Tools, Settings
+    - **Simple structure**: Single row of tabs with clear content areas
+  - **Tab Features**:
+    - Agents - Management of agent instances with cards and controls
+    - Memory - Visualization of agent memory with filtering
+    - Tools - Browser for available agent tools with categories
+    - Settings - Configuration options for agent operation
+  - **Features**:
+    - Agent cards with status indicators and action buttons
+    - Agent creation form with validation
+    - Memory visualization with filtering options
+    - Tool browser with categorization and search
+    - Settings management with improved, balanced form styling
+    - Tab-based interface with clean transitions between content areas
+    - Improved form elements with consistent sizing and alignment
+    - Clean, unified interface with consistent styling across all elements
 
 ## Technical Architecture
 
@@ -82,6 +114,32 @@ Each UI component follows this structure:
   │       ├── server.py           # Python-based UI server (HTTP + WebSocket)
   │       └── component_registry.json # Component registration information
 ```
+
+### Navigation Structure
+
+The left panel navigation has been organized into functional groups:
+
+1. **Core System Components**
+   - Tekton - Projects (Dashboard)
+   - Prometheus - Planning
+   - Telos - Requirements
+   
+2. **Agent & Integration Components**
+   - Ergon - Agent Builder
+   - Harmonia - Orchestration
+   - Synthesis - Integration
+   
+3. **Knowledge & Learning Components**
+   - Athena - Knowledge
+   - Sophia - Learning
+   - Engram - Memory
+   
+4. **Communication Components**
+   - Rhetor - Context
+   - Hermes - Messages/Data
+   - Codex - Coding
+
+This structure groups related components together to make navigation more intuitive and follows a logical progression from project definition to execution.
 
 ### System Components
 
@@ -165,6 +223,7 @@ Messages between UI and backend follow this structure:
 - Implement proper authentication and security
 - Add error handling and reconnection logic
 - Create message queue for offline operation
+- Implement AI assistant routing system for Ergon and Ergon-Team tabs
 
 ### 4. UI/UX Improvements
 - Complete light theme implementation and smooth transitions
@@ -260,6 +319,76 @@ cd /Users/cskoons/projects/github/Tekton/Hephaestus
 ```
 
 Then access the UI at: http://localhost:8080
+
+## Guide for Next Development Session
+
+### Setting Up Development Environment
+
+1. Start by running the UI server and exploring the current implementation:
+   ```bash
+   cd /Users/cskoons/projects/github/Tekton/Hephaestus
+   ./run_ui.sh
+   ```
+
+2. In another terminal, you can make changes to the code and see them reflected immediately when you refresh the browser.
+
+3. The UI uses a simple Python-based HTTP and WebSocket server to serve the UI and handle communication with the backend.
+
+### Implementing Terminal-Like Interfaces for AI Tabs
+
+For the Ergon and AWT-Team tabs, we need to create a terminal-like interface that:
+- Displays messages in a conversation format
+- Allows for styled text (markdown or formatted responses)
+- Shows typing indicators when the AI is processing
+- Maintains conversation history
+
+Suggested approach:
+1. Create a new component in `/ui/scripts/` called `terminal-chat.js` that implements a terminal-like chat interface
+2. Update the Ergon tab content to use this new component
+3. Implement WebSocket message handling for AI communication
+
+### Creating New Component UIs
+
+When creating new component UIs (Tekton, Prometheus, Telos), follow this pattern:
+
+1. Create an HTML template in `/ui/components/component-name.html`
+2. Add component-specific styles in `/ui/styles/component-name.css`
+3. Create a JavaScript file in `/ui/scripts/component-name.js` that handles:
+   - Component initialization
+   - UI interaction
+   - WebSocket communication
+4. Register the component in `index.html` by adding:
+   ```html
+   <link rel="stylesheet" href="styles/component-name.css">
+   <script src="scripts/component-name.js"></script>
+   ```
+
+### UI/UX Enhancement Opportunities
+
+The current UI has several opportunities for enhancement:
+
+1. **Animation and Transitions**:
+   - Add subtle animations when switching tabs
+   - Implement slide/fade transitions for content changes
+   - Create loading indicators for asynchronous operations
+
+2. **Drag and Drop**:
+   - Implement drag and drop for agent cards (for reordering)
+   - Create drop zones for moving items between categories
+   - Add visual feedback during drag operations
+
+3. **Color System**:
+   - Expand the color variables in the CSS themes
+   - Create a consistent color palette for status indicators
+   - Implement accent colors for different components
+
+### Testing and Debugging
+
+When testing changes:
+1. Check browser console for any JavaScript errors
+2. Monitor the server output for WebSocket communication issues
+3. Test on different browsers to ensure compatibility
+4. Verify responsive design by resizing the browser window
 
 The system will start both:
 - HTTP server on port 8080 (for static files)

@@ -28,6 +28,8 @@ Implementation is in progress. The redesign uses a simpler architecture with van
 
 - **Vanilla Web Technologies**: Simple HTML/CSS/JS with no complex frameworks or build systems
 - **Component-Based Design**: Each Tekton component has its own UI module
+- **Logical Navigation**: Components organized in functional groups for intuitive access
+- **AI Assistant Tabs**: Support for multiple AI contexts within components (e.g., Ergon/Ergon-Team)
 - **Real-Time Communication**: WebSocket-based communication with backend services
 - **Persistent State**: Client-side storage for user preferences and context
 - **Dual Interface**: Support for both terminal and graphical interfaces

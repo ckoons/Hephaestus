@@ -8,6 +8,17 @@
   overflow-y: auto;
 }
 
+/* Placeholder content for unimplemented tabs */
+.placeholder-content {
+  padding: 24px;
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius);
+  margin: 16px 0;
+  text-align: center;
+  color: var(--text-secondary);
+  border: 1px dashed var(--border-color);
+}
+
 /* Tabs */
 .ergon-tabs {
   display: flex;
@@ -220,17 +231,16 @@
 .form-row {
   display: flex;
   margin-bottom: 16px;
+  align-items: center; /* Align items vertically */
 }
 
 .form-row label {
   width: 120px;
   font-size: 0.9rem;
-  padding-top: 8px;
 }
 
 .form-row input[type="text"],
 .form-row input[type="password"],
-.form-row select,
 .form-row textarea {
   flex-grow: 1;
   padding: 8px 12px;
@@ -238,6 +248,27 @@
   border: 1px solid var(--border-color);
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  height: 36px;
+}
+
+/* Make select inputs match other input styles */
+.form-row select {
+  flex-grow: 1;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  height: 36px;
+  font-size: 0.9rem; /* Match text inputs */
+  min-width: 200px;
+}
+
+/* Fix checkbox alignment */
+.form-row input[type="checkbox"] {
+  margin-top: 0;
+  width: 16px;
+  height: 16px;
 }
 
 .form-row textarea {
