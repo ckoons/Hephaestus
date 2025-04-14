@@ -36,6 +36,13 @@ fi
 # Ensure the static directory exists
 mkdir -p "${STATIC_DIR}"
 
+# Backup component directory if it exists
+if [ -d "${STATIC_DIR}/component" ]; then
+    echo -e "${YELLOW}Backing up component directory...${NC}"
+    mkdir -p /tmp/hephaestus-component-backup
+    cp -r "${STATIC_DIR}/component/"* /tmp/hephaestus-component-backup/
+fi
+
 # Clear the static directory
 echo -e "${YELLOW}Clearing static directory...${NC}"
 rm -rf "${STATIC_DIR:?}"/*
@@ -43,6 +50,13 @@ rm -rf "${STATIC_DIR:?}"/*
 # Copy the build files to the static directory
 echo -e "${YELLOW}Copying build files to static directory...${NC}"
 cp -r "${SRC_DIR}/build/"* "${STATIC_DIR}/"
+
+# Restore component directory from backup
+mkdir -p "${STATIC_DIR}/component"
+if [ -d "/tmp/hephaestus-component-backup" ] && [ "$(ls -A /tmp/hephaestus-component-backup)" ]; then
+    echo -e "${YELLOW}Restoring component files...${NC}"
+    cp -r /tmp/hephaestus-component-backup/* "${STATIC_DIR}/component/"
+fi
 
 # Create an asset directory to ensure static files are served correctly
 echo -e "${YELLOW}Creating asset directories...${NC}"
