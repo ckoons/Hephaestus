@@ -1,1 +1,0 @@
-"""Hermes integration for Hephaestus."""
