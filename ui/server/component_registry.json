@@ -1,0 +1,92 @@
+{
+  "components": [
+    {
+      "id": "tekton",
+      "name": "Tekton",
+      "description": "Project and system orchestration",
+      "icon": "📋",
+      "defaultMode": "terminal",
+      "capabilities": ["project_management", "system_orchestration"]
+    },
+    {
+      "id": "prometheus",
+      "name": "Prometheus",
+      "description": "Planning and roadmap management",
+      "icon": "🗓️",
+      "defaultMode": "terminal",
+      "capabilities": ["planning", "timeline_management", "roadmap_visualization"]
+    },
+    {
+      "id": "telos",
+      "name": "Telos",
+      "description": "Requirements and goal management",
+      "icon": "🎯",
+      "defaultMode": "html",
+      "capabilities": ["requirements_management", "goal_tracking", "criteria_validation"]
+    },
+    {
+      "id": "athena",
+      "name": "Athena",
+      "description": "Knowledge graph and information retrieval",
+      "icon": "🧠",
+      "defaultMode": "terminal",
+      "capabilities": ["knowledge_graph", "information_retrieval", "fact_lookup"]
+    },
+    {
+      "id": "sophia",
+      "name": "Sophia",
+      "description": "Machine learning and model training",
+      "icon": "📊",
+      "defaultMode": "html",
+      "capabilities": ["ml_operations", "model_training", "data_analysis"]
+    },
+    {
+      "id": "engram",
+      "name": "Engram",
+      "description": "Memory and context management",
+      "icon": "💾",
+      "defaultMode": "terminal",
+      "capabilities": ["memory_management", "context_storage", "conversation_history"]
+    },
+    {
+      "id": "rhetor",
+      "name": "Rhetor",
+      "description": "Context-aware communication",
+      "icon": "💬",
+      "defaultMode": "terminal",
+      "capabilities": ["context_switching", "communication_management"]
+    },
+    {
+      "id": "hermes",
+      "name": "Hermes",
+      "description": "Message bus and data management",
+      "icon": "📨",
+      "defaultMode": "terminal",
+      "capabilities": ["message_routing", "data_management", "service_discovery"]
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "description": "Code development and analysis",
+      "icon": "💻",
+      "defaultMode": "html",
+      "capabilities": ["code_generation", "code_review", "documentation"]
+    },
+    {
+      "id": "harmonia",
+      "name": "Harmonia",
+      "description": "Workflow orchestration",
+      "icon": "🔄",
+      "defaultMode": "terminal",
+      "capabilities": ["workflow_management", "process_coordination"]
+    },
+    {
+      "id": "synthesis",
+      "name": "Synthesis",
+      "description": "Integration and automation",
+      "icon": "🔗",
+      "defaultMode": "terminal",
+      "capabilities": ["system_integration", "automation", "external_tools"]
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tekton - AI Orchestration System</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/themes/dark.css" id="theme-stylesheet">
+</head>
+<body class="theme-dark">
+    <div class="app-container">
+        <!-- Left Panel -->
+        <div class="left-panel">
+            <div class="left-panel-header">
+                <div class="tekton-logo">
+                    <div class="logo-text">
+                        <h1>Tekton</h1>
+                        <div class="subtitle">Multi-AI Engineering</div>
+                    </div>
+                    <img src="../../../images/Tekton.png" alt="Tekton Pillar" class="pillar-icon">
+                </div>
+            </div>
+            
+            <div class="left-panel-nav">
+                <ul class="component-nav">
+                    <li class="nav-item active" data-component="tekton">
+                        <span class="nav-label">Tekton - Projects</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="prometheus">
+                        <span class="nav-label">Prometheus - Planning</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="telos">
+                        <span class="nav-label">Telos - Requirements</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="athena">
+                        <span class="nav-label">Athena - Knowledge</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="sophia">
+                        <span class="nav-label">Sophia - Learning</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="engram">
+                        <span class="nav-label">Engram - Memory</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="rhetor">
+                        <span class="nav-label">Rhetor - Context</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="hermes">
+                        <span class="nav-label">Hermes - Messages/Data</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="codex">
+                        <span class="nav-label">Codex - Coding</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="harmonia">
+                        <span class="nav-label">Harmonia - Orchestration</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="synthesis">
+                        <span class="nav-label">Synthesis - Integration</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="left-panel-footer">
+                <div class="footer-separator"></div>
+                <div class="footer-buttons">
+                    <button class="control-button" id="budget-button" title="Budget">
+                        <span class="button-icon">💰</span>
+                        <span class="button-label">Budget</span>
+                    </button>
+                    <button class="control-button" id="profile-button" title="Profile">
+                        <span class="button-icon">👤</span>
+                        <span class="button-label">Profile</span>
+                    </button>
+                    <button class="control-button" id="settings-button" title="Settings">
+                        <span class="button-icon">⚙️</span>
+                        <span class="button-label">Settings</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="content-header">
+                <div class="component-title">Tekton - Projects</div>
+                <div class="component-controls">
+                    <!-- Component-specific controls will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Main Panel -->
+            <div class="content-main">
+                <div class="panel terminal-panel active" id="terminal-panel">
+                    <div id="terminal" class="terminal"></div>
+                </div>
+                <div class="panel html-panel" id="html-panel">
+                    <!-- HTML controls will be loaded here -->
+                </div>
+            </div>
+            
+            <!-- Chat Input Area -->
+            <div class="content-footer">
+                <div class="chat-input-container">
+                    <textarea id="chat-input" placeholder="Type your message here..." rows="1"></textarea>
+                    <button id="send-button">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for system messages and notifications -->
+    <div class="modal" id="system-modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-title">System Message</h2>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Error container for displaying error messages -->
+    <div id="error-container"></div>
+    
+    <!-- No splash screen -->
+
+    <!-- Load scripts -->
+    <script src="scripts/main.js"></script>
+    <script src="scripts/ui-manager.js"></script>
+    <script src="scripts/terminal.js"></script>
+    <script src="scripts/storage.js"></script>
+    <script src="scripts/websocket.js"></script>
+</body>
+</html>
