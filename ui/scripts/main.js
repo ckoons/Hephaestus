@@ -67,6 +67,12 @@ window.tektonUI = {
 
 // Initialize the application when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Check for cache-busting version to ensure fresh content
+    fetch('./.cache-version?' + new Date().getTime())
+        .then(response => response.text())
+        .then(version => console.log('UI Version:', version))
+        .catch(() => console.log('No cache version file found, using existing files'));
+    
     // Initialize UI manager
     window.uiManager = new UIManager();
     uiManager.init();
