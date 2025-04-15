@@ -93,7 +93,7 @@ body {
 }
 
 .subtitle {
-    font-size: 0.85rem; /* Further reduced size to prevent wrapping */
+    font-size: 0.75rem; /* Further reduced size to prevent wrapping */
     color: var(--text-secondary);
     text-align: center;
     margin-top: -2px; /* Reduced spacing even more */
@@ -101,10 +101,12 @@ body {
 }
 
 .pillar-icon {
-    height: 78px; /* Increased by ~40% from 56px */
+    height: 80px; /* Adjust to fit the header height */
     width: auto;
-    margin-left: 12px;
+    margin-left: 8px;
+    margin-right: 0;
     align-self: center; /* Center vertically */
+    object-fit: contain; /* Ensure image fits within dimensions */
 }
 
 .left-panel-nav {
@@ -168,10 +170,15 @@ body {
 }
 
 .nav-label {
-    font-size: 0.9rem;
+    font-size: 0.9rem; /* Original size */
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Smaller font for longer component names */
+.nav-item[data-component="ergon"] .nav-label {
+    font-size: 0.8rem; /* Original size for Ergon */
 }
 
 /* Footer section in left panel */
