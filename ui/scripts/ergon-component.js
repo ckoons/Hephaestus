@@ -96,12 +96,19 @@ window.ergonComponent = {
         // Insert the HTML into the panel
         document.getElementById('html-panel').innerHTML = html;
         
+        // Log for debugging
+        console.log('Ergon UI HTML loaded successfully');
+        console.log('Chat inputs available:', document.querySelectorAll('.terminal-chat-input').length);
+        
         // Initialize the UI components
         this.setupTabs();
         this.setupEventListeners();
         
         // Initialize chat components
         this.initChatInterfaces();
+        
+        // Add additional setup for chat inputs
+        this.setupChatInputs();
         
         // Load agent data
         this.loadAgentData();
@@ -114,31 +121,112 @@ window.ergonComponent = {
   
   // Initialize the chat interfaces for Ergon and AWT-Team
   initChatInterfaces: function() {
-    console.log("Note: Chat interfaces removed in terminal-focused UI");
+    console.log("Initializing terminal-style chat interfaces");
     
-    // Check if containers exist
+    // Check if containers exist and add message handler if not already present
     const ergonContainer = document.getElementById('ergon-chat-container');
     const awtContainer = document.getElementById('awt-team-chat-container');
     
-    if (ergonContainer) {
-      ergonContainer.innerHTML = `
-        <div style="padding: 20px; background: #1e1e1e; color: white;">
-          <h3>Chat functionality replaced with terminal interface</h3>
-          <p>Please use the terminal in the main panel for all interactions.</p>
-          <p>All components now use a unified terminal interface.</p>
-        </div>
-      `;
+    // Check if inputs exist
+    const ergonInput = document.querySelector('.terminal-chat-input[data-context="ergon"]');
+    const awtInput = document.querySelector('.terminal-chat-input[data-context="awt-team"]');
+    
+    console.log("Found Ergon input:", !!ergonInput);
+    console.log("Found AWT input:", !!awtInput);
+    
+    if (ergonInput) {
+      // Add event listener directly to make sure it's attached
+      ergonInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const message = ergonInput.value.trim();
+          if (message) {
+            this.sendChatMessage('ergon', message);
+            ergonInput.value = '';
+          }
+        }
+      });
     }
     
-    if (awtContainer) {
-      awtContainer.innerHTML = `
-        <div style="padding: 20px; background: #1e1e1e; color: white;">
-          <h3>Chat functionality replaced with terminal interface</h3>
-          <p>Please use the terminal in the main panel for all interactions.</p>
-          <p>All components now use a unified terminal interface.</p>
+    if (awtInput) {
+      // Add event listener directly to make sure it's attached
+      awtInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const message = awtInput.value.trim();
+          if (message) {
+            this.sendChatMessage('awt-team', message);
+            awtInput.value = '';
+          }
+        }
+      });
+    }
+  },
+  
+  // Send a chat message and handle the response
+  sendChatMessage: function(context, message) {
+    // Get the chat messages container
+    const chatMessages = document.getElementById(`${context}-chat-messages`);
+    if (!chatMessages) return;
+    
+    console.log(`Sending message in ${context} context:`, message);
+    
+    // Add user message to chat
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message user';
+    messageDiv.innerHTML = `
+      <div class="message-content">
+        <div class="message-text">${message}</div>
+        <div class="message-time">Just now</div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(messageDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Show typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message system typing';
+    typingDiv.setAttribute('data-typing', 'true');
+    typingDiv.innerHTML = `
+      <div class="message-content">
+        <div class="message-text">Processing...</div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    // Also echo to main terminal
+    if (window.websocketManager) {
+      // Format as if it was entered in the main terminal with @ prefix
+      const termPrefix = context === 'awt-team' ? '@awt' : '@ergon';
+      websocketManager.addToTerminal(`${termPrefix}: ${message}`, '#2962FF');
+    }
+    
+    // Simulate response after delay
+    setTimeout(() => {
+      // Remove typing indicators
+      const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
+      typingIndicators.forEach(indicator => indicator.remove());
+      
+      // Add response
+      const responseDiv = document.createElement('div');
+      responseDiv.className = 'chat-message agent';
+      responseDiv.innerHTML = `
+        <div class="message-content">
+          <div class="message-text">I received your message: "${message}".<br>How can I assist you further?</div>
+          <div class="message-time">Just now</div>
         </div>
       `;
-    }
+      
+      chatMessages.appendChild(responseDiv);
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // Also echo to main terminal
+      if (window.websocketManager) {
+        const targetName = context === 'awt-team' ? 'AWT-Team' : 'Ergon';
+        websocketManager.addToTerminal(`[${targetName}] I received your message: "${message}". How can I assist you further?`, '#00bfff');
+      }
+    }, 1000);
   },
   
   // Set up the tabbed interface
@@ -156,18 +244,12 @@ window.ergonComponent = {
         tabButton.classList.add('active');
       }
       
-      // Show the corresponding content
+      // Hide all tab content
       document.querySelectorAll('.tab-content').forEach(content => {
         content.style.display = 'none';
       });
       
-      // Always show terminal-redirect content first for guidance
-      const terminalRedirect = document.getElementById('terminal-redirect');
-      if (terminalRedirect) {
-        terminalRedirect.style.display = 'block';
-      }
-      
-      // Then show the specific tab content below it
+      // Show the specific tab content
       const tabContent = document.getElementById(`${tabId}-content`);
       if (tabContent) {
         tabContent.style.display = 'block';
@@ -177,10 +259,44 @@ window.ergonComponent = {
       this.state.activeTab = tabId;
       this.saveComponentState();
       
-      // Update terminal prompt with relevant context
+      // Add notification message to terminal
       if (window.websocketManager) {
-        websocketManager.addToTerminal(`Active context: Ergon ${tabId}`, '#888888');
-        websocketManager.addToTerminal(`Type 'help ${tabId}' for available commands`, '#888888');
+        // Only add context switch notification for chat tabs
+        if (tabId === 'ergon' || tabId === 'awt-team') {
+          websocketManager.addToTerminal("", 'white'); // blank line for spacing
+          websocketManager.addToTerminal(`Switched to ${tabId} chat interface.`, '#888888');
+          websocketManager.addToTerminal(`Type '@${tabId === 'awt-team' ? 'awt' : 'ergon'} your message' to chat directly`, '#888888');
+        } else if (tabId === 'agents' || tabId === 'memory' || tabId === 'tools') {
+          websocketManager.addToTerminal(`Viewing ${tabId} panel. Use terminal commands to interact.`, '#888888');
+        }
+      }
+      
+      // Special handling for chat tabs
+      if (tabId === 'ergon' || tabId === 'awt-team') {
+        // Focus the terminal input when switching to a chat tab
+        setTimeout(() => {
+          const terminalInput = document.getElementById('simple-terminal-input');
+          if (terminalInput) {
+            terminalInput.focus();
+            
+            // Set a data attribute on the input to track which chat is active
+            terminalInput.setAttribute('data-chat-context', tabId);
+            
+            // Update the placeholder text
+            if (tabId === 'ergon') {
+              terminalInput.placeholder = "Type @ergon followed by your message";
+            } else if (tabId === 'awt-team') {
+              terminalInput.placeholder = "Type @awt followed by your message";
+            }
+          }
+        }, 100);
+      } else {
+        // Reset placeholder for non-chat tabs
+        const terminalInput = document.getElementById('simple-terminal-input');
+        if (terminalInput) {
+          terminalInput.placeholder = "Type here and press Enter";
+          terminalInput.removeAttribute('data-chat-context');
+        }
       }
     };
     
@@ -192,13 +308,16 @@ window.ergonComponent = {
       });
     });
     
-    // Show the terminal message first, but set agents as active tab
-    console.log('Initializing Ergon with agents tab active');
-    activateTab('agents');
+    // Show the ergon tab for chat testing
+    console.log('Initializing Ergon with chat tab active for testing');
+    activateTab('ergon');
   },
   
   // Set up event listeners for UI elements
   setupEventListeners: function() {
+    // Set up terminal chat inputs
+    this.setupChatInputs();
+    
     // Create agent button
     const createButton = document.getElementById('create-agent-button');
     if (createButton) {
@@ -526,6 +645,100 @@ window.ergonComponent = {
   updateAgentStatus: function(status) {
     // This would update an agent's status indicator in a real implementation
     console.log('Would update agent status:', status);
+  },
+  
+  // Set up component-specific terminal chat inputs
+  setupChatInputs: function() {
+    const chatInputs = document.querySelectorAll('.terminal-chat-input');
+    
+    chatInputs.forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const message = input.value.trim();
+          if (!message) return;
+          
+          // Get the chat context from the data attribute
+          const context = input.getAttribute('data-context');
+          if (!context) return;
+          
+          // Get the chat messages container
+          const chatMessages = document.getElementById(`${context}-chat-messages`);
+          if (!chatMessages) return;
+          
+          console.log(`Sending message in ${context} context:`, message);
+          
+          // Add user message to chat
+          const messageDiv = document.createElement('div');
+          messageDiv.className = 'chat-message user';
+          messageDiv.innerHTML = `
+            <div class="message-content">
+              <div class="message-text">${message}</div>
+              <div class="message-time">Just now</div>
+            </div>
+          `;
+          
+          chatMessages.appendChild(messageDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          
+          // Show typing indicator
+          const typingDiv = document.createElement('div');
+          typingDiv.className = 'chat-message system typing';
+          typingDiv.setAttribute('data-typing', 'true');
+          typingDiv.innerHTML = `
+            <div class="message-content">
+              <div class="message-text">Processing...</div>
+            </div>
+          `;
+          
+          chatMessages.appendChild(typingDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          
+          // Also echo to main terminal
+          if (window.websocketManager) {
+            // Format as if it was entered in the main terminal with @ prefix
+            const termPrefix = context === 'awt-team' ? '@awt' : '@ergon';
+            websocketManager.addToTerminal(`${termPrefix}: ${message}`, '#2962FF');
+          }
+          
+          // Clear input
+          input.value = '';
+          
+          // Simulate response after delay
+          setTimeout(() => {
+            // Remove typing indicators
+            const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
+            typingIndicators.forEach(indicator => indicator.remove());
+            
+            // Add response
+            const responseDiv = document.createElement('div');
+            responseDiv.className = 'chat-message agent';
+            responseDiv.innerHTML = `
+              <div class="message-content">
+                <div class="message-text">I received your message: "${message}".<br>How can I assist you further?</div>
+                <div class="message-time">Just now</div>
+              </div>
+            `;
+            
+            chatMessages.appendChild(responseDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Also echo to main terminal
+            if (window.websocketManager) {
+              const targetName = context === 'awt-team' ? 'AWT-Team' : 'Ergon';
+              websocketManager.addToTerminal(`[${targetName}] I received your message: "${message}". How can I assist you further?`, '#00bfff');
+            }
+          }, 1000);
+        }
+      });
+      
+      // Focus input when chat container is clicked
+      const chatContainer = input.closest('.terminal-chat-container');
+      if (chatContainer) {
+        chatContainer.addEventListener('click', () => {
+          input.focus();
+        });
+      }
+    });
   }
 };
 

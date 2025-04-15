@@ -197,46 +197,175 @@
               console.log('Command entered:', command);
               
               if (command) {
-                // Display the command in the terminal
-                const outputDiv = document.createElement('div');
-                outputDiv.style.color = 'white';
-                outputDiv.style.padding = '5px 0';
-                outputDiv.style.marginBottom = '5px';
-                outputDiv.innerHTML = '<span style="color: cyan;">> ' + command + '</span>';
-                
                 // Get terminal content container
                 const terminalContent = document.getElementById('terminal-content');
                 
-                // Append to the terminal content
-                terminalContent.appendChild(outputDiv);
-                
-                // Display a "Processing..." message
-                const processingDiv = document.createElement('div');
-                processingDiv.style.color = '#888';
-                processingDiv.style.padding = '5px 0';
-                processingDiv.style.marginBottom = '10px';
-                processingDiv.innerText = 'Processing...';
-                terminalContent.appendChild(processingDiv);
-                
-                // Send the command via WebSocket
-                if (window.websocketManager) {
-                  websocketManager.sendMessage({
-                    type: "COMMAND",
-                    source: "UI",
-                    target: tektonUI.activeComponent || 'SYSTEM',
-                    timestamp: new Date().toISOString(),
-                    payload: {
-                      command: "process_message",
-                      message: command
+                // Check if this is a chat message (starts with @ symbol)
+                if (command.startsWith('@')) {
+                  // Parse the chat target and message
+                  const chatMatch = command.match(/^@(\w+)\s+(.+)$/);
+                  
+                  if (chatMatch && chatMatch.length >= 3) {
+                    const chatTarget = chatMatch[1].toLowerCase();
+                    const chatMessage = chatMatch[2];
+                    let targetContext = null;
+                    
+                    // Map chat target to context
+                    if (chatTarget === 'ergon') {
+                      targetContext = 'ergon';
+                    } else if (chatTarget === 'awt' || chatTarget === 'team') {
+                      targetContext = 'awt-team';
                     }
-                  });
+                    
+                    if (targetContext) {
+                      // Display the command in the terminal
+                      const outputDiv = document.createElement('div');
+                      outputDiv.style.color = 'white';
+                      outputDiv.style.padding = '5px 0';
+                      outputDiv.style.marginBottom = '5px';
+                      outputDiv.innerHTML = '<span style="color: #2962FF;">@' + chatTarget + ':</span> ' + chatMessage;
+                      
+                      // Append to the terminal content
+                      terminalContent.appendChild(outputDiv);
+                      
+                      // Add the message to the chat interface
+                      const chatMessages = document.getElementById(`${targetContext}-chat-messages`);
+                      if (chatMessages) {
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = 'chat-message user';
+                        messageDiv.innerHTML = `
+                          <div class="message-content">
+                            <div class="message-text">${chatMessage}</div>
+                            <div class="message-time">Just now</div>
+                          </div>
+                        `;
+                        
+                        chatMessages.appendChild(messageDiv);
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                        
+                        // Display a "Processing..." message only in the target chat
+                        const typingDiv = document.createElement('div');
+                        typingDiv.className = 'chat-message system typing';
+                        typingDiv.innerHTML = `
+                          <div class="message-content">
+                            <div class="message-text">Processing...</div>
+                          </div>
+                        `;
+                        
+                        chatMessages.appendChild(typingDiv);
+                        
+                        // If the chat tab isn't active, activate it
+                        if (window.ergonComponent) {
+                          const tabButton = document.querySelector(`.tab-button[data-tab="${targetContext}"]`);
+                          if (tabButton && !tabButton.classList.contains('active')) {
+                            tabButton.click();
+                          }
+                        }
+                        
+                        // Simulate a response (this would be replaced with real backend communication)
+                        setTimeout(() => {
+                          // Remove typing indicator
+                          const typingIndicators = chatMessages.querySelectorAll('.typing');
+                          typingIndicators.forEach(indicator => indicator.remove());
+                          
+                          // Add AI response
+                          const responseDiv = document.createElement('div');
+                          responseDiv.className = 'chat-message agent';
+                          responseDiv.innerHTML = `
+                            <div class="message-content">
+                              <div class="message-text">I received your message: "${chatMessage}".<br>How can I assist you further?</div>
+                              <div class="message-time">Just now</div>
+                            </div>
+                          `;
+                          
+                          chatMessages.appendChild(responseDiv);
+                          chatMessages.scrollTop = chatMessages.scrollHeight;
+                          
+                          // Also show in terminal
+                          const terminalResponseDiv = document.createElement('div');
+                          terminalResponseDiv.style.color = '#00bfff';
+                          terminalResponseDiv.style.padding = '5px 0';
+                          terminalResponseDiv.style.marginBottom = '10px';
+                          terminalResponseDiv.innerHTML = `<span style="color: #00bfff;">[${targetContext}]</span> I received your message: "${chatMessage}". How can I assist you further?`;
+                          terminalContent.appendChild(terminalResponseDiv);
+                          terminalContent.scrollTop = terminalContent.scrollHeight;
+                        }, 1000);
+                      }
+                    } else {
+                      // Unrecognized chat target
+                      const outputDiv = document.createElement('div');
+                      outputDiv.style.color = 'white';
+                      outputDiv.style.padding = '5px 0';
+                      outputDiv.style.marginBottom = '5px';
+                      outputDiv.innerHTML = '<span style="color: cyan;">> ' + command + '</span>';
+                      terminalContent.appendChild(outputDiv);
+                      
+                      // Show error
+                      const errorDiv = document.createElement('div');
+                      errorDiv.style.color = '#ff3333';
+                      errorDiv.style.padding = '5px 0';
+                      errorDiv.style.marginBottom = '10px';
+                      errorDiv.innerText = `Unknown chat target: @${chatTarget}. Available targets: @ergon, @awt`;
+                      terminalContent.appendChild(errorDiv);
+                    }
+                  } else {
+                    // Malformed chat command
+                    const outputDiv = document.createElement('div');
+                    outputDiv.style.color = 'white';
+                    outputDiv.style.padding = '5px 0';
+                    outputDiv.style.marginBottom = '5px';
+                    outputDiv.innerHTML = '<span style="color: cyan;">> ' + command + '</span>';
+                    terminalContent.appendChild(outputDiv);
+                    
+                    // Show error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.style.color = '#ff3333';
+                    errorDiv.style.padding = '5px 0';
+                    errorDiv.style.marginBottom = '10px';
+                    errorDiv.innerText = 'Chat format: @target your message (example: @ergon help)';
+                    terminalContent.appendChild(errorDiv);
+                  }
                 } else {
-                  // Fallback if websocket manager doesn't exist
-                  const responseDiv = document.createElement('div');
-                  responseDiv.style.color = '#00bfff';
-                  responseDiv.style.padding = '5px 10px';
-                  responseDiv.innerText = 'Command received: ' + command + '\nWebSocket not connected, using demo mode.';
-                  terminal.insertBefore(responseDiv, inputContainer);
+                  // Regular command, not a chat message
+                  // Display the command in the terminal
+                  const outputDiv = document.createElement('div');
+                  outputDiv.style.color = 'white';
+                  outputDiv.style.padding = '5px 0';
+                  outputDiv.style.marginBottom = '5px';
+                  outputDiv.innerHTML = '<span style="color: cyan;">> ' + command + '</span>';
+                  
+                  // Append to the terminal content
+                  terminalContent.appendChild(outputDiv);
+                  
+                  // Display a "Processing..." message
+                  const processingDiv = document.createElement('div');
+                  processingDiv.style.color = '#888';
+                  processingDiv.style.padding = '5px 0';
+                  processingDiv.style.marginBottom = '10px';
+                  processingDiv.innerText = 'Processing...';
+                  terminalContent.appendChild(processingDiv);
+                  
+                  // Send the command via WebSocket
+                  if (window.websocketManager) {
+                    websocketManager.sendMessage({
+                      type: "COMMAND",
+                      source: "UI",
+                      target: tektonUI.activeComponent || 'SYSTEM',
+                      timestamp: new Date().toISOString(),
+                      payload: {
+                        command: "process_message",
+                        message: command
+                      }
+                    });
+                  } else {
+                    // Fallback if websocket manager doesn't exist
+                    const responseDiv = document.createElement('div');
+                    responseDiv.style.color = '#00bfff';
+                    responseDiv.style.padding = '5px 0';
+                    responseDiv.style.marginBottom = '10px';
+                    responseDiv.innerText = 'Command received: ' + command + '\nWebSocket not connected, using demo mode.';
+                    terminalContent.appendChild(responseDiv);
+                  }
                 }
                 
                 // Clear the input field
