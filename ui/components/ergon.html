@@ -2,37 +2,29 @@
 <div class="ergon-container">
   <!-- Tabbed Navigation -->
   <div class="ergon-tabs">
-    <div class="tab-button" data-tab="ergon">Ergon</div>
-    <div class="tab-button" data-tab="awt-team">AWT-Team</div>
     <div class="tab-button active" data-tab="agents">Agents</div>
     <div class="tab-button" data-tab="memory">Memory</div>
     <div class="tab-button" data-tab="tools">Tools</div>
     <div class="tab-button" data-tab="settings">Settings</div>
   </div>
 
-  <!-- Ergon Tab Content -->
-  <div class="tab-content" id="ergon-content">
+  <!-- Terminal Tab Content -->
+  <div class="tab-content" id="terminal-redirect">
     <div class="ergon-section-header">
-      <h2>Ergon AI Assistant</h2>
-      <div class="ergon-controls">
-        <button class="control-button" id="clear-ergon-chat">Clear Chat</button>
+      <h2>Terminal-focused Interface</h2>
+    </div>
+    <div class="terminal-redirect-message">
+      <div style="padding: 20px; background: #1e1e1e; color: white; text-align: center; border-radius: 8px; margin-top: 16px;">
+        <h3 style="color: #007bff; margin-bottom: 16px;">Terminal Interface Active</h3>
+        <p>All Ergon interactions now take place in the main terminal.</p>
+        <p>Please use the terminal in the main panel for all commands.</p>
+        <div style="margin-top: 24px; background: #333; padding: 12px; border-radius: 4px; text-align: left;">
+          <p style="margin-bottom: 8px; color: #00bfff;">Example commands:</p>
+          <code style="display: block; padding: 4px; color: #00ff00;">list agents</code>
+          <code style="display: block; padding: 4px; color: #00ff00;">create agent "GitAgent" type=github</code>
+          <code style="display: block; padding: 4px; color: #00ff00;">run agent "MailAgent"</code>
+        </div>
       </div>
-    </div>
-    <div class="chat-container" id="ergon-chat-container">
-      <!-- Chat messages will be inserted here by terminal-chat.js -->
-    </div>
-  </div>
-
-  <!-- AWT-Team Tab Content -->
-  <div class="tab-content" id="awt-team-content">
-    <div class="ergon-section-header">
-      <h2>AWT-Team Assistant</h2>
-      <div class="ergon-controls">
-        <button class="control-button" id="clear-awt-chat">Clear Chat</button>
-      </div>
-    </div>
-    <div class="chat-container" id="awt-team-chat-container">
-      <!-- Chat messages will be inserted here by terminal-chat.js -->
     </div>
   </div>
 

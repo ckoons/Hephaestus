@@ -30,10 +30,11 @@ class WebSocketManager {
      */
     connect() {
         try {
+            console.log('Connecting to WebSocket server at:', this.url);
             this.socket = new WebSocket(this.url);
             
             this.socket.onopen = () => {
-                console.log('WebSocket connected');
+                console.log('WebSocket connected successfully');
                 this.connected = true;
                 this.reconnectAttempts = 0;
                 
@@ -44,7 +45,7 @@ class WebSocketManager {
                     target: 'SYSTEM',
                     timestamp: new Date().toISOString(),
                     payload: {
-                        clientId: 'ui-client',
+                        clientId: 'ui-client-' + Date.now(),
                         capabilities: ['UI', 'USER_INTERACTION']
                     }
                 });
@@ -54,9 +55,18 @@ class WebSocketManager {
                 
                 // Display connection status in UI
                 this.updateConnectionStatus(true);
+                
+                // Call onNextConnect callback if defined
+                if (typeof this.onNextConnect === 'function') {
+                    console.log('Calling onNextConnect callback');
+                    this.onNextConnect();
+                    // Clear the callback
+                    this.onNextConnect = null;
+                }
             };
             
             this.socket.onmessage = (event) => {
+                console.log('WebSocket message received:', event.data.substring(0, 100) + '...');
                 this.handleMessage(event.data);
             };
             
@@ -117,12 +127,19 @@ class WebSocketManager {
     simulateResponse(message) {
         if (!message || !message.type) return;
         
+        if (window.tektonUI) {
+            tektonUI.log("Simulating response for message", message);
+        }
+        
         switch (message.type) {
             case 'COMMAND':
                 if (message.payload && message.payload.command === 'process_message') {
                     const userMessage = message.payload.message;
                     const componentId = message.target;
                     const context = message.payload.context || componentId;
+                    
+                    // Show processing message immediately
+                    this.addToTerminal(`[${componentId}] Processing: "${userMessage}"`, '#888888');
                     
                     // Show typing indicator after a slight delay
                     setTimeout(() => {
@@ -157,27 +174,35 @@ class WebSocketManager {
                             };
                             
                             this.handleMessage(JSON.stringify(responseMessage));
-                        }, 1200 + Math.random() * 1000); // Random delay between 1.2-2.2 seconds for typing
-                    }, 300); // Small delay before typing starts
+                        }, 800 + Math.random() * 800); // Random delay between 0.8-1.6 seconds for response
+                    }, 200); // Small delay before processing starts
                     
-                    // Use the traditional terminal too for backward compatibility
-                    if (window.terminalManager) {
-                        terminalManager.write(`[${componentId}] Processing: "${userMessage}"`);
-                    }
                 } else if (message.payload && message.payload.command === 'get_context') {
                     // Simulate context response
                     const componentId = message.target;
                     
-                    if (window.uiManager) {
-                        // Update header with fake actions
-                        uiManager.updateComponentControls([
-                            { id: 'action1', label: 'Action 1' },
-                            { id: 'action2', label: 'Action 2' }
-                        ]);
-                    }
-                    
                     if (window.terminalManager) {
                         terminalManager.write(`Loaded context for ${componentId} component`);
+                    }
+                } else {
+                    // General command
+                    if (window.terminalManager) {
+                        terminalManager.write(`Command "${message.payload.command}" sent to ${message.target}`);
+                        
+                        // After a small delay, send a response
+                        setTimeout(() => {
+                            const responseMessage = {
+                                type: 'RESPONSE',
+                                source: message.target,
+                                target: 'UI',
+                                timestamp: new Date().toISOString(),
+                                payload: {
+                                    message: `Command "${message.payload.command}" executed successfully`,
+                                }
+                            };
+                            
+                            this.handleMessage(JSON.stringify(responseMessage));
+                        }, 500);
                     }
                 }
                 break;
@@ -185,6 +210,7 @@ class WebSocketManager {
             case 'REGISTER':
                 if (window.terminalManager) {
                     terminalManager.write('UI client registered with Tekton system');
+                    terminalManager.write('Running in demo mode - type "help" for available commands');
                 }
                 break;
         }
@@ -278,14 +304,52 @@ class WebSocketManager {
      * @param {Object} message - Message to send (will be JSON stringified)
      */
     sendMessage(message) {
-        if (!message) return;
+        if (!message) {
+            console.error("Cannot send empty message");
+            return;
+        }
+        
+        // Ensure message has required fields for Tekton protocol
+        if (typeof message === 'object' && !message.type) {
+            console.error("Message missing required 'type' field:", message);
+            // Add default type if missing
+            message.type = 'COMMAND';
+        }
+        
+        if (typeof message === 'object' && !message.source) {
+            message.source = 'UI';
+        }
+        
+        if (typeof message === 'object' && !message.timestamp) {
+            message.timestamp = new Date().toISOString();
+        }
+        
+        // Log the message we're sending
+        console.log('Sending WebSocket message:', 
+          typeof message === 'object' ? 
+            `Type: ${message.type}, Target: ${message.target || 'SYSTEM'}` : 
+            'Raw message');
         
         if (this.connected && this.socket && this.socket.readyState === WebSocket.OPEN) {
             const serializedMessage = typeof message === 'string' ? message : JSON.stringify(message);
-            this.socket.send(serializedMessage);
+            try {
+                this.socket.send(serializedMessage);
+                console.log('Message sent successfully');
+            } catch (e) {
+                console.error('Error sending message:', e);
+                // Queue the message for retry
+                this.messageQueue.push(message);
+            }
         } else {
+            console.log('WebSocket not connected, queueing message for later');
             // Queue the message for later
             this.messageQueue.push(message);
+            
+            // Try to connect if not connected
+            if (!this.connected) {
+                console.log('Attempting to reconnect WebSocket');
+                this.connect();
+            }
         }
     }
     
@@ -345,19 +409,20 @@ class WebSocketManager {
     handleResponse(message) {
         const payload = message.payload || {};
         
+        if (window.tektonUI) {
+            tektonUI.log("Handling response message", message);
+        }
+        
         // Handle AI response to a message
-        if (payload.response && window.terminalManager) {
-            terminalManager.write(payload.response);
+        if (payload.message !== undefined) {
+            this.addToTerminal(payload.message, '#00bfff');
+        } else if (payload.response !== undefined) {
+            this.addToTerminal(payload.response, '#00bfff');
         }
         
         // Handle context response
         if (payload.context && window.uiManager) {
             // Update UI based on context
-            
-            // Update header controls if provided
-            if (payload.context.actions) {
-                uiManager.updateComponentControls(payload.context.actions);
-            }
             
             // Set terminal mode if specified
             if (payload.context.mode === 'terminal') {
@@ -367,10 +432,36 @@ class WebSocketManager {
             }
             
             // Display context summary
-            if (payload.context.summary && window.terminalManager) {
-                terminalManager.write(payload.context.summary);
+            if (payload.context.summary) {
+                this.addToTerminal(payload.context.summary, '#aaaaaa');
             }
         }
+    }
+    
+    /**
+     * Add message to terminal content
+     * @param {string} message - The message text
+     * @param {string} color - Text color (hex or name)
+     */
+    addToTerminal(message, color = 'white') {
+        // Add message to the terminal content div instead of using terminalManager
+        const terminalContent = document.getElementById('terminal-content');
+        if (!terminalContent) return;
+        
+        // Create message element
+        const msgDiv = document.createElement('div');
+        msgDiv.style.color = color;
+        msgDiv.style.padding = '5px 0';
+        msgDiv.style.marginBottom = '10px';
+        msgDiv.style.whiteSpace = 'pre-wrap';
+        msgDiv.style.wordBreak = 'break-word';
+        msgDiv.textContent = message;
+        
+        // Add to terminal
+        terminalContent.appendChild(msgDiv);
+        
+        // Scroll to bottom
+        terminalContent.scrollTop = terminalContent.scrollHeight;
     }
     
     /**
@@ -380,13 +471,48 @@ class WebSocketManager {
     handleUpdate(message) {
         const payload = message.payload || {};
         
+        if (window.tektonUI) {
+            tektonUI.log("Handling update message", message);
+        }
+        
         // Update terminal if terminal update included
-        if (payload.terminal && window.terminalManager) {
+        if (payload.terminal) {
             if (typeof payload.terminal === 'string') {
-                terminalManager.write(payload.terminal);
+                this.addToTerminal(payload.terminal);
             } else if (payload.terminal.text) {
-                terminalManager.write(payload.terminal.text, payload.terminal.isCommand);
+                this.addToTerminal(
+                    payload.terminal.text, 
+                    payload.terminal.isCommand ? '#00ff00' : 'white'
+                );
             }
+        }
+        
+        // Handle typing status (used to be for chat UI)
+        if (payload.status === 'typing') {
+            const isTyping = !!payload.isTyping;
+            if (isTyping) {
+                // Find and remove any existing processing messages
+                const terminalContent = document.getElementById('terminal-content');
+                if (terminalContent) {
+                    const existingProcessing = terminalContent.querySelectorAll('div[data-processing="true"]');
+                    existingProcessing.forEach(el => el.remove());
+                    
+                    // Add new processing message
+                    const processingDiv = document.createElement('div');
+                    processingDiv.setAttribute('data-processing', 'true');
+                    processingDiv.style.color = '#888';
+                    processingDiv.style.padding = '5px 0';
+                    processingDiv.style.marginBottom = '10px';
+                    processingDiv.textContent = 'Processing request...';
+                    terminalContent.appendChild(processingDiv);
+                    terminalContent.scrollTop = terminalContent.scrollHeight;
+                }
+            }
+        }
+        
+        // Handle message updates
+        if (payload.message) {
+            this.addToTerminal(payload.message);
         }
         
         // Update HTML elements if specified
@@ -408,17 +534,6 @@ class WebSocketManager {
                 }
             });
         }
-        
-        // Update header if specified
-        if (payload.header && window.uiManager) {
-            if (payload.header.title) {
-                document.querySelector('.component-title').textContent = payload.header.title;
-            }
-            
-            if (payload.header.actions) {
-                uiManager.updateComponentControls(payload.header.actions);
-            }
-        }
     }
     
     /**
@@ -428,7 +543,36 @@ class WebSocketManager {
     handleNotification(message) {
         const payload = message.payload || {};
         
+        if (window.tektonUI) {
+            tektonUI.log("Handling notification message", message);
+        }
+        
         if (payload.message) {
+            // Get notification prefix and color based on type
+            let prefix, color;
+            
+            switch(payload.type) {
+                case 'error':
+                    prefix = 'ERROR: ';
+                    color = '#ff3333';
+                    break;
+                case 'warning':
+                    prefix = 'WARNING: ';
+                    color = '#ffaa00';
+                    break;
+                case 'success':
+                    prefix = 'SUCCESS: ';
+                    color = '#33cc33';
+                    break;
+                default:
+                    prefix = 'NOTIFICATION: ';
+                    color = '#aaaaaa';
+            }
+            
+            // Add to terminal
+            this.addToTerminal(`${prefix}${payload.message}`, color);
+            
+            // Also show in UI if specified
             if (payload.type === 'error') {
                 if (window.tektonUI) {
                     tektonUI.showError(payload.message);
@@ -437,9 +581,6 @@ class WebSocketManager {
                 if (window.tektonUI) {
                     tektonUI.showModal(payload.title || 'Notification', payload.message);
                 }
-            } else if (window.terminalManager) {
-                // Default to showing in terminal
-                terminalManager.write(`[${payload.type || 'INFO'}] ${payload.message}`);
             }
         }
     }
@@ -451,15 +592,19 @@ class WebSocketManager {
     handleError(message) {
         const payload = message.payload || {};
         
+        if (window.tektonUI) {
+            tektonUI.log("Handling error message", message);
+        }
+        
         console.error('Error from server:', payload);
         
         if (payload.message) {
+            // Add error to terminal with red color
+            this.addToTerminal(`ERROR: ${payload.message}`, '#ff3333');
+            
+            // Also show in UI
             if (window.tektonUI) {
                 tektonUI.showError(payload.message);
-            }
-            
-            if (payload.showInTerminal && window.terminalManager) {
-                terminalManager.write(`[ERROR] ${payload.message}`);
             }
         }
     }

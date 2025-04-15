@@ -5,18 +5,86 @@
 
 // Ergon component handler
 window.ergonComponent = {
+  // Component state
+  state: {
+    initialized: false,
+    activeTab: 'agents', // Default tab
+    tabHistory: {}      // History for each tab
+  },
+  
   // Called when the component is activated
   initialize: function() {
     console.log('Initializing Ergon component');
     
-    // Switch to HTML panel mode
+    // First, add a terminal message to inform the user
+    if (window.websocketManager) {
+      websocketManager.addToTerminal("", 'white'); // blank line for spacing
+      websocketManager.addToTerminal("=== ERGON COMPONENT ACTIVATED ===", '#00bfff');
+      websocketManager.addToTerminal("Switching to the Ergon interface panel.", '#aaaaaa');
+      websocketManager.addToTerminal("You can still use the terminal for all Ergon commands.", '#aaaaaa');
+      websocketManager.addToTerminal("", 'white'); // blank line for spacing
+    }
+    
+    // Then switch to HTML panel mode
     uiManager.activatePanel('html');
     
-    // Load the Ergon HTML content into the panel
-    this.loadErgonUI();
+    if (!this.state.initialized) {
+      // First-time initialization
+      this.loadErgonUI();
+      this.state.initialized = true;
+    } else {
+      // Already initialized, just restore state
+      this.restoreComponentState();
+    }
     
     // Update the component status indicator
     this.updateStatusIndicator();
+  },
+  
+  // Save current component state
+  saveComponentState: function() {
+    // Save active tab
+    const activeTab = document.querySelector('.tab-button.active');
+    if (activeTab) {
+      this.state.activeTab = activeTab.getAttribute('data-tab');
+    }
+    
+    // Save to localStorage if available
+    if (window.storageManager) {
+      storageManager.setItem('ergon_component_state', JSON.stringify(this.state));
+    }
+    
+    console.log('Ergon component state saved, active tab:', this.state.activeTab);
+  },
+  
+  // Restore component state
+  restoreComponentState: function() {
+    // Load state from localStorage if available
+    if (window.storageManager) {
+      const savedState = storageManager.getItem('ergon_component_state');
+      if (savedState) {
+        try {
+          const parsedState = JSON.parse(savedState);
+          // Merge with current state
+          this.state = {...this.state, ...parsedState};
+        } catch (e) {
+          console.error('Error parsing saved Ergon state:', e);
+        }
+      }
+    }
+    
+    // Do not force Ergon tab to avoid flashing AWT-Team message
+    
+    // Activate the previously active tab (now forced to ergon)
+    if (this.state.activeTab) {
+      const tabButton = document.querySelector(`.tab-button[data-tab="${this.state.activeTab}"]`);
+      if (tabButton) {
+        // Simulate a click on the tab button
+        tabButton.click();
+      }
+    }
+    
+    console.log('Ergon component state restored, forced tab to ergon for testing');
   },
   
   // Load the Ergon UI into the HTML panel
@@ -46,29 +114,30 @@ window.ergonComponent = {
   
   // Initialize the chat interfaces for Ergon and AWT-Team
   initChatInterfaces: function() {
-    // Initialize Ergon chat
-    if (!window.ergonChatManager && document.getElementById('ergon-chat-container')) {
-      window.ergonChatManager = new TerminalChatManager('ergon-chat-container');
-      ergonChatManager.init();
-      ergonChatManager.setActiveComponent('ergon');
-      
-      // Add welcome message
-      ergonChatManager.addSystemMessage('Welcome to Ergon AI Assistant! I can help you manage agents, workflows, and tools. How can I assist you today?');
-      
-      // Demo message for example
-      setTimeout(() => {
-        ergonChatManager.addAIMessage('I\'m ready to help with agent creation, deployment, monitoring, and other tasks. Just let me know what you need!', 'ergon');
-      }, 1000);
+    console.log("Note: Chat interfaces removed in terminal-focused UI");
+    
+    // Check if containers exist
+    const ergonContainer = document.getElementById('ergon-chat-container');
+    const awtContainer = document.getElementById('awt-team-chat-container');
+    
+    if (ergonContainer) {
+      ergonContainer.innerHTML = `
+        <div style="padding: 20px; background: #1e1e1e; color: white;">
+          <h3>Chat functionality replaced with terminal interface</h3>
+          <p>Please use the terminal in the main panel for all interactions.</p>
+          <p>All components now use a unified terminal interface.</p>
+        </div>
+      `;
     }
     
-    // Initialize AWT-Team chat
-    if (!window.awtChatManager && document.getElementById('awt-team-chat-container')) {
-      window.awtChatManager = new TerminalChatManager('awt-team-chat-container');
-      awtChatManager.init();
-      awtChatManager.setActiveComponent('awt-team');
-      
-      // Add welcome message
-      awtChatManager.addSystemMessage('Welcome to AWT-Team Assistant! I can help with advanced workflow tools and team coordination.');
+    if (awtContainer) {
+      awtContainer.innerHTML = `
+        <div style="padding: 20px; background: #1e1e1e; color: white;">
+          <h3>Chat functionality replaced with terminal interface</h3>
+          <p>Please use the terminal in the main panel for all interactions.</p>
+          <p>All components now use a unified terminal interface.</p>
+        </div>
+      `;
     }
   },
   
@@ -76,24 +145,56 @@ window.ergonComponent = {
   setupTabs: function() {
     const tabs = document.querySelectorAll('.tab-button');
     
+    // Helper function to activate a tab
+    const activateTab = (tabId) => {
+      // Update active tab
+      document.querySelectorAll('.tab-button').forEach(t => {
+        t.classList.remove('active');
+      });
+      const tabButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
+      if (tabButton) {
+        tabButton.classList.add('active');
+      }
+      
+      // Show the corresponding content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.style.display = 'none';
+      });
+      
+      // Always show terminal-redirect content first for guidance
+      const terminalRedirect = document.getElementById('terminal-redirect');
+      if (terminalRedirect) {
+        terminalRedirect.style.display = 'block';
+      }
+      
+      // Then show the specific tab content below it
+      const tabContent = document.getElementById(`${tabId}-content`);
+      if (tabContent) {
+        tabContent.style.display = 'block';
+      }
+      
+      // Save active tab to state
+      this.state.activeTab = tabId;
+      this.saveComponentState();
+      
+      // Update terminal prompt with relevant context
+      if (window.websocketManager) {
+        websocketManager.addToTerminal(`Active context: Ergon ${tabId}`, '#888888');
+        websocketManager.addToTerminal(`Type 'help ${tabId}' for available commands`, '#888888');
+      }
+    };
+    
+    // Add click handlers to tabs
     tabs.forEach(tab => {
       tab.addEventListener('click', () => {
-        // Get the tab ID
         const tabId = tab.getAttribute('data-tab');
-        
-        // Update active tab
-        document.querySelectorAll('.tab-button').forEach(t => {
-          t.classList.remove('active');
-        });
-        tab.classList.add('active');
-        
-        // Show the corresponding content
-        document.querySelectorAll('.tab-content').forEach(content => {
-          content.style.display = 'none';
-        });
-        document.getElementById(`${tabId}-content`).style.display = 'block';
+        activateTab(tabId);
       });
     });
+    
+    // Show the terminal message first, but set agents as active tab
+    console.log('Initializing Ergon with agents tab active');
+    activateTab('agents');
   },
   
   // Set up event listeners for UI elements
@@ -227,63 +328,81 @@ window.ergonComponent = {
     const chatInput = document.getElementById('chat-input');
     const sendButton = document.getElementById('send-button');
     if (chatInput && sendButton) {
-      // Override the default send handler when Ergon component is active
-      this.originalSendMessage = window.sendMessage;
+      // REMOVED CHAT-SPECIFIC HANDLERS - Messages are now handled by the terminal directly
+      console.log("Chat input handlers removed - using terminal input only");
       
-      window.sendMessage = () => {
-        const message = chatInput.value.trim();
-        if (!message) return;
-        
+      // Show a message in terminal
+      if (window.terminalManager) {
+        terminalManager.write("Ergon component active - use terminal for all commands", false);
+        terminalManager.write("Example: 'list agents' or 'create agent'", false);
+      }
+      
+      // Hardcoded input handling remains active
+      const hardcodedInput = document.getElementById('hardcoded-input');
+      if (hardcodedInput) {
+        console.log("Found hardcoded input field:", hardcodedInput);
+        hardcodedInput.focus();
+      }
+      
+      // Add keyboard navigation to chat input
+      chatInput.addEventListener('keydown', (e) => {
         const activeTab = document.querySelector('.tab-button.active');
-        if (!activeTab) return this.originalSendMessage();
+        if (!activeTab) return;
         
         const tabId = activeTab.getAttribute('data-tab');
         
-        // Handle chat messages for Ergon and AWT-Team tabs
-        if (tabId === 'ergon' && window.ergonChatManager) {
-          // Add user message to chat
-          ergonChatManager.addUserMessage(message);
+        // Only handle history for chat tabs
+        if (tabId !== 'ergon' && tabId !== 'awt-team') return;
+        
+        const history = this.messageHistory[tabId];
+        
+        // Arrow up: navigate back in history
+        if (e.key === 'ArrowUp' && !e.shiftKey) {
+          e.preventDefault();
           
-          // Show typing indicator
-          ergonChatManager.showTypingIndicator();
+          // Save current input if at beginning of history
+          if (this.historyPosition === -1) {
+            this.currentInput = chatInput.value;
+          }
           
-          // Send to backend
-          tektonUI.sendCommand('process_message', { 
-            message: message,
-            context: 'ergon'
-          });
-          
-          // Clear input
-          chatInput.value = '';
-          chatInput.style.height = 'auto';
-          
-          // Prevent default handling
-          return false;
-        } 
-        else if (tabId === 'awt-team' && window.awtChatManager) {
-          // Add user message to chat
-          awtChatManager.addUserMessage(message);
-          
-          // Show typing indicator
-          awtChatManager.showTypingIndicator();
-          
-          // Send to backend
-          tektonUI.sendCommand('process_message', { 
-            message: message,
-            context: 'awt-team'
-          });
-          
-          // Clear input
-          chatInput.value = '';
-          chatInput.style.height = 'auto';
-          
-          // Prevent default handling
-          return false;
+          // Move through history if there are entries
+          if (history.length > 0 && this.historyPosition < history.length - 1) {
+            this.historyPosition++;
+            chatInput.value = history[this.historyPosition];
+            chatInput.style.height = 'auto';
+            chatInput.style.height = (chatInput.scrollHeight) + 'px';
+            
+            // Move cursor to end
+            setTimeout(() => {
+              chatInput.selectionStart = chatInput.selectionEnd = chatInput.value.length;
+            }, 0);
+          }
         }
         
-        // Fall back to default behavior for other tabs
-        return this.originalSendMessage();
-      };
+        // Arrow down: navigate forward in history
+        else if (e.key === 'ArrowDown' && !e.shiftKey) {
+          e.preventDefault();
+          
+          if (this.historyPosition > 0) {
+            // Move forward in history
+            this.historyPosition--;
+            chatInput.value = history[this.historyPosition];
+          } 
+          else if (this.historyPosition === 0) {
+            // Return to current input when reaching the end of history
+            this.historyPosition = -1;
+            chatInput.value = this.currentInput;
+          }
+          
+          chatInput.style.height = 'auto';
+          chatInput.style.height = (chatInput.scrollHeight) + 'px';
+          
+          // Move cursor to end
+          setTimeout(() => {
+            chatInput.selectionStart = chatInput.selectionEnd = chatInput.value.length;
+          }, 0);
+        }
+      });
     }
   },
   

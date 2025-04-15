@@ -7,9 +7,26 @@
 window.tektonUI = {
     activeComponent: 'tekton',
     activePanel: 'terminal',
+    debug: true, // Enable debug logging
+    
+    // Debug logging
+    log: function(message, data = null) {
+        if (!this.debug) return;
+        
+        const timestamp = new Date().toISOString();
+        const component = "TektonUI";
+        
+        if (data) {
+            console.log(`[${timestamp}] [${component}] ${message}`, data);
+        } else {
+            console.log(`[${timestamp}] [${component}] ${message}`);
+        }
+    },
     
     // Methods that will be exposed to component UIs
     sendCommand: function(command, params = {}) {
+        this.log(`Sending command: ${command}`, params);
+        
         if (window.websocketManager) {
             websocketManager.sendMessage({
                 type: "COMMAND",
@@ -23,22 +40,36 @@ window.tektonUI = {
             });
         } else {
             console.error("WebSocket not initialized");
+            if (window.terminalManager) {
+                terminalManager.write("Error: WebSocket not initialized. Command could not be sent.", false);
+            }
         }
     },
     
     switchComponent: function(componentId) {
         if (componentId && componentId !== this.activeComponent) {
+            this.log(`Switching component from ${this.activeComponent} to ${componentId}`);
             uiManager.activateComponent(componentId);
         }
     },
     
     updateTerminal: function(text, isCommand = false) {
         if (window.terminalManager) {
+            this.log(`Updating terminal${isCommand ? ' (command)' : ''}: ${text.substring(0, 50)}${text.length > 50 ? '...' : ''}`);
             terminalManager.write(text, isCommand);
+        } else {
+            console.error("Terminal manager not initialized");
         }
     },
     
     showError: function(message) {
+        this.log(`Showing error: ${message}`);
+        
+        // Also write to terminal if available
+        if (window.terminalManager) {
+            terminalManager.write(`ERROR: ${message}`, false);
+        }
+        
         const errorContainer = document.getElementById('error-container');
         errorContainer.textContent = message;
         errorContainer.style.display = 'block';
@@ -50,6 +81,8 @@ window.tektonUI = {
     },
     
     showModal: function(title, content) {
+        this.log(`Showing modal: ${title}`);
+        
         const modal = document.getElementById('system-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalBody = document.getElementById('modal-body');
@@ -60,6 +93,8 @@ window.tektonUI = {
     },
     
     hideModal: function() {
+        this.log('Hiding modal');
+        
         const modal = document.getElementById('system-modal');
         modal.style.display = 'none';
     }
@@ -70,7 +105,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Check for cache-busting version to ensure fresh content
     fetch('./.cache-version?' + new Date().getTime())
         .then(response => response.text())
-        .then(version => console.log('UI Version:', version))
+        .then(version => {
+            console.log('UI Version:', version);
+            
+            if (window.terminalManager) {
+                terminalManager.write(`Tekton UI Version: ${version}`);
+            }
+        })
         .catch(() => console.log('No cache version file found, using existing files'));
     
     // Initialize UI manager
@@ -100,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('settings-button').addEventListener('click', function() {
         // Include theme toggle in settings
         const currentTheme = document.querySelector('body').classList.contains('theme-dark') ? 'dark' : 'light';
+        const debugMode = tektonUI.debug;
         
         tektonUI.showModal('Settings', `
             <div class="settings-panel">
@@ -113,14 +155,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 <div class="setting-row">
                     <label>AI Model:</label>
-                    <select>
+                    <select id="model-select">
                         <option>Claude</option>
                         <option>Ollama</option>
                     </select>
                 </div>
                 <div class="setting-row">
                     <label>Debug Mode:</label>
-                    <input type="checkbox">
+                    <input type="checkbox" id="debug-mode" ${debugMode ? 'checked' : ''}>
                 </div>
                 <button class="settings-save" id="save-settings">Save Settings</button>
             </div>
@@ -134,15 +176,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 const body = document.querySelector('body');
                 const stylesheet = document.getElementById('theme-stylesheet');
                 
+                // Handle theme change
                 if (selectedTheme === 'light' && body.classList.contains('theme-dark')) {
                     body.classList.replace('theme-dark', 'theme-light');
                     stylesheet.href = 'styles/themes/light.css';
                     storageManager.setItem('theme', 'light');
+                    tektonUI.log('Theme changed to light');
                 } else if (selectedTheme === 'dark' && body.classList.contains('theme-light')) {
                     body.classList.replace('theme-light', 'theme-dark');
                     stylesheet.href = 'styles/themes/dark.css';
                     storageManager.setItem('theme', 'dark');
+                    tektonUI.log('Theme changed to dark');
                 }
+                
+                // Handle debug mode change
+                const debugModeCheckbox = document.getElementById('debug-mode');
+                tektonUI.debug = debugModeCheckbox.checked;
+                storageManager.setItem('debug_mode', debugModeCheckbox.checked);
+                
+                // Also update terminal debug mode
+                if (window.terminalManager) {
+                    terminalManager.debugMode = debugModeCheckbox.checked;
+                    terminalManager.write(`Debug mode ${debugModeCheckbox.checked ? 'enabled' : 'disabled'}`);
+                }
+                
+                tektonUI.log(`Debug mode ${debugModeCheckbox.checked ? 'enabled' : 'disabled'}`);
                 
                 tektonUI.hideModal();
             });
@@ -184,57 +242,45 @@ document.addEventListener('DOMContentLoaded', function() {
         stylesheet.href = 'styles/themes/light.css';
     }
     
-    // Set up chat input functionality
-    const chatInput = document.getElementById('chat-input');
-    const sendButton = document.getElementById('send-button');
-    
-    // Auto-resize textarea as user types
-    chatInput.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-        // Save draft as user types
-        storageManager.setInputContext(tektonUI.activeComponent, this.value);
-    });
-    
-    // Handle sending messages
-    function sendMessage() {
-        const message = chatInput.value.trim();
-        if (message) {
-            // Define the sendMessage function globally so it can be overridden
-            // by component-specific handlers
-            window.sendMessage = sendMessage;
-            
-            // Save to terminal history for standard components
-            terminalManager.write(`> ${message}`, true);
-            
-            // Send via websocket
-            tektonUI.sendCommand('process_message', { message: message });
-            
-            // Clear input but save to history
-            chatInput.value = '';
-            chatInput.style.height = 'auto';
-            
-            // Clear saved draft
-            storageManager.setInputContext(tektonUI.activeComponent, '');
+    // Load saved debug mode preference
+    const savedDebugMode = storageManager.getItem('debug_mode');
+    if (savedDebugMode !== null) {
+        tektonUI.debug = savedDebugMode === 'true';
+        
+        if (window.terminalManager) {
+            terminalManager.debugMode = tektonUI.debug;
         }
     }
     
-    sendButton.addEventListener('click', sendMessage);
-    
-    chatInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault(); // Prevent new line
-            sendMessage();
+    // Notify user of initialization in terminal
+    if (window.terminalManager) {
+        terminalManager.write("Tekton Terminal UI initialized");
+        terminalManager.write(`Debug mode: ${tektonUI.debug ? 'enabled' : 'disabled'}`);
+        terminalManager.write("Type 'help' for available commands");
+        
+        // Focus terminal input when the terminal container is clicked
+        const terminalContainer = document.getElementById('terminal');
+        if (terminalContainer) {
+            terminalContainer.addEventListener('click', (e) => {
+                console.log('Terminal container clicked, focusing input');
+                if (window.terminalManager) {
+                    terminalManager.focusInput();
+                }
+                
+                // Prevent event propagation
+                e.stopPropagation();
+            });
         }
-    });
-    
-    // Restore any saved input for the active component
-    const savedInput = storageManager.getInputContext(tektonUI.activeComponent);
-    if (savedInput) {
-        chatInput.value = savedInput;
-        chatInput.style.height = 'auto';
-        chatInput.style.height = (chatInput.scrollHeight) + 'px';
+        
+        // Also focus on document click
+        document.addEventListener('click', (e) => {
+            // If the terminal panel is active, try to focus the input
+            if (tektonUI.activePanel === 'terminal' && window.terminalManager) {
+                console.log('Document clicked, focusing terminal input');
+                setTimeout(() => terminalManager.focusInput(), 10);
+            }
+        });
     }
     
-    console.log('Tekton UI initialized');
+    tektonUI.log('Tekton UI initialized');
 });

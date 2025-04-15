@@ -1,6 +1,11 @@
 /* Ergon Component Styles */
 
-/* Chat Container Styles */
+/* Terminal Redirect Message */
+.terminal-redirect-message {
+  margin-bottom: 20px;
+}
+
+/* Chat Container Styles (kept for compatibility) */
 .chat-container {
   height: calc(100vh - 220px);
   overflow-y: auto;
