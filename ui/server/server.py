@@ -35,10 +35,52 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     
     def do_GET(self):
         """Handle GET requests"""
-        # Serve index.html for root path or if file doesn't exist
+        # Add no-cache headers to force browser to reload content
+        self.protocol_version = 'HTTP/1.1'
+        
+        # Handle requests for images directory
+        if self.path.startswith("/images/"):
+            # Try to serve from Tekton root images directory
+            tekton_images_dir = os.path.abspath(os.path.join(self.directory, "../../..", "images"))
+            file_path = os.path.join(tekton_images_dir, self.path[8:])  # Remove '/images/' prefix
+            
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                # File exists in Tekton images directory
+                with open(file_path, 'rb') as f:
+                    # Determine content type based on extension
+                    ext = os.path.splitext(file_path)[1].lower()
+                    content_type = {
+                        '.png': 'image/png',
+                        '.jpg': 'image/jpeg',
+                        '.jpeg': 'image/jpeg',
+                        '.gif': 'image/gif',
+                        '.ico': 'image/x-icon',
+                    }.get(ext, 'application/octet-stream')
+                    
+                    self.send_response(200)
+                    self.send_header("Content-type", content_type)
+                    self.send_header("Content-Length", str(os.path.getsize(file_path)))
+                    # Add cache control headers
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    self.send_header("Pragma", "no-cache")
+                    self.send_header("Expires", "0")
+                    self.end_headers()
+                    self.wfile.write(f.read())
+                return
+            
+        # Default behavior - serve index.html for root path or if file doesn't exist
         if self.path == "/" or not os.path.exists(os.path.join(self.directory, self.path[1:])):
             self.path = "/index.html"
         
+        # Add our custom headers by extending the base method behavior
+        old_end_headers = self.end_headers
+        def new_end_headers():
+            self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+            self.send_header("Pragma", "no-cache")
+            self.send_header("Expires", "0")
+            old_end_headers()
+        self.end_headers = new_end_headers
+            
         return SimpleHTTPRequestHandler.do_GET(self)
     
     def log_message(self, format, *args):

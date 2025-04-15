@@ -60,12 +60,14 @@ body {
 }
 
 .left-panel-header {
-    padding: 16px;
+    padding: 0 0 0 16px; /* Padding only on left, no vertical padding */
     border-bottom: 1px solid var(--border-color);
-    height: 90px; /* Reduced height slightly */
+    height: 85px; /* Slightly taller */
     background-color: #000000; /* Black background for the title area */
     display: flex;
     align-items: center;
+    position: relative;
+    overflow: hidden;
 }
 
 .tekton-logo {
@@ -80,6 +82,8 @@ body {
     flex-direction: column;
     align-items: center;
     flex: 1;
+    margin-right: 65px; /* Reduced space for the icon to shift text right */
+    margin-left: 20px; /* Add margin on the left to push text right */
 }
 
 .tekton-logo h1 {
@@ -93,20 +97,22 @@ body {
 }
 
 .subtitle {
-    font-size: 0.75rem; /* Further reduced size to prevent wrapping */
+    font-size: 0.5rem; /* MUCH smaller to test if changes are visible */
     color: var(--text-secondary);
     text-align: center;
-    margin-top: -2px; /* Reduced spacing even more */
+    margin-top: -2px; /* Reduced spacing */
     white-space: nowrap; /* Prevent text wrapping */
 }
 
 .pillar-icon {
-    height: 80px; /* Adjust to fit the header height */
+    height: 60px; /* Reduced height to better fit */
     width: auto;
-    margin-left: 8px;
+    margin-left: 10px; /* More separation from text */
     margin-right: 0;
     align-self: center; /* Center vertically */
     object-fit: contain; /* Ensure image fits within dimensions */
+    position: relative; /* Enable positioning adjustments */
+    top: -2px; /* Adjust vertical position slightly upward */
 }
 
 .left-panel-nav {
@@ -176,9 +182,10 @@ body {
     text-overflow: ellipsis;
 }
 
-/* Smaller font for longer component names */
-.nav-item[data-component="ergon"] .nav-label {
-    font-size: 0.8rem; /* Original size for Ergon */
+/* Styling for the small tag within nav labels */
+.nav-label small {
+    font-size: 0.7rem !important; /* Force smaller size with !important to override browser defaults */
+    opacity: 0.85; /* Slightly dimmer to create visual hierarchy */
 }
 
 /* Footer section in left panel */
