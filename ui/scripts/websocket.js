@@ -121,10 +121,48 @@ class WebSocketManager {
             case 'COMMAND':
                 if (message.payload && message.payload.command === 'process_message') {
                     const userMessage = message.payload.message;
-                    const response = this.generateFakeResponse(userMessage, message.target);
+                    const componentId = message.target;
+                    const context = message.payload.context || componentId;
                     
+                    // Show typing indicator after a slight delay
+                    setTimeout(() => {
+                        // Send typing indicator
+                        const typingUpdate = {
+                            type: 'UPDATE',
+                            source: componentId,
+                            target: 'UI',
+                            timestamp: new Date().toISOString(),
+                            payload: {
+                                status: 'typing',
+                                isTyping: true,
+                                context: context
+                            }
+                        };
+                        this.handleMessage(JSON.stringify(typingUpdate));
+                        
+                        // Then send the response after a delay
+                        setTimeout(() => {
+                            const response = this.generateFakeResponse(userMessage, componentId, context);
+                            
+                            // Create AI response message
+                            const responseMessage = {
+                                type: 'RESPONSE',
+                                source: componentId,
+                                target: 'UI',
+                                timestamp: new Date().toISOString(),
+                                payload: {
+                                    message: response,
+                                    context: context
+                                }
+                            };
+                            
+                            this.handleMessage(JSON.stringify(responseMessage));
+                        }, 1200 + Math.random() * 1000); // Random delay between 1.2-2.2 seconds for typing
+                    }, 300); // Small delay before typing starts
+                    
+                    // Use the traditional terminal too for backward compatibility
                     if (window.terminalManager) {
-                        terminalManager.write(response);
+                        terminalManager.write(`[${componentId}] Processing: "${userMessage}"`);
                     }
                 } else if (message.payload && message.payload.command === 'get_context') {
                     // Simulate context response
@@ -156,10 +194,33 @@ class WebSocketManager {
      * Generate a fake response for demo mode
      * @param {string} message - User message to respond to
      * @param {string} componentId - The component ID
+     * @param {string} context - The context/tab (optional)
      * @returns {string} Generated response
      */
-    generateFakeResponse(message, componentId) {
+    generateFakeResponse(message, componentId, context = null) {
+        const contextId = context || componentId;
+        
+        // Check for special keywords in the message for more contextual responses
+        if (message.toLowerCase().includes('hello') || message.toLowerCase().includes('hi')) {
+            return `Hello! I'm the ${componentId} AI assistant. How can I help you today?`;
+        }
+        
+        if (message.toLowerCase().includes('help')) {
+            return `I can help you with various ${componentId} tasks. What specific aspect do you need assistance with?`;
+        }
+        
+        // Context-specific responses
         const responses = {
+            ergon: [
+                "I can help you create and manage agents for various tasks. Would you like me to explain the agent types?",
+                `The Ergon system manages AI agents that can perform tasks across different domains. Your message "${message}" is being processed.`,
+                "I can help you set up workflows between agents or execute specific tasks. What would you like to accomplish?"
+            ],
+            'awt-team': [
+                "The Advanced Workflow Tools team provides specialized workflow automation. Your request is being processed.",
+                "AWT systems are designed for complex process orchestration. I can help you design optimal workflows for your needs.",
+                "Advanced Workflow Tools can integrate with multiple data sources and processing systems. How can I assist you today?"
+            ],
             tekton: [
                 "I'm managing your projects. What would you like to do?",
                 "This is the Tekton Projects component. I can help with project management.",
@@ -177,7 +238,7 @@ class WebSocketManager {
             ]
         };
         
-        // Default responses if component isn't specifically handled
+        // Default responses if component/context isn't specifically handled
         const defaultResponses = [
             `The ${componentId} component received your message: "${message}"`,
             `I'm processing your request in the ${componentId} system.`,
@@ -185,7 +246,7 @@ class WebSocketManager {
         ];
         
         // Get appropriate response list
-        const responseList = responses[componentId] || defaultResponses;
+        const responseList = responses[contextId] || defaultResponses;
         
         // Select a random response
         return responseList[Math.floor(Math.random() * responseList.length)];

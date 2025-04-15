@@ -200,7 +200,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function sendMessage() {
         const message = chatInput.value.trim();
         if (message) {
-            // Save to terminal history
+            // Define the sendMessage function globally so it can be overridden
+            // by component-specific handlers
+            window.sendMessage = sendMessage;
+            
+            // Save to terminal history for standard components
             terminalManager.write(`> ${message}`, true);
             
             // Send via websocket

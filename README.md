@@ -75,6 +75,26 @@ Detailed component integration instructions are available in [DEVELOPMENT_STATUS
 ## Technical Design
 
 For more details on the UI implementation, see:
-- [HephaestusRedesign.md](./HephaestusRedesign.md) - Overall design approach and goals
-- [TektonUIOperation.md](./TektonUIOperation.md) - AI integration details
+- [UI_STYLING_GUIDE.md](./UI_STYLING_GUIDE.md) - Styling guidelines and best practices
 - [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) - Current status and implementation details
+- [TektonUIOperation.md](./TektonUIOperation.md) - AI integration details
+- [HephaestusRedesign.md](./HephaestusRedesign.md) - Historical design decisions and approach
+
+## UI Image Management
+
+Images used in the UI should follow these guidelines:
+
+1. **Location:**
+   - UI-specific images should be placed in: `/Hephaestus/ui/images/`
+   - Shared Tekton images remain in: `/images/`
+
+2. **Referencing Images:**
+   - From HTML: Use relative paths (e.g., `images/icon.png`)
+   - Always include fallbacks: `onerror="this.src='images/fallback.png'"`
+
+3. **Image Formats:**
+   - Use PNG for icons and logos
+   - Use JPEG for photographs
+   - Keep image sizes reasonable (under 200KB)
+
+The UI server has been configured to properly serve images from these locations.

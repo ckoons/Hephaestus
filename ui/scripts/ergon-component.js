@@ -32,6 +32,9 @@ window.ergonComponent = {
         this.setupTabs();
         this.setupEventListeners();
         
+        // Initialize chat components
+        this.initChatInterfaces();
+        
         // Load agent data
         this.loadAgentData();
       })
@@ -39,6 +42,34 @@ window.ergonComponent = {
         console.error('Error loading Ergon UI:', error);
         document.getElementById('html-panel').innerHTML = '<div class="error-message">Error loading Ergon component UI</div>';
       });
+  },
+  
+  // Initialize the chat interfaces for Ergon and AWT-Team
+  initChatInterfaces: function() {
+    // Initialize Ergon chat
+    if (!window.ergonChatManager && document.getElementById('ergon-chat-container')) {
+      window.ergonChatManager = new TerminalChatManager('ergon-chat-container');
+      ergonChatManager.init();
+      ergonChatManager.setActiveComponent('ergon');
+      
+      // Add welcome message
+      ergonChatManager.addSystemMessage('Welcome to Ergon AI Assistant! I can help you manage agents, workflows, and tools. How can I assist you today?');
+      
+      // Demo message for example
+      setTimeout(() => {
+        ergonChatManager.addAIMessage('I\'m ready to help with agent creation, deployment, monitoring, and other tasks. Just let me know what you need!', 'ergon');
+      }, 1000);
+    }
+    
+    // Initialize AWT-Team chat
+    if (!window.awtChatManager && document.getElementById('awt-team-chat-container')) {
+      window.awtChatManager = new TerminalChatManager('awt-team-chat-container');
+      awtChatManager.init();
+      awtChatManager.setActiveComponent('awt-team');
+      
+      // Add welcome message
+      awtChatManager.addSystemMessage('Welcome to AWT-Team Assistant! I can help with advanced workflow tools and team coordination.');
+    }
   },
   
   // Set up the tabbed interface
@@ -160,6 +191,100 @@ window.ergonComponent = {
         alert('Settings saved successfully');
       });
     }
+    
+    // Chat clear buttons
+    const clearErgonButton = document.getElementById('clear-ergon-chat');
+    if (clearErgonButton && window.ergonChatManager) {
+      clearErgonButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear the chat history?')) {
+          ergonChatManager.clear();
+          ergonChatManager.addSystemMessage('Chat history cleared');
+          
+          // Clear history in storage
+          if (window.storageManager) {
+            storageManager.removeItem('terminal_chat_history_ergon');
+          }
+        }
+      });
+    }
+    
+    const clearAwtButton = document.getElementById('clear-awt-chat');
+    if (clearAwtButton && window.awtChatManager) {
+      clearAwtButton.addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear the chat history?')) {
+          awtChatManager.clear();
+          awtChatManager.addSystemMessage('Chat history cleared');
+          
+          // Clear history in storage
+          if (window.storageManager) {
+            storageManager.removeItem('terminal_chat_history_awt-team');
+          }
+        }
+      });
+    }
+    
+    // Add event listener to chat input for sending messages to active chat
+    const chatInput = document.getElementById('chat-input');
+    const sendButton = document.getElementById('send-button');
+    if (chatInput && sendButton) {
+      // Override the default send handler when Ergon component is active
+      this.originalSendMessage = window.sendMessage;
+      
+      window.sendMessage = () => {
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        const activeTab = document.querySelector('.tab-button.active');
+        if (!activeTab) return this.originalSendMessage();
+        
+        const tabId = activeTab.getAttribute('data-tab');
+        
+        // Handle chat messages for Ergon and AWT-Team tabs
+        if (tabId === 'ergon' && window.ergonChatManager) {
+          // Add user message to chat
+          ergonChatManager.addUserMessage(message);
+          
+          // Show typing indicator
+          ergonChatManager.showTypingIndicator();
+          
+          // Send to backend
+          tektonUI.sendCommand('process_message', { 
+            message: message,
+            context: 'ergon'
+          });
+          
+          // Clear input
+          chatInput.value = '';
+          chatInput.style.height = 'auto';
+          
+          // Prevent default handling
+          return false;
+        } 
+        else if (tabId === 'awt-team' && window.awtChatManager) {
+          // Add user message to chat
+          awtChatManager.addUserMessage(message);
+          
+          // Show typing indicator
+          awtChatManager.showTypingIndicator();
+          
+          // Send to backend
+          tektonUI.sendCommand('process_message', { 
+            message: message,
+            context: 'awt-team'
+          });
+          
+          // Clear input
+          chatInput.value = '';
+          chatInput.style.height = 'auto';
+          
+          // Prevent default handling
+          return false;
+        }
+        
+        // Fall back to default behavior for other tabs
+        return this.originalSendMessage();
+      };
+    }
   },
   
   // Load agent data from the backend
@@ -189,21 +314,80 @@ window.ergonComponent = {
     if (message.type === 'RESPONSE') {
       const payload = message.payload || {};
       
-      if (payload.agents) {
+      // Handle chat responses
+      if (payload.message && payload.context) {
+        this.handleChatResponse(payload.message, payload.context);
+      }
+      // Handle agent list responses
+      else if (payload.agents) {
         // Update agent list
         this.updateAgentList(payload.agents);
-      } else if (payload.agent_created) {
+      } 
+      // Handle agent creation response
+      else if (payload.agent_created) {
         // Add new agent to list
         this.addAgentToList(payload.agent_created);
       }
-    } else if (message.type === 'UPDATE') {
-      // Handle updates
+      // Handle general responses
+      else if (payload.response) {
+        // If we have a active chat tab, show response there
+        const activeTab = document.querySelector('.tab-button.active');
+        if (activeTab) {
+          const tabId = activeTab.getAttribute('data-tab');
+          if (tabId === 'ergon' && window.ergonChatManager) {
+            ergonChatManager.addAIMessage(payload.response, 'ergon');
+          } else if (tabId === 'awt-team' && window.awtChatManager) {
+            awtChatManager.addAIMessage(payload.response, 'awt-team');
+          }
+        }
+      }
+    } 
+    // Handle typing indicators and status updates
+    else if (message.type === 'UPDATE') {
       const payload = message.payload || {};
       
-      if (payload.agent_status) {
+      // Handle typing status
+      if (payload.status === 'typing') {
+        const context = payload.context || '';
+        
+        if (context === 'ergon' && window.ergonChatManager) {
+          if (payload.isTyping) {
+            ergonChatManager.showTypingIndicator();
+          } else {
+            ergonChatManager.hideTypingIndicator();
+          }
+        } 
+        else if (context === 'awt-team' && window.awtChatManager) {
+          if (payload.isTyping) {
+            awtChatManager.showTypingIndicator();
+          } else {
+            awtChatManager.hideTypingIndicator();
+          }
+        }
+      }
+      // Handle agent status updates
+      else if (payload.agent_status) {
         // Update agent status
         this.updateAgentStatus(payload.agent_status);
       }
+    }
+  },
+  
+  // Handle chat responses from AI
+  handleChatResponse: function(message, context) {
+    if (context === 'ergon' && window.ergonChatManager) {
+      // Hide typing indicator if still showing
+      ergonChatManager.hideTypingIndicator();
+      
+      // Add AI message to chat
+      ergonChatManager.addAIMessage(message, 'ergon');
+    } 
+    else if (context === 'awt-team' && window.awtChatManager) {
+      // Hide typing indicator if still showing
+      awtChatManager.hideTypingIndicator();
+      
+      // Add AI message to chat
+      awtChatManager.addAIMessage(message, 'awt-team');
     }
   },
   

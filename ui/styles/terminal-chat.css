@@ -1,0 +1,189 @@
+/**
+ * Terminal Chat Styles
+ * Styles for the AI chat terminal interface
+ */
+
+.terminal-chat {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+
+.chat-message {
+  margin-bottom: 16px;
+  max-width: 85%;
+  animation: fadeIn 0.3s ease-in-out;
+  padding: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.user-message {
+  margin-left: auto;
+  margin-right: 0;
+  background-color: #3a4a6b;
+  border-radius: 12px 12px 0 12px;
+}
+
+.ai-message {
+  margin-right: auto;
+  margin-left: 0;
+  background-color: #2d2d2d;
+  border-radius: 12px 12px 12px 0;
+}
+
+.system-message {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  background-color: rgba(80, 80, 80, 0.3);
+  padding: 8px 16px;
+  border-radius: 16px;
+  opacity: 0.8;
+  max-width: 70%;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 12px 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.message-content {
+  padding: 8px 12px;
+  overflow-wrap: break-word;
+  line-height: 1.4;
+}
+
+.message-timestamp {
+  font-size: 0.7rem;
+  opacity: 0.7;
+  margin-top: 4px;
+  text-align: right;
+  padding-right: 8px;
+  padding-bottom: 4px;
+}
+
+.message-sender {
+  font-weight: 500;
+}
+
+.user-message .message-sender {
+  color: #a3c9ff;
+}
+
+.ai-message .message-sender {
+  color: #7ce38b;
+}
+
+.typing-indicator {
+  padding: 12px;
+  display: inline-block;
+  margin-right: auto;
+  margin-left: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+}
+
+.typing-dots .dot {
+  height: 8px;
+  width: 8px;
+  margin-right: 4px;
+  border-radius: 50%;
+  background-color: #e0e0e0;
+  opacity: 0.6;
+  animation: pulse 1.5s infinite;
+}
+
+.typing-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Formatted message content styles */
+.message-content a {
+  color: #64b5f6;
+  text-decoration: none;
+}
+
+.message-content a:hover {
+  text-decoration: underline;
+}
+
+.message-content code {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+  color: #f8f8f8;
+}
+
+.message-content pre {
+  background-color: rgba(0, 0, 0, 0.3);
+  padding: 8px 12px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.message-content pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+  color: #f8f8f8;
+  display: block;
+  white-space: pre;
+}
+
+/* Component specific color themes */
+.ai-message[data-component="ergon"] {
+  border-left: 2px solid #64b5f6;
+}
+
+.ai-message[data-component="awt-team"] {
+  border-left: 2px solid #81c784;
+}
+
+.ai-message[data-component="tekton"] {
+  border-left: 2px solid #ba68c8;
+}
+
+.ai-message[data-component="prometheus"] {
+  border-left: 2px solid #ffb74d;
+}
+
+.ai-message[data-component="telos"] {
+  border-left: 2px solid #4fc3f7;
+}

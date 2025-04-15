@@ -1,5 +1,17 @@
 /* Ergon Component Styles */
 
+/* Chat Container Styles */
+.chat-container {
+  height: calc(100vh - 220px);
+  overflow-y: auto;
+  padding: 16px;
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
 /* Container */
 .ergon-container {
   position: absolute;
