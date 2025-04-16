@@ -33,6 +33,14 @@ class UIManager {
             });
         }
         
+        // Set up profile button
+        const profileButton = document.getElementById('profile-button');
+        if (profileButton) {
+            profileButton.addEventListener('click', () => {
+                this.showProfilePanel();
+            });
+        }
+        
         // Set initial active component
         this.activateComponent(this.activeComponent);
         
@@ -148,8 +156,8 @@ class UIManager {
     }
     
     /**
-     * Switch between terminal, HTML, and settings panels
-     * @param {string} panelId - 'terminal', 'html', or 'settings'
+     * Switch between terminal, HTML, settings, and profile panels
+     * @param {string} panelId - 'terminal', 'html', 'settings', or 'profile'
      */
     activatePanel(panelId) {
         const panels = document.querySelectorAll('.panel');
@@ -187,6 +195,19 @@ class UIManager {
         // Initialize settings UI if it hasn't been initialized
         if (window.settingsUI && !window.settingsUI.initialized) {
             window.settingsUI.init();
+        }
+    }
+    
+    /**
+     * Show the profile panel
+     */
+    showProfilePanel() {
+        this.activatePanel('profile');
+        console.log('Showing profile panel');
+        
+        // Initialize profile UI if it hasn't been initialized
+        if (window.profileUI && !window.profileUI.initialized) {
+            window.profileUI.init();
         }
     }
     

@@ -4,6 +4,141 @@
 
 This document describes how AI components will interact with the Tekton UI system. Each component in the Tekton platform has an associated AI that specializes in a specific domain. This guide outlines the communication protocols, interface mechanisms, and operational patterns for these AIs to interoperate with the Hephaestus UI.
 
+## Recent UI Enhancements (April 2025)
+
+The following improvements have been implemented to enhance the UI's functionality and user experience:
+
+### 1. Theme System
+
+A comprehensive theming system has been implemented with:
+
+- **Dual-axis themes**: Six themes combining light/dark mode with blue/green/purple accents
+- **CSS Variables**: All colors defined as CSS variables for consistency
+- **Persistent Settings**: Theme selection stored in localStorage
+- **Dynamic Switching**: Themes can be changed without page reload
+
+Available themes:
+- Dark Blue (`dark-blue.css`)
+- Dark Green (`dark-green.css`)
+- Dark Purple (`dark-purple.css`)
+- Light Blue (`light-blue.css`)
+- Light Green (`light-green.css`)
+- Light Purple (`light-purple.css`)
+
+Example CSS variable structure:
+```css
+:root[data-theme="dark-blue"] {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --accent-primary: #007bff;
+  --accent-secondary: #0056b3;
+  
+  /* Terminal-specific colors */
+  --terminal-bg: #1a1a1a;
+  --terminal-text: #f8f8f8;
+  --input-bg: rgba(0, 0, 0, 0.3);
+  --prompt-color: #00ff00;
+  
+  /* Chat terminal colors */
+  --chat-terminal-bg: #1a1a1a;
+  --chat-input-bg: #111111;
+  --chat-input-border: #007bff;
+  --chat-user-bg: #2962FF;
+  --chat-agent-bg: #333333;
+  --chat-agent-border: #007bff;
+}
+```
+
+### 2. Settings Management
+
+A comprehensive settings manager has been implemented:
+
+- **Display Preferences**: Toggle between Greek names (e.g., "Ergon") and functional names (e.g., "Tools/Agents/Workflows")
+- **Visual Preferences**: Theme selection and other display options
+- **Persistence**: All settings stored in localStorage
+- **Events System**: Settings changes trigger UI updates via events
+
+The settings manager can be used by AI components to check current preferences:
+
+```javascript
+// Access settings manager
+const settings = window.tektonUI.settingsManager;
+
+// Check if Greek names are enabled
+const useGreekNames = settings.settings.showGreekNames;
+
+// Get the appropriate component label
+const componentLabel = settings.getComponentLabel('ergon');
+
+// Listen for settings changes
+document.addEventListener('tekton-settings-changed', (e) => {
+  // Update UI based on new settings
+  const newSettings = e.detail;
+  // Handle settings changes...
+});
+```
+
+### 3. Enhanced Terminal Chat
+
+The terminal chat interface has been enhanced with:
+
+- **Persistent Chat History**: Conversation history is stored by component
+- **Improved Styling**: Terminal uses theme colors with proper contrast
+- **Fixed Layout**: Terminal header and input are fixed with scrollable content
+- **Full-screen Mode**: Terminal uses entire available space
+- **Multi-LLM Communication**: Support for routing messages to different AI models
+
+Terminal chat markup structure:
+```html
+<div class="terminal-chat-container">
+  <div class="terminal-chat-header">
+    <h2>Chat with [Component Name]</h2>
+  </div>
+  <div class="terminal-chat-messages">
+    <!-- Messages appear here -->
+  </div>
+  <div class="terminal-chat-input-area">
+    <textarea id="terminal-chat-input" placeholder="Type your message..."></textarea>
+    <button id="terminal-chat-send">Send</button>
+  </div>
+</div>
+```
+
+### 4. Hermes Integration
+
+The UI now integrates with the Hermes message bus system:
+
+- **Terminal Registration**: Terminals register with Hermes on activation
+- **Message Routing**: Support for direct, team, and broadcast communication
+- **Context Awareness**: Messages maintain context of ongoing conversations
+- **AI Model Selection**: Support for routing to specific AI models
+
+Example of using Hermes connector:
+```javascript
+// Get the Hermes connector
+const hermesConnector = window.tektonUI.hermesConnector;
+
+// Send a message via Hermes
+hermesConnector.sendMessage({
+  text: userMessage,
+  context: 'terminal-chat',
+  source: 'ui-terminal',
+  target: 'claude-3-sonnet',
+  conversationId: currentConversationId
+});
+
+// Listen for responses
+hermesConnector.onMessage((message) => {
+  if (message.target === 'ui-terminal' && message.context === 'terminal-chat') {
+    // Display the message in the terminal
+    displayMessageInTerminal(message);
+  }
+});
+```
+
 ## AI Component Architecture
 
 Each Tekton component has:
@@ -269,6 +404,90 @@ function updateHeader(componentId, data) {
 }
 ```
 
+## UI Theme Management for AI Components
+
+The new theme system provides these benefits to AI components:
+
+- **Consistent Visual Experience**: UI elements maintain consistent styling
+- **Color Semantics**: Colors convey meaning (success, warning, error)
+- **Accessibility**: Proper contrast for readability
+- **Visual Hierarchy**: Clear distinction between different UI elements
+
+AI components can adapt to the current theme:
+
+```javascript
+// Check the current theme
+const currentTheme = document.documentElement.getAttribute('data-theme');
+
+// Determine if it's a dark theme
+const isDarkMode = currentTheme.startsWith('dark');
+
+// Get the accent color
+const accentColor = currentTheme.split('-')[1];
+
+// Adjust visualization colors based on theme
+function getVisualizationColors() {
+  return isDarkMode ? 
+    ['#36a2eb', '#ff6384', '#4bc0c0', '#ff9f40', '#9966ff'] : 
+    ['#007bff', '#dc3545', '#28a745', '#fd7e14', '#6f42c1'];
+}
+
+// Apply theme-based styling to component-specific elements
+function applyThemeStyling() {
+  const elements = document.querySelectorAll('.component-element');
+  elements.forEach(el => {
+    el.classList.toggle('dark-mode', isDarkMode);
+    el.dataset.accent = accentColor;
+  });
+}
+```
+
+## Terminal Chat Operation for AI Components
+
+The enhanced terminal chat offers these capabilities to AI components:
+
+1. **Message Display Formats**:
+   - User messages with blue background
+   - AI responses with theme-colored borders
+   - System messages in italics
+   - Error messages in red
+   
+2. **Command Prefixes**:
+   - `/help` - Display component help
+   - `/clear` - Clear chat history
+   - `/reset` - Reset conversation context
+   - `/team` - Send message to team chat
+   - `/model [name]` - Route to specific model
+
+3. **Message Routing**:
+   AI components can check message prefixes to determine routing:
+   
+   ```javascript
+   function processMessage(message) {
+     // Check for command prefixes
+     if (message.startsWith('/')) {
+       const [command, ...args] = message.substring(1).split(' ');
+       
+       switch (command) {
+         case 'help':
+           return displayHelp();
+         case 'model':
+           return routeToModel(args[0], message);
+         // Other commands...
+       }
+     }
+     
+     // Regular message processing
+     // ...
+   }
+   ```
+
+4. **Rich Message Formatting**:
+   - Support for markdown in messages
+   - Code blocks with syntax highlighting
+   - Lists and tables
+   - Image embedding (base64)
+
 ## Context Persistence
 
 AI components maintain conversation context across sessions through:
@@ -389,6 +608,18 @@ When implementing a component AI for Tekton:
    - Explain expected responses
    - Provide example interactions
 
+6. **Utilize New Theme System**:
+   - Access current theme information
+   - Adapt visualizations to current theme
+   - Use theme-appropriate colors
+   - Handle both light and dark mode
+
+7. **Leverage Enhanced Terminal Features**:
+   - Use rich message formatting
+   - Support command prefixes
+   - Implement team chat capabilities
+   - Utilize multi-model routing
+
 ## Security Considerations
 
 AI components must adhere to these security guidelines:
@@ -411,6 +642,9 @@ To verify AI-UI integration:
 5. Validate terminal command processing
 6. Verify HTML control updates
 7. Test cross-component interaction
+8. Verify theme switching works properly
+9. Test terminal chat with various message types
+10. Confirm settings persistence between sessions
 
 ## UI Element Reference
 
@@ -459,9 +693,17 @@ This section provides a reference of HTML element IDs, classes, and selectors fo
 ### Control Elements
 
 **Settings Buttons**:
-- ID: `#budget-button` - Opens budget information
-- ID: `#profile-button` - Opens user profile
 - ID: `#settings-button` - Opens settings dialog
+- ID: `#theme-toggle` - Toggles between light and dark mode
+- ID: `#accent-color-selector` - Selects accent color
+- ID: `#greek-names-toggle` - Toggles Greek names display
+
+**Terminal Chat Elements**:
+- Class: `.terminal-chat-container` - Main container
+- Class: `.terminal-chat-messages` - Message display area
+- Class: `.terminal-chat-input-area` - Input area
+- ID: `#terminal-chat-input` - Input field
+- ID: `#terminal-chat-send` - Send button
 
 **Modal Dialog**:
 - ID: `#system-modal` - Container for modal dialogs
@@ -490,6 +732,11 @@ window.COMPONENT_ID_Component = {
   // Called when component is being deactivated
   cleanup: function() {
     // Cleanup code
+  },
+  
+  // Called when theme changes
+  onThemeChange: function(theme) {
+    // Update visuals for new theme
   }
 };
 ```
