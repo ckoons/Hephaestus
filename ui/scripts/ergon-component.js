@@ -119,46 +119,66 @@ window.ergonComponent = {
       });
   },
   
-  // Initialize the chat interfaces for Ergon and AWT-Team
+  // Initialize the chat interfaces for all chat tabs
   initChatInterfaces: function() {
     console.log("Initializing terminal-style chat interfaces");
     
-    // Check if containers exist and add message handler if not already present
-    const ergonContainer = document.getElementById('ergon-chat-container');
-    const awtContainer = document.getElementById('awt-team-chat-container');
+    // Get all chat containers and inputs
+    const chatInputs = document.querySelectorAll('.terminal-chat-input');
     
-    // Check if inputs exist
-    const ergonInput = document.querySelector('.terminal-chat-input[data-context="ergon"]');
-    const awtInput = document.querySelector('.terminal-chat-input[data-context="awt-team"]');
+    console.log(`Found ${chatInputs.length} chat inputs`);
     
-    console.log("Found Ergon input:", !!ergonInput);
-    console.log("Found AWT input:", !!awtInput);
-    
-    if (ergonInput) {
+    // Add event listeners to all chat inputs
+    chatInputs.forEach(input => {
+      const context = input.getAttribute('data-context');
+      console.log(`Setting up input for context: ${context}`);
+      
       // Add event listener directly to make sure it's attached
-      ergonInput.addEventListener('keydown', (e) => {
+      input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
-          const message = ergonInput.value.trim();
+          const message = input.value.trim();
           if (message) {
-            this.sendChatMessage('ergon', message);
-            ergonInput.value = '';
+            this.sendChatMessage(context, message);
+            input.value = '';
           }
         }
       });
-    }
+      
+      // Focus input when container is clicked
+      const container = input.closest('.terminal-chat-container');
+      if (container) {
+        container.addEventListener('click', () => {
+          input.focus();
+        });
+      }
+    });
     
-    if (awtInput) {
-      // Add event listener directly to make sure it's attached
-      awtInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const message = awtInput.value.trim();
-          if (message) {
-            this.sendChatMessage('awt-team', message);
-            awtInput.value = '';
+    // Set up clear chat buttons
+    const clearButtons = {
+      'ergon': document.getElementById('clear-ergon-chat'),
+      'awt-team': document.getElementById('clear-awt-chat'),
+      'agora': document.getElementById('clear-agora-chat')
+    };
+    
+    // Add event listeners to clear buttons
+    Object.entries(clearButtons).forEach(([context, button]) => {
+      if (button) {
+        button.addEventListener('click', () => {
+          const chatMessages = document.getElementById(`${context}-chat-messages`);
+          if (chatMessages) {
+            // Add confirmation
+            if (confirm('Are you sure you want to clear this chat history?')) {
+              // Keep only the welcome message
+              const welcomeMessage = chatMessages.querySelector('.chat-message.system');
+              chatMessages.innerHTML = '';
+              if (welcomeMessage) {
+                chatMessages.appendChild(welcomeMessage);
+              }
+            }
           }
-        }
-      });
-    }
+        });
+      }
+    });
   },
   
   // Send a chat message and handle the response

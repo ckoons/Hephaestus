@@ -7,7 +7,7 @@ class UIManager {
     constructor() {
         this.components = {};
         this.activeComponent = 'tekton'; // Default component
-        this.activePanel = 'terminal'; // Default panel (terminal or html)
+        this.activePanel = 'terminal'; // Default panel (terminal, html, or settings)
     }
     
     /**
@@ -24,6 +24,14 @@ class UIManager {
                 });
             }
         });
+        
+        // Set up settings button
+        const settingsButton = document.getElementById('settings-button');
+        if (settingsButton) {
+            settingsButton.addEventListener('click', () => {
+                this.showSettingsPanel();
+            });
+        }
         
         // Set initial active component
         this.activateComponent(this.activeComponent);
@@ -55,7 +63,9 @@ class UIManager {
         
         // Clear component controls
         const componentControls = document.querySelector('.component-controls');
-        componentControls.innerHTML = '';
+        if (componentControls) {
+            componentControls.innerHTML = '';
+        }
         
         // Store the previous component to save its state
         const previousComponent = this.activeComponent;
@@ -85,7 +95,9 @@ class UIManager {
         tektonUI.sendCommand('get_context');
         
         // Restore terminal history for this component
-        terminalManager.loadHistory(componentId);
+        if (window.terminalManager) {
+            terminalManager.loadHistory(componentId);
+        }
         
         console.log(`Activated component: ${componentId}`);
     }
@@ -136,8 +148,8 @@ class UIManager {
     }
     
     /**
-     * Switch between terminal and HTML panels
-     * @param {string} panelId - 'terminal' or 'html'
+     * Switch between terminal, HTML, and settings panels
+     * @param {string} panelId - 'terminal', 'html', or 'settings'
      */
     activatePanel(panelId) {
         const panels = document.querySelectorAll('.panel');
@@ -152,7 +164,30 @@ class UIManager {
         this.activePanel = panelId;
         tektonUI.activePanel = panelId;
         
+        // Auto-focus on input if terminal panel
+        if (panelId === 'terminal') {
+            const terminalInput = document.getElementById('simple-terminal-input');
+            if (terminalInput) {
+                setTimeout(() => {
+                    terminalInput.focus();
+                }, 100);
+            }
+        }
+        
         console.log(`Activated panel: ${panelId}`);
+    }
+    
+    /**
+     * Show the settings panel
+     */
+    showSettingsPanel() {
+        this.activatePanel('settings');
+        console.log('Showing settings panel');
+        
+        // Initialize settings UI if it hasn't been initialized
+        if (window.settingsUI && !window.settingsUI.initialized) {
+            window.settingsUI.init();
+        }
     }
     
     /**
@@ -161,6 +196,8 @@ class UIManager {
      */
     updateComponentControls(actions) {
         const controlsContainer = document.querySelector('.component-controls');
+        if (!controlsContainer) return;
+        
         controlsContainer.innerHTML = '';
         
         if (Array.isArray(actions) && actions.length > 0) {

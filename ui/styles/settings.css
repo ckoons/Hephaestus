@@ -1,0 +1,212 @@
+/* Settings Component Styles */
+
+.settings-container {
+  padding: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.settings-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.settings-header h2 {
+  font-size: 1.3rem;
+  margin: 0;
+  color: var(--accent-primary);
+}
+
+.settings-header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.settings-section {
+  margin: 24px 16px;
+  padding: 16px;
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.settings-section h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1.1rem;
+  color: var(--text-primary);
+}
+
+.setting-group {
+  margin-bottom: 20px;
+}
+
+.setting-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.setting-label {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.setting-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+.warning-text {
+  color: #f44336;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 46px;
+  height: 24px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: .4s;
+  border-radius: 24px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: var(--accent-primary);
+}
+
+input:focus + .toggle-slider {
+  box-shadow: 0 0 1px var(--accent-primary);
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(22px);
+}
+
+/* Theme Mode Selector */
+.theme-mode-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.theme-mode-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-mode-button:hover {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.theme-mode-button.active {
+  background-color: var(--accent-primary);
+  color: white;
+  border-color: var(--accent-primary);
+}
+
+.theme-icon {
+  font-size: 1.2rem;
+}
+
+/* Theme Color Selector */
+.theme-color-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.theme-color-button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-color-button:hover {
+  background-color: rgba(var(--color-rgb, 0, 123, 255), 0.1);
+}
+
+.theme-color-button.active {
+  border-color: var(--color, var(--accent-primary));
+  background-color: rgba(var(--color-rgb, 0, 123, 255), 0.1);
+}
+
+.theme-color-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: var(--color, var(--accent-primary));
+}
+
+/* Buttons */
+.primary-button {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+.primary-button:hover {
+  background-color: var(--accent-secondary);
+}
+
+.danger-button {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  border: 1px solid rgba(244, 67, 54, 0.3);
+}
+
+.danger-button:hover {
+  background-color: #f44336;
+  color: white;
+}

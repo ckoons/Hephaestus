@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     window.websocketManager = new WebSocketManager();
     websocketManager.connect();
     
-    // Set up settings buttons
+    // Set up button handlers
     document.getElementById('budget-button').addEventListener('click', function() {
         tektonUI.showModal('Budget', '<div class="budget-panel"><h3>Resource Usage</h3><p>AI Credits: 2,450 / 5,000</p><p>Storage: 1.2 GB / 10 GB</p><p>API Calls: 325 / 1,000</p></div>');
     });
@@ -138,73 +138,11 @@ document.addEventListener('DOMContentLoaded', function() {
         tektonUI.showModal('Profile', '<div class="profile-panel"><h3>User Profile</h3><p>Name: Admin User</p><p>Role: System Administrator</p><p>Last Login: Today at 12:34 PM</p></div>');
     });
     
+    // Settings button now opens the settings panel instead of a modal
     document.getElementById('settings-button').addEventListener('click', function() {
-        // Include theme toggle in settings
-        const currentTheme = document.querySelector('body').classList.contains('theme-dark') ? 'dark' : 'light';
-        const debugMode = tektonUI.debug;
-        
-        tektonUI.showModal('Settings', `
-            <div class="settings-panel">
-                <h3>System Settings</h3>
-                <div class="setting-row">
-                    <label>Theme:</label>
-                    <select id="theme-select">
-                        <option value="dark" ${currentTheme === 'dark' ? 'selected' : ''}>Dark</option>
-                        <option value="light" ${currentTheme === 'light' ? 'selected' : ''}>Light</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <label>AI Model:</label>
-                    <select id="model-select">
-                        <option>Claude</option>
-                        <option>Ollama</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <label>Debug Mode:</label>
-                    <input type="checkbox" id="debug-mode" ${debugMode ? 'checked' : ''}>
-                </div>
-                <button class="settings-save" id="save-settings">Save Settings</button>
-            </div>
-        `);
-        
-        // Add event listener to the save button
-        setTimeout(() => {
-            document.getElementById('save-settings').addEventListener('click', function() {
-                const themeSelect = document.getElementById('theme-select');
-                const selectedTheme = themeSelect.value;
-                const body = document.querySelector('body');
-                const stylesheet = document.getElementById('theme-stylesheet');
-                
-                // Handle theme change
-                if (selectedTheme === 'light' && body.classList.contains('theme-dark')) {
-                    body.classList.replace('theme-dark', 'theme-light');
-                    stylesheet.href = 'styles/themes/light.css';
-                    storageManager.setItem('theme', 'light');
-                    tektonUI.log('Theme changed to light');
-                } else if (selectedTheme === 'dark' && body.classList.contains('theme-light')) {
-                    body.classList.replace('theme-light', 'theme-dark');
-                    stylesheet.href = 'styles/themes/dark.css';
-                    storageManager.setItem('theme', 'dark');
-                    tektonUI.log('Theme changed to dark');
-                }
-                
-                // Handle debug mode change
-                const debugModeCheckbox = document.getElementById('debug-mode');
-                tektonUI.debug = debugModeCheckbox.checked;
-                storageManager.setItem('debug_mode', debugModeCheckbox.checked);
-                
-                // Also update terminal debug mode
-                if (window.terminalManager) {
-                    terminalManager.debugMode = debugModeCheckbox.checked;
-                    terminalManager.write(`Debug mode ${debugModeCheckbox.checked ? 'enabled' : 'disabled'}`);
-                }
-                
-                tektonUI.log(`Debug mode ${debugModeCheckbox.checked ? 'enabled' : 'disabled'}`);
-                
-                tektonUI.hideModal();
-            });
-        }, 100);
+        if (window.uiManager) {
+            uiManager.showSettingsPanel();
+        }
     });
     
     // Set up status indicators for demo
@@ -232,17 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Load saved theme preference
-    const savedTheme = storageManager.getItem('theme') || 'dark';
-    const body = document.querySelector('body');
-    const stylesheet = document.getElementById('theme-stylesheet');
-    
-    if (savedTheme === 'light') {
-        body.classList.replace('theme-dark', 'theme-light');
-        stylesheet.href = 'styles/themes/light.css';
-    }
-    
-    // Load saved debug mode preference
+    // Theme and settings will now be handled by the settings manager
+    // Load saved debug mode preference for compatibility
     const savedDebugMode = storageManager.getItem('debug_mode');
     if (savedDebugMode !== null) {
         tektonUI.debug = savedDebugMode === 'true';

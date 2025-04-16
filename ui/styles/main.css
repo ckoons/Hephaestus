@@ -126,18 +126,23 @@ body {
 }
 
 .nav-item {
-    padding: 8px 16px;
     display: flex;
     align-items: center;
+    padding: 8px 12px;
+    background-color: var(--bg-tertiary);
+    border: none;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    border-radius: 4px;
-    margin: 2px 8px;
     transition: background-color var(--transition-speed) ease;
+    text-align: left;
+    color: var(--text-primary);
+    margin: 8px;
     position: relative;
 }
 
 .nav-item:hover {
-    background-color: var(--bg-tertiary);
+    background-color: var(--accent-primary);
+    color: white;
 }
 
 .nav-item.active {

@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tekton - AI Orchestration System</title>
     <link rel="stylesheet" href="styles/main.css">
-    <link rel="stylesheet" href="styles/themes/dark.css" id="theme-stylesheet">
+    <link rel="stylesheet" href="styles/themes/dark-blue.css" id="theme-stylesheet">
     <link rel="stylesheet" href="styles/ergon.css">
+    <link rel="stylesheet" href="styles/settings.css">
     <style>
         /* Streamlined header styles */
         .left-panel-header {
@@ -15,7 +16,7 @@
         }
     </style>
 </head>
-<body class="theme-dark">
+<body data-theme="dark-blue">
     <div class="app-container">
         <!-- Left Panel -->
         <div class="left-panel">
@@ -44,11 +45,7 @@
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="ergon">
-                        <span class="nav-label" style="display: flex; align-items: center;">
-                            <span style="font-size: 0.9rem;">Ergon</span>
-                            <span> - </span>
-                            <span style="font-size: 0.75rem; opacity: 0.8;">Agents/Workflows/Tools</span>
-                        </span>
+                        <span class="nav-label">Ergon - Tools/Agents/Workflows</span>
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="harmonia">
@@ -131,6 +128,12 @@
                 <div class="panel html-panel" id="html-panel">
                     <!-- HTML controls will be loaded here -->
                 </div>
+                <div class="panel settings-panel" id="settings-panel">
+                    <!-- Settings controls -->
+                    <div id="settings-tab-content">
+                        <!-- Settings UI will be loaded here -->
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -155,7 +158,17 @@
     <script src="scripts/terminal.js"></script>
     <script src="scripts/storage.js"></script>
     <script src="scripts/websocket.js"></script>
-    <script src="scripts/terminal-chat.js"></script> <!-- Added back for compatibility -->
+    
+    <!-- Settings and theming system -->
+    <script src="scripts/settings-manager.js"></script>
+    <script src="scripts/settings-ui.js"></script>
+    
+    <!-- Enhanced terminal chat system -->
+    <script src="scripts/terminal-chat.js"></script> <!-- For compatibility -->
+    <script src="scripts/terminal-chat-enhanced.js"></script>
+    <script src="scripts/hermes-connector.js"></script>
+    
+    <!-- Component scripts -->
     <script src="scripts/ergon-component.js"></script>
     
     <!-- Direct script for simple terminal input -->
@@ -215,6 +228,8 @@
                       targetContext = 'ergon';
                     } else if (chatTarget === 'awt' || chatTarget === 'team') {
                       targetContext = 'awt-team';
+                    } else if (chatTarget === 'agora' || chatTarget === 'all') {
+                      targetContext = 'agora';
                     }
                     
                     if (targetContext) {
@@ -305,7 +320,7 @@
                       errorDiv.style.color = '#ff3333';
                       errorDiv.style.padding = '5px 0';
                       errorDiv.style.marginBottom = '10px';
-                      errorDiv.innerText = `Unknown chat target: @${chatTarget}. Available targets: @ergon, @awt`;
+                      errorDiv.innerText = `Unknown chat target: @${chatTarget}. Available targets: @ergon, @team, @agora`;
                       terminalContent.appendChild(errorDiv);
                     }
                   } else {

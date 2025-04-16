@@ -7,27 +7,40 @@
 
 /* Terminal Chat Container Styles */
 .terminal-chat-container {
-  height: calc(100vh - 220px);
-  background-color: #1e1e1e;
-  border-radius: 8px;
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid #333;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--chat-terminal-bg, #1e1e1e);
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
   overflow: hidden;
 }
 
 .terminal-chat-messages {
-  flex: 1;
+  position: absolute;
+  top: 40px; /* Height of section header */
+  bottom: 62px; /* Height of input area + padding */
+  left: 0;
+  right: 0;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  background-color: var(--chat-terminal-bg, #1e1e1e);
 }
 
 .terminal-chat-input-area {
-  border-top: 1px solid #333;
-  padding: 12px;
-  background-color: #111;
+  border-top: 2px solid var(--chat-input-border, #007bff);
+  padding: 12px 20px;
+  background-color: var(--chat-input-bg, #111);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
 }
 
 .terminal-chat-prompt {
@@ -38,21 +51,24 @@
 .prompt-symbol {
   color: #00ff00;
   font-weight: bold;
-  margin-right: 8px;
+  margin-right: 10px;
   font-size: 1.2rem;
   line-height: 1;
 }
 
 .terminal-chat-input {
   flex: 1;
-  background-color: transparent;
+  width: 100%;
+  background-color: var(--chat-input-bg, rgba(0, 0, 0, 0.3));
   border: none;
   outline: none;
   color: white;
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   font-size: 1rem;
-  padding: 8px 0;
-  caret-color: #00ff00;
+  padding: 8px 10px;
+  border-radius: 4px;
+  caret-color: var(--prompt-color, #00ff00);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
 }
 
 .terminal-chat-notice {
@@ -72,10 +88,16 @@
 
 /* Chat Message Styles */
 .chat-message {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
   display: flex;
   flex-direction: column;
-  max-width: 100%;
+  max-width: 95%;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .chat-message.user {
@@ -88,25 +110,32 @@
 }
 
 .message-content {
-  padding: 10px 12px;
-  border-radius: 6px;
-  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 8px;
+  max-width: 85%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .chat-message.user .message-content {
-  background-color: #2962FF;
+  background-color: var(--chat-user-bg, #2962FF);
   color: white;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .chat-message.agent .message-content {
-  background-color: #333;
-  color: white;
+  background-color: var(--chat-agent-bg, #333);
+  color: var(--text-primary, white);
+  border-left: 3px solid var(--chat-agent-border, #00ff00);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
 }
 
 .chat-message.system .message-content {
-  background-color: #333;
+  background-color: rgba(0,0,0,0.2);
   color: #aaa;
   font-style: italic;
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
 .message-text {
@@ -116,7 +145,22 @@
 .message-time {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.5);
-  margin-top: 4px;
+  margin-top: 6px;
+  text-align: right;
+}
+
+/* Styling for typing indicator */
+.chat-message.typing .message-content {
+  background-color: #222;
+  color: #777;
+  font-style: italic;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
 }
 
 /* Old Chat Container Styles (kept for compatibility) */
@@ -140,7 +184,7 @@
   bottom: 0;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 /* Placeholder content for unimplemented tabs */
@@ -158,11 +202,13 @@
 .ergon-tabs {
   display: flex;
   border-bottom: 1px solid var(--border-color);
-  margin-bottom: 16px;
   background-color: var(--bg-secondary);
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 10;
+  left: var(--left-panel-width);
+  right: 0;
+  z-index: 300;
+  height: 41px;
 }
 
 .tab-button {
@@ -170,7 +216,9 @@
   cursor: pointer;
   border-bottom: 3px solid transparent;
   transition: all var(--transition-speed) ease;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 1.2rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .tab-button:hover {
@@ -180,11 +228,19 @@
 .tab-button.active {
   border-bottom-color: var(--accent-primary);
   color: var(--accent-primary);
+  transform: none; /* Prevent any transformation */
+  font-size: 1.2rem; /* Explicitly set the same font size to override any changes */
 }
 
 .tab-content {
-  padding: 0 16px 16px 16px;
+  padding: 0;
   flex: 1;
+  height: calc(100% - 41px); /* Account for tabs height */
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  margin-top: 41px; /* Height of the tab buttons */
+  overflow: hidden;
 }
 
 /* Section Header */
@@ -192,13 +248,24 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin: 0;
+  padding: 8px 16px;
+  background-color: var(--bg-secondary, #111);
+  border-bottom: 1px solid var(--chat-input-border, #333);
+  height: 40px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 200;
 }
 
 .ergon-section-header h2 {
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0;
+  color: var(--accent-primary, #007bff);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
 .ergon-controls {

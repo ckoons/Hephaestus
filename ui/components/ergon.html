@@ -3,7 +3,8 @@
   <!-- Tabbed Navigation -->
   <div class="ergon-tabs">
     <div class="tab-button" data-tab="ergon">Ergon</div>
-    <div class="tab-button" data-tab="awt-team">AWT-Team</div>
+    <div class="tab-button" data-tab="awt-team">Symposium</div>
+    <div class="tab-button" data-tab="agora">Agora</div>
     <div class="tab-button active" data-tab="agents">Agents</div>
     <div class="tab-button" data-tab="memory">Memory</div>
     <div class="tab-button" data-tab="tools">Tools</div>
@@ -24,7 +25,7 @@
         <!-- Welcome message -->
         <div class="chat-message system">
           <div class="message-content">
-            <div class="message-text">Welcome to the Ergon AI Assistant. How can I help you with agent management today?</div>
+            <div class="message-text">Welcome to the Ergon AI Assistant. I specialize in agent management, workflow automation, and tool configuration. How can I assist you today?</div>
             <div class="message-time">Just now</div>
           </div>
         </div>
@@ -40,10 +41,10 @@
     </div>
   </div>
 
-  <!-- AWT-Team Chat Tab Content -->
+  <!-- Team Chat Tab Content (Symposium when SHOW_GREEK_NAMES=true) -->
   <div class="tab-content" id="awt-team-content">
     <div class="ergon-section-header">
-      <h2>AWT-Team Assistant</h2>
+      <h2>Symposium</h2>
       <div class="ergon-controls">
         <button class="control-button" id="clear-awt-chat">Clear Chat</button>
       </div>
@@ -54,7 +55,20 @@
         <!-- Welcome message -->
         <div class="chat-message system">
           <div class="message-content">
-            <div class="message-text">Welcome to the Advanced Workflow Team Assistant. I can help with complex workflow orchestration and automation.</div>
+            <div class="message-text">Welcome to the Team Discussion space. This is where multiple AI specialists collaborate on complex problems related to agents, workflows, and tools.</div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+        <!-- Sample team conversation -->
+        <div class="chat-message agent">
+          <div class="message-content">
+            <div class="message-text"><strong>Workflow Specialist:</strong> I'm here to discuss automation sequences and process optimization.</div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+        <div class="chat-message agent">
+          <div class="message-content">
+            <div class="message-text"><strong>Agent Designer:</strong> And I can help with creating specialized agents for specific tasks.</div>
             <div class="message-time">Just now</div>
           </div>
         </div>
@@ -64,12 +78,61 @@
         <div class="terminal-chat-prompt">
           <span class="prompt-symbol">></span>
           <input type="text" class="terminal-chat-input" data-context="awt-team" 
-                 placeholder="Type your message here and press Enter" autofocus>
+                 placeholder="Type your message to the team and press Enter" autofocus>
         </div>
       </div>
     </div>
   </div>
   
+  <!-- Agora Chat Tab Content -->
+  <div class="tab-content" id="agora-content">
+    <div class="ergon-section-header">
+      <h2>Agora - All AI Discussion</h2>
+      <div class="ergon-controls">
+        <button class="control-button" id="clear-agora-chat">Clear Chat</button>
+      </div>
+    </div>
+    <!-- Terminal-style chat container -->
+    <div class="terminal-chat-container" id="agora-chat-container">
+      <div class="terminal-chat-messages" id="agora-chat-messages">
+        <!-- Welcome message -->
+        <div class="chat-message system">
+          <div class="message-content">
+            <div class="message-text">Welcome to the Agora, a central forum for all AI assistants to collaborate on solving complex problems. This space gives you direct access to the full range of Tekton's AI capabilities.</div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+        <!-- Sample conversation -->
+        <div class="chat-message agent">
+          <div class="message-content">
+            <div class="message-text"><strong>Ergon:</strong> I manage agent development and tool configuration.</div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+        <div class="chat-message agent">
+          <div class="message-content">
+            <div class="message-text"><strong>Prometheus:</strong> I can assist with planning and strategy.</div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+        <div class="chat-message agent">
+          <div class="message-content">
+            <div class="message-text"><strong>Telos:</strong> And I help define requirements and objectives.</div>
+            <div class="message-time">Just now</div>
+          </div>
+        </div>
+      </div>
+      <!-- Terminal-style input field (this one is functional) -->
+      <div class="terminal-chat-input-area">
+        <div class="terminal-chat-prompt">
+          <span class="prompt-symbol">></span>
+          <input type="text" class="terminal-chat-input" data-context="agora" 
+                 placeholder="Type your message to all AIs and press Enter" autofocus>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Terminal Info Tab Content -->
   <div class="tab-content" id="terminal-redirect">
     <div class="ergon-section-header">
@@ -83,7 +146,8 @@
         <div style="margin-top: 24px; background: #333; padding: 12px; border-radius: 4px; text-align: left;">
           <p style="margin-bottom: 8px; color: #00bfff;">Chat commands:</p>
           <code style="display: block; padding: 4px; color: #00ff00;">@ergon Tell me about available agents</code>
-          <code style="display: block; padding: 4px; color: #00ff00;">@awt How do I create a workflow?</code>
+          <code style="display: block; padding: 4px; color: #00ff00;">@team How do I create a workflow?</code>
+          <code style="display: block; padding: 4px; color: #00ff00;">@agora Can someone help with this problem?</code>
           <p style="margin: 12px 0 8px 0; color: #00bfff;">Action commands:</p>
           <code style="display: block; padding: 4px; color: #00ff00;">list agents</code>
           <code style="display: block; padding: 4px; color: #00ff00;">create agent "GitAgent" type=github</code>
