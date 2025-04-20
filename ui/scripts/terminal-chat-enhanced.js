@@ -216,36 +216,110 @@ class EnhancedTerminalChat {
         // Add to UI
         this.addUserMessage(text);
         
-        // Send via Hermes if connected
+        // Get context ID
         const contextId = this.options.contextId;
         
-        if (window.hermesConnector && contextId) {
-            const recipients = this.getRecipients(contextId);
+        // Show typing indicator
+        this.showTypingIndicator();
+        
+        // Send message to LLM if Hermes connector is available
+        if (window.hermesConnector) {
+            console.log(`Sending message to LLM via Hermes: ${text}`);
             
-            window.hermesConnector.sendMessage(
-                'user',
-                recipients,
-                {
-                    type: 'chat',
-                    context: contextId,
-                    content: text,
-                    timestamp: new Date().toISOString()
-                }
-            );
+            // Use LLM integration
+            window.hermesConnector.sendLLMMessage(contextId, text, true, {
+                // Additional options can be configured here
+                temperature: 0.7,
+                // model: "anthropic/claude-3-sonnet-20240229", // Can be configured based on settings
+            });
             
-            console.log(`Sent message to ${recipients.join(', ')}: ${text}`);
-            
-            // Show typing indicator
-            this.showTypingIndicator();
+            // Listen for stream events if not already listening
+            if (!this._streamListenersAttached) {
+                this._attachStreamListeners();
+            }
         } else {
             console.log(`Hermes not available, message handled locally: ${text}`);
             
             // Simulate response locally (temporary until real backend)
-            this.showTypingIndicator();
             setTimeout(() => {
                 this.hideTypingIndicator();
                 this.addAIMessage(`I received your message: "${text}".<br>How can I assist you further?`, contextId);
             }, 1500);
+        }
+        
+        // Save to history
+        this.saveHistory();
+    }
+    
+    /**
+     * Attach stream event listeners
+     * @private
+     */
+    _attachStreamListeners() {
+        if (!window.hermesConnector) return;
+        
+        const contextId = this.options.contextId;
+        
+        // Listen for typing started events
+        window.hermesConnector.addEventListener('typingStarted', (data) => {
+            if (data.contextId === contextId) {
+                this.showTypingIndicator();
+            }
+        });
+        
+        // Listen for typing ended events
+        window.hermesConnector.addEventListener('typingEnded', (data) => {
+            if (data.contextId === contextId) {
+                this.hideTypingIndicator();
+            }
+        });
+        
+        // Listen for stream chunks
+        window.hermesConnector.addEventListener('streamChunk', (data) => {
+            if (data.contextId === contextId) {
+                this._handleStreamChunk(data.chunk);
+            }
+        });
+        
+        // Mark listeners as attached
+        this._streamListenersAttached = true;
+    }
+    
+    /**
+     * Handle a streaming response chunk
+     * @param {string} chunk - Text chunk
+     * @private
+     */
+    _handleStreamChunk(chunk) {
+        const messagesContainer = this.container.querySelector('.terminal-chat-messages');
+        if (!messagesContainer) return;
+        
+        // Find or create the streaming message element
+        let streamMsgEl = messagesContainer.querySelector('.llm-streaming-message');
+        if (!streamMsgEl) {
+            // Hide any typing indicators first
+            this.hideTypingIndicator();
+            
+            // Create new message element
+            streamMsgEl = document.createElement('div');
+            streamMsgEl.className = 'chat-message agent llm-streaming-message';
+            streamMsgEl.innerHTML = `
+                <div class="message-content">
+                    <div class="message-text"></div>
+                    <div class="message-time">${this.formatTimestamp(new Date().toISOString())}</div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(streamMsgEl);
+        }
+        
+        // Append chunk to the message text
+        const textEl = streamMsgEl.querySelector('.message-text');
+        if (textEl) {
+            textEl.innerHTML += chunk;
+            
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
     }
     

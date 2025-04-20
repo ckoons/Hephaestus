@@ -22,6 +22,7 @@ window.ergonComponent = {
       websocketManager.addToTerminal("=== ERGON COMPONENT ACTIVATED ===", '#00bfff');
       websocketManager.addToTerminal("Switching to the Ergon interface panel.", '#aaaaaa');
       websocketManager.addToTerminal("You can still use the terminal for all Ergon commands.", '#aaaaaa');
+      websocketManager.addToTerminal("Connecting to LLM adapter for enhanced chat...", '#00bfff');
       websocketManager.addToTerminal("", 'white'); // blank line for spacing
     }
     
@@ -32,6 +33,12 @@ window.ergonComponent = {
       // First-time initialization
       this.loadErgonUI();
       this.state.initialized = true;
+      
+      // Ensure LLM adapter connection is established
+      if (window.hermesConnector && !window.hermesConnector.llmConnected) {
+        console.log("Initializing connection to LLM adapter");
+        window.hermesConnector.connectToLLMAdapter();
+      }
     } else {
       // Already initialized, just restore state
       this.restoreComponentState();
@@ -195,7 +202,7 @@ window.ergonComponent = {
     messageDiv.innerHTML = `
       <div class="message-content">
         <div class="message-text">${message}</div>
-        <div class="message-time">Just now</div>
+        <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
       </div>
     `;
     
@@ -222,31 +229,222 @@ window.ergonComponent = {
       websocketManager.addToTerminal(`${termPrefix}: ${message}`, '#2962FF');
     }
     
-    // Simulate response after delay
-    setTimeout(() => {
-      // Remove typing indicators
+    // Use LLM integration if available
+    if (window.hermesConnector) {
+      // Register stream event handlers if not already done
+      if (!this.streamHandlersRegistered) {
+        this.setupStreamHandlers();
+      }
+      
+      // First check if LLM Adapter is connected
+      if (!window.hermesConnector.llmConnected) {
+        console.log(`LLM Adapter not connected, attempting to connect for ${context}`);
+        
+        // Add a message to the chat explaining we're trying to connect
+        const connectingDiv = document.createElement('div');
+        connectingDiv.className = 'chat-message system';
+        connectingDiv.innerHTML = `
+          <div class="message-content">
+            <div class="message-text">
+              <strong>System:</strong> Attempting to connect to LLM service...
+            </div>
+            <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+        `;
+        
+        // Hide typing indicator before adding this message
+        const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
+        typingIndicators.forEach(indicator => indicator.remove());
+        
+        chatMessages.appendChild(connectingDiv);
+        
+        // Re-add typing indicator
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+      
+      // Send to LLM via Hermes connector
+      window.hermesConnector.sendLLMMessage(context, message, true, {
+        // Additional options can be configured here
+        temperature: 0.7
+      });
+    } else {
+      // Fallback - simulate response after delay
+      setTimeout(() => {
+        // Remove typing indicators
+        const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
+        typingIndicators.forEach(indicator => indicator.remove());
+        
+        // Add response
+        const responseDiv = document.createElement('div');
+        responseDiv.className = 'chat-message agent';
+        responseDiv.innerHTML = `
+          <div class="message-content">
+            <div class="message-text">
+              <strong>Note:</strong> LLM integration not available. This is a simulated response.<br><br>
+              I received your message: "${message}".<br>How can I assist you further?
+            </div>
+            <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+          </div>
+        `;
+        
+        chatMessages.appendChild(responseDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        
+        // Also echo to main terminal
+        if (window.websocketManager) {
+          const targetName = context === 'awt-team' ? 'AWT-Team' : 'Ergon';
+          websocketManager.addToTerminal(`[${targetName}] I received your message: "${message}". How can I assist you further?`, '#00bfff');
+        }
+      }, 1000);
+    }
+  },
+  
+  // Set up stream event handlers for all contexts
+  setupStreamHandlers: function() {
+    if (!window.hermesConnector) return;
+    
+    // Set up stream chunk handler
+    window.hermesConnector.addEventListener('streamChunk', (data) => {
+      const { contextId, chunk } = data;
+      
+      // Handle chunk based on context
+      if (contextId === 'ergon' || contextId === 'awt-team' || contextId === 'agora') {
+        this.handleStreamChunk(contextId, chunk);
+      }
+    });
+    
+    // Set up stream completion handler
+    window.hermesConnector.addEventListener('streamComplete', (data) => {
+      const { contextId, fullResponse } = data;
+      
+      // Convert streaming message to regular message
+      this.finalizeStreamingMessage(contextId);
+      
+      // Also echo to main terminal if needed
+      if (window.websocketManager) {
+        const targetName = contextId === 'awt-team' ? 'AWT-Team' : 
+                           contextId === 'agora' ? 'Agora' : 'Ergon';
+        
+        // Extract first 100 chars for terminal summary
+        const summary = fullResponse.length > 100 ? 
+          fullResponse.substring(0, 100) + '...' : 
+          fullResponse;
+          
+        websocketManager.addToTerminal(`[${targetName}] Response: ${summary}`, '#00bfff');
+      }
+    });
+    
+    // Handle typing indicators
+    window.hermesConnector.addEventListener('typingStarted', (data) => {
+      const { contextId } = data;
+      
+      // Add typing indicator to specific context
+      this.showTypingIndicator(contextId);
+    });
+    
+    window.hermesConnector.addEventListener('typingEnded', (data) => {
+      const { contextId } = data;
+      
+      // Remove typing indicator from specific context
+      this.hideTypingIndicator(contextId);
+    });
+    
+    // Mark handlers as registered
+    this.streamHandlersRegistered = true;
+  },
+  
+  // Handle stream chunk for a specific context
+  handleStreamChunk: function(contextId, chunk) {
+    // Get the chat messages container
+    const chatMessages = document.getElementById(`${contextId}-chat-messages`);
+    if (!chatMessages) return;
+    
+    // Find or create streaming message element
+    let streamingMessage = chatMessages.querySelector('.llm-streaming-message');
+    if (!streamingMessage) {
+      // Remove typing indicators first
       const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
       typingIndicators.forEach(indicator => indicator.remove());
       
-      // Add response
-      const responseDiv = document.createElement('div');
-      responseDiv.className = 'chat-message agent';
-      responseDiv.innerHTML = `
+      // Create new streaming message element
+      streamingMessage = document.createElement('div');
+      streamingMessage.className = 'chat-message agent llm-streaming-message';
+      streamingMessage.innerHTML = `
         <div class="message-content">
-          <div class="message-text">I received your message: "${message}".<br>How can I assist you further?</div>
+          <div class="message-text"></div>
           <div class="message-time">Just now</div>
         </div>
       `;
       
-      chatMessages.appendChild(responseDiv);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
+      chatMessages.appendChild(streamingMessage);
+    }
+    
+    // Add chunk to message
+    const messageText = streamingMessage.querySelector('.message-text');
+    if (messageText) {
+      messageText.innerHTML += chunk;
       
-      // Also echo to main terminal
-      if (window.websocketManager) {
-        const targetName = context === 'awt-team' ? 'AWT-Team' : 'Ergon';
-        websocketManager.addToTerminal(`[${targetName}] I received your message: "${message}". How can I assist you further?`, '#00bfff');
+      // Scroll to bottom
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  },
+  
+  // Finalize a streaming message when complete
+  finalizeStreamingMessage: function(contextId) {
+    // Get the chat messages container
+    const chatMessages = document.getElementById(`${contextId}-chat-messages`);
+    if (!chatMessages) return;
+    
+    // Find streaming message element
+    const streamingMessage = chatMessages.querySelector('.llm-streaming-message');
+    if (streamingMessage) {
+      // Convert to regular message
+      streamingMessage.classList.remove('llm-streaming-message');
+      
+      // Update timestamp
+      const timeElement = streamingMessage.querySelector('.message-time');
+      if (timeElement) {
+        const now = new Date();
+        timeElement.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
       }
-    }, 1000);
+    }
+  },
+  
+  // Show typing indicator for a specific context
+  showTypingIndicator: function(contextId) {
+    // Get the chat messages container
+    const chatMessages = document.getElementById(`${contextId}-chat-messages`);
+    if (!chatMessages) return;
+    
+    // Check if typing indicator already exists
+    if (chatMessages.querySelector('[data-typing="true"]')) {
+      return;
+    }
+    
+    // Create typing indicator
+    const typingDiv = document.createElement('div');
+    typingDiv.className = 'chat-message system typing';
+    typingDiv.setAttribute('data-typing', 'true');
+    typingDiv.innerHTML = `
+      <div class="message-content">
+        <div class="message-text">Processing...</div>
+      </div>
+    `;
+    
+    chatMessages.appendChild(typingDiv);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  },
+  
+  // Hide typing indicator for a specific context
+  hideTypingIndicator: function(contextId) {
+    // Get the chat messages container
+    const chatMessages = document.getElementById(`${contextId}-chat-messages`);
+    if (!chatMessages) return;
+    
+    // Remove typing indicators
+    const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
+    typingIndicators.forEach(indicator => indicator.remove());
   },
   
   // Set up the tabbed interface
@@ -310,6 +508,47 @@ window.ergonComponent = {
             }
           }
         }, 100);
+        
+        // Ensure LLM adapter is connected
+        if (window.hermesConnector) {
+          // If we have an LLM adapter connector, make sure it's connected
+          // This will attempt reconnection if needed
+          if (!window.hermesConnector.llmConnected) {
+            console.log(`Connecting to LLM adapter for ${tabId} chat...`);
+            window.hermesConnector.connectToLLMAdapter();
+            
+            // Send a welcome message to test the connection
+            const welcomeMsg = `Welcome to ${tabId} chat terminal. How can I assist you today?`;
+            const chatMessages = document.getElementById(`${tabId}-chat-messages`);
+            if (chatMessages) {
+              // Add a system message that explains the LLM connection
+              const systemMsgEl = document.createElement('div');
+              systemMsgEl.className = 'chat-message system';
+              systemMsgEl.innerHTML = `
+                <div class="message-content">
+                  <div class="message-text">
+                    <strong>System:</strong> Connecting to LLM for enhanced chat capabilities.
+                    Type your message and press Enter to chat with the AI.
+                  </div>
+                  <div class="message-time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+              `;
+              
+              // Add system message
+              const welcomeMsgEl = chatMessages.querySelector('.chat-message.system');
+              if (welcomeMsgEl) {
+                // Insert after existing welcome message
+                welcomeMsgEl.parentNode.insertBefore(systemMsgEl, welcomeMsgEl.nextSibling);
+              } else {
+                // Add to the beginning
+                chatMessages.appendChild(systemMsgEl);
+              }
+              
+              // Scroll to bottom
+              chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+          }
+        }
       } else {
         // Reset placeholder for non-chat tabs
         const terminalInput = document.getElementById('simple-terminal-input');
@@ -670,9 +909,10 @@ window.ergonComponent = {
   // Set up component-specific terminal chat inputs
   setupChatInputs: function() {
     const chatInputs = document.querySelectorAll('.terminal-chat-input');
+    const self = this; // Store reference to 'this' for use in event handler
     
     chatInputs.forEach(input => {
-      input.addEventListener('keydown', (e) => {
+      input.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
           const message = input.value.trim();
           if (!message) return;
@@ -681,73 +921,11 @@ window.ergonComponent = {
           const context = input.getAttribute('data-context');
           if (!context) return;
           
-          // Get the chat messages container
-          const chatMessages = document.getElementById(`${context}-chat-messages`);
-          if (!chatMessages) return;
+          // Call our sendChatMessage function that uses the LLM adapter
+          self.sendChatMessage(context, message);
           
-          console.log(`Sending message in ${context} context:`, message);
-          
-          // Add user message to chat
-          const messageDiv = document.createElement('div');
-          messageDiv.className = 'chat-message user';
-          messageDiv.innerHTML = `
-            <div class="message-content">
-              <div class="message-text">${message}</div>
-              <div class="message-time">Just now</div>
-            </div>
-          `;
-          
-          chatMessages.appendChild(messageDiv);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-          
-          // Show typing indicator
-          const typingDiv = document.createElement('div');
-          typingDiv.className = 'chat-message system typing';
-          typingDiv.setAttribute('data-typing', 'true');
-          typingDiv.innerHTML = `
-            <div class="message-content">
-              <div class="message-text">Processing...</div>
-            </div>
-          `;
-          
-          chatMessages.appendChild(typingDiv);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-          
-          // Also echo to main terminal
-          if (window.websocketManager) {
-            // Format as if it was entered in the main terminal with @ prefix
-            const termPrefix = context === 'awt-team' ? '@awt' : '@ergon';
-            websocketManager.addToTerminal(`${termPrefix}: ${message}`, '#2962FF');
-          }
-          
-          // Clear input
+          // Clear input after sending
           input.value = '';
-          
-          // Simulate response after delay
-          setTimeout(() => {
-            // Remove typing indicators
-            const typingIndicators = chatMessages.querySelectorAll('[data-typing="true"]');
-            typingIndicators.forEach(indicator => indicator.remove());
-            
-            // Add response
-            const responseDiv = document.createElement('div');
-            responseDiv.className = 'chat-message agent';
-            responseDiv.innerHTML = `
-              <div class="message-content">
-                <div class="message-text">I received your message: "${message}".<br>How can I assist you further?</div>
-                <div class="message-time">Just now</div>
-              </div>
-            `;
-            
-            chatMessages.appendChild(responseDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // Also echo to main terminal
-            if (window.websocketManager) {
-              const targetName = context === 'awt-team' ? 'AWT-Team' : 'Ergon';
-              websocketManager.addToTerminal(`[${targetName}] I received your message: "${message}". How can I assist you further?`, '#00bfff');
-            }
-          }, 1000);
         }
       });
       

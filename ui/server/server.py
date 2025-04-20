@@ -14,6 +14,12 @@ import socketserver
 import asyncio
 import websockets
 import threading
+import urllib.request
+import urllib.error
+import urllib.parse
+from urllib.parse import urlparse
+import http.client
+import random
 
 # Configure logging
 logging.basicConfig(
@@ -28,6 +34,10 @@ logger = logging.getLogger(__name__)
 class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     """Handler for serving the Tekton UI"""
     
+    # Configuration for API proxying
+    ERGON_API_HOST = "localhost"
+    ERGON_API_PORT = 8200  # Ergon API port based on Tekton launch configuration
+    
     def __init__(self, *args, directory=None, **kwargs):
         if directory is None:
             directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -37,6 +47,11 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         """Handle GET requests"""
         # Add no-cache headers to force browser to reload content
         self.protocol_version = 'HTTP/1.1'
+        
+        # Check if this is an API request that needs to be proxied
+        if self.path.startswith("/api/"):
+            self.proxy_api_request("GET")
+            return
         
         # Handle requests for images directory
         if self.path.startswith("/images/"):
@@ -83,6 +98,140 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             
         return SimpleHTTPRequestHandler.do_GET(self)
     
+    def do_POST(self):
+        """Handle POST requests"""
+        # Check if this is an API request that needs to be proxied
+        if self.path.startswith("/api/"):
+            self.proxy_api_request("POST")
+            return
+        
+        # Handle any other POST requests with 404
+        self.send_error(404, "Not Found")
+    
+    def proxy_api_request(self, method):
+        """Proxy API requests to the appropriate backend service"""
+        try:
+            # Determine target based on path
+            target_host = self.ERGON_API_HOST
+            target_port = self.ERGON_API_PORT
+            
+            # Terminal/LLM endpoints
+            if self.path.startswith("/api/terminal/"):
+                # Convert /api/terminal/* to /terminal/* for Ergon API
+                target_path = self.path.replace("/api/terminal/", "/terminal/")
+            # Hermes registration endpoints
+            elif self.path.startswith("/api/register"):
+                # Direct to Hermes registration endpoint when available
+                # For now, we'll mock this
+                self.mock_registration_endpoint()
+                return
+            # General message endpoints
+            elif self.path.startswith("/api/message"):
+                # Direct to message bus when available
+                # For now, we'll mock this
+                self.mock_message_endpoint()
+                return
+            # Status endpoint
+            elif self.path == "/api/status":
+                self.mock_status_endpoint()
+                return
+            else:
+                # Unknown API endpoint
+                self.send_error(404, f"API endpoint not supported: {self.path}")
+                return
+            
+            # Get content length for POST requests
+            content_length = int(self.headers.get('Content-Length', 0))
+            body = None
+            if content_length > 0:
+                body = self.rfile.read(content_length)
+            
+            # Get all headers to forward
+            headers = {}
+            for header, value in self.headers.items():
+                if header.lower() not in ('host', 'content-length'):
+                    headers[header] = value
+            
+            # Make request to backend
+            logger.info(f"Proxying {method} request to {target_host}:{target_port}{target_path}")
+            
+            conn = http.client.HTTPConnection(target_host, target_port)
+            conn.request(method, target_path, body=body, headers=headers)
+            response = conn.getresponse()
+            
+            # Forward response status and headers
+            self.send_response(response.status)
+            for header, value in response.getheaders():
+                if header.lower() not in ('transfer-encoding',):
+                    self.send_header(header, value)
+            self.end_headers()
+            
+            # Forward response body
+            self.wfile.write(response.read())
+            conn.close()
+            
+        except Exception as e:
+            logger.error(f"Error proxying request: {e}")
+            self.send_error(500, f"Error proxying request: {str(e)}")
+    
+    def mock_registration_endpoint(self):
+        """Mock Hermes registration endpoint for development"""
+        content_length = int(self.headers.get('Content-Length', 0))
+        if content_length > 0:
+            body = self.rfile.read(content_length).decode('utf-8')
+            request = json.loads(body)
+            logger.info(f"Mock registration: {request}")
+        
+        # Return success response
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        response = {
+            "status": "success",
+            "registered": True,
+            "message": "Component registered successfully (mock)"
+        }
+        
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+    
+    def mock_message_endpoint(self):
+        """Mock Hermes message endpoint for development"""
+        content_length = int(self.headers.get('Content-Length', 0))
+        if content_length > 0:
+            body = self.rfile.read(content_length).decode('utf-8')
+            message = json.loads(body)
+            logger.info(f"Mock message received: {message}")
+        
+        # Return success response
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        response = {
+            "status": "success",
+            "delivered": True,
+            "message": "Message delivered successfully (mock)"
+        }
+        
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+    
+    def mock_status_endpoint(self):
+        """Mock Hermes status endpoint for development"""
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        
+        response = {
+            "status": "ok",
+            "service": "hermes",
+            "version": "0.1.0",
+            "components": ["ergon", "engram", "athena"],
+            "message": "Hermes is running (mock)"
+        }
+        
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+    
     def log_message(self, format, *args):
         """Override to use our logger"""
         logger.info(format % args)
@@ -116,6 +265,7 @@ class WebSocketServer:
             
             # For demo purposes, echo the message back with a response
             if data.get('type') == 'COMMAND':
+                # Handle command message
                 response = {
                     'type': 'RESPONSE',
                     'source': data.get('target', 'SYSTEM'),
@@ -128,6 +278,11 @@ class WebSocketServer:
                 }
                 await websocket.send(json.dumps(response))
             
+            # LLM requests for terminal chats
+            elif data.get('type') == 'LLM_REQUEST':
+                # Forward LLM requests to the Ergon API
+                await self.handle_llm_request(websocket, data)
+                
             # If this is a registration message, acknowledge it
             elif data.get('type') == 'REGISTER':
                 response = {
@@ -146,6 +301,145 @@ class WebSocketServer:
             logger.error(f"Invalid JSON message: {message}")
         except Exception as e:
             logger.error(f"Error handling message: {e}")
+            
+    async def handle_llm_request(self, websocket, data):
+        """Handle LLM request messages by simulating responses"""
+        try:
+            # Extract relevant information
+            payload = data.get('payload', {})
+            context_id = payload.get('context', 'ergon')
+            message = payload.get('message', '')
+            
+            if not message:
+                logger.error("Empty message in LLM request")
+                return
+            
+            # Set up typing indicator response
+            typing_response = {
+                'type': 'UPDATE',
+                'source': 'SYSTEM',
+                'target': data.get('source', 'UI'),
+                'timestamp': self.get_timestamp(),
+                'payload': {
+                    'status': 'typing',
+                    'isTyping': True,
+                    'context': context_id
+                }
+            }
+            await websocket.send(json.dumps(typing_response))
+            
+            # Get simulation mode
+            streaming = payload.get('streaming', True)
+            
+            # Create a simulated response based on context
+            simulated_response = f"I received your message: \"{message}\". This is a simulated response as I'm not connected to an LLM. To use a real LLM, you should connect to the Ergon API which is configured with the appropriate LLM integration."
+            
+            # Add context-specific information
+            if context_id == "ergon":
+                simulated_response += "\n\nThis is a simulated response from the Ergon AI assistant. In a real implementation, I would help with agent creation, automation, and tool configuration."
+            elif context_id == "awt-team":
+                simulated_response += "\n\nThis is a simulated response from the AWT Team assistant. In a real implementation, I would help with workflow automation and process design."
+            elif context_id == "agora":
+                simulated_response += "\n\nThis is a simulated response from the Agora multi-component assistant. In a real implementation, I would coordinate between different AI systems."
+            
+            # Handle streaming vs non-streaming
+            if streaming:
+                # Simulate streaming response
+                chunk_size = 5  # Characters per chunk
+                for i in range(0, len(simulated_response), chunk_size):
+                    chunk = simulated_response[i:i+chunk_size]
+                    
+                    # Send chunk
+                    chunk_response = {
+                        'type': 'UPDATE',
+                        'source': context_id,
+                        'target': data.get('source', 'UI'),
+                        'timestamp': self.get_timestamp(),
+                        'payload': {
+                            'chunk': chunk,
+                            'context': context_id
+                        }
+                    }
+                    await websocket.send(json.dumps(chunk_response))
+                    
+                    # Add a short delay between chunks (50-150ms) for realistic effect
+                    await asyncio.sleep(0.05 + (0.1 * random.random()))
+                
+                # Send done signal
+                done_response = {
+                    'type': 'UPDATE',
+                    'source': context_id,
+                    'target': data.get('source', 'UI'),
+                    'timestamp': self.get_timestamp(),
+                    'payload': {
+                        'done': True,
+                        'context': context_id
+                    }
+                }
+                await websocket.send(json.dumps(done_response))
+            else:
+                # Create AI response (non-streaming)
+                ai_response = {
+                    'type': 'RESPONSE',
+                    'source': context_id,
+                    'target': data.get('source', 'UI'),
+                    'timestamp': self.get_timestamp(),
+                    'payload': {
+                        'message': simulated_response,
+                        'context': context_id
+                    }
+                }
+                
+                # Add a delay to simulate processing time
+                await asyncio.sleep(1.0)
+                
+                # Send response
+                await websocket.send(json.dumps(ai_response))
+            
+            # Send typing end indicator
+            typing_end_response = {
+                'type': 'UPDATE',
+                'source': 'SYSTEM',
+                'target': data.get('source', 'UI'),
+                'timestamp': self.get_timestamp(),
+                'payload': {
+                    'status': 'typing',
+                    'isTyping': False,
+                    'context': context_id
+                }
+            }
+            await websocket.send(json.dumps(typing_end_response))
+                
+        except Exception as e:
+            logger.error(f"Error handling LLM request: {e}")
+            
+            # Send error response
+            error_response = {
+                'type': 'ERROR',
+                'source': 'SYSTEM',
+                'target': data.get('source', 'UI'),
+                'timestamp': self.get_timestamp(),
+                'payload': {
+                    'error': f"Error processing request: {str(e)}",
+                    'context': context_id if 'context_id' in locals() else 'unknown'
+                }
+            }
+            await websocket.send(json.dumps(error_response))
+            
+            # End typing indicator if it was started
+            if 'context_id' in locals():
+                typing_end_response = {
+                    'type': 'UPDATE',
+                    'source': 'SYSTEM',
+                    'target': data.get('source', 'UI'),
+                    'timestamp': self.get_timestamp(),
+                    'payload': {
+                        'status': 'typing',
+                        'isTyping': False,
+                        'context': context_id
+                    }
+                }
+                await websocket.send(json.dumps(typing_end_response))
     
     def get_timestamp(self):
         """Get current ISO timestamp"""
