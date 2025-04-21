@@ -1,6 +1,14 @@
 {
   "components": [
     {
+      "id": "terma",
+      "name": "Terma",
+      "description": "Advanced terminal environment",
+      "icon": "🖥️",
+      "defaultMode": "html",
+      "capabilities": ["terminal", "command_execution", "shell_access"]
+    },
+    {
       "id": "tekton",
       "name": "Tekton",
       "description": "Project and system orchestration",

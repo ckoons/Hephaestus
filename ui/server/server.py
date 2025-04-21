@@ -52,7 +52,45 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         if self.path.startswith("/api/"):
             self.proxy_api_request("GET")
             return
-        
+            
+        # Handle requests for Terma UI files
+        if self.path.startswith("/components/terma/") or self.path.startswith("/scripts/terma/") or self.path.startswith("/styles/terma/"):
+            # We have symlinks now that should handle this, but if there are issues,
+            # we can directly serve from the Terma directory
+            return SimpleHTTPRequestHandler.do_GET(self)
+            
+        # Handle direct requests to Terma UI files
+        if self.path.startswith("/terma/ui/"):
+            # Direct path to Terma UI files
+            terma_path = self.path[len("/terma/ui/"):]
+            file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "..", "Terma", "ui", terma_path)
+            
+            if os.path.exists(file_path) and os.path.isfile(file_path):
+                self.send_response(200)
+                
+                # Determine content type based on extension
+                ext = os.path.splitext(file_path)[1].lower()
+                content_type = {
+                    '.html': 'text/html',
+                    '.js': 'application/javascript',
+                    '.css': 'text/css',
+                    '.png': 'image/png',
+                    '.jpg': 'image/jpeg',
+                    '.jpeg': 'image/jpeg',
+                    '.gif': 'image/gif',
+                }.get(ext, 'application/octet-stream')
+                
+                self.send_header("Content-type", content_type)
+                self.send_header("Content-Length", str(os.path.getsize(file_path)))
+                self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                self.send_header("Pragma", "no-cache")
+                self.send_header("Expires", "0")
+                self.end_headers()
+                
+                with open(file_path, 'rb') as f:
+                    self.wfile.write(f.read())
+                return
+            
         # Handle requests for images directory
         if self.path.startswith("/images/"):
             # Try to serve from Tekton root images directory

@@ -109,13 +109,150 @@ class SettingsUI {
             });
         }
         
-        // Terminal font size
+        // Terminal font size (simple selector for overall terminal size)
         const fontSizeSelect = document.getElementById('terminal-font-size');
         if (fontSizeSelect) {
             fontSizeSelect.addEventListener('change', () => {
                 this.settingsManager.settings.terminalFontSize = fontSizeSelect.value;
                 this.settingsManager.save();
                 this.applyFontSize();
+            });
+        }
+        
+        // Advanced Terminal Settings - Terminal Mode
+        const terminalModeSelect = document.getElementById('terminal-mode-select');
+        if (terminalModeSelect) {
+            terminalModeSelect.addEventListener('change', () => {
+                this.settingsManager.settings.terminalMode = terminalModeSelect.value;
+                this.settingsManager.save();
+                
+                // Notify components of mode change
+                this.settingsManager.dispatchEvent('terminalModeChanged', {
+                    mode: terminalModeSelect.value
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Font Size Slider
+        const fontSizeSlider = document.getElementById('terminal-font-size-slider');
+        const fontSizeValue = document.getElementById('terminal-font-size-value');
+        if (fontSizeSlider && fontSizeValue) {
+            fontSizeSlider.addEventListener('input', () => {
+                const size = fontSizeSlider.value;
+                fontSizeValue.textContent = `${size}px`;
+                this.settingsManager.settings.terminalFontSizePx = parseInt(size);
+                
+                // Live update for immediate feedback
+                this.settingsManager.dispatchEvent('terminalFontSizeChanged', {
+                    size: parseInt(size)
+                });
+            });
+            
+            fontSizeSlider.addEventListener('change', () => {
+                this.settingsManager.save();
+            });
+        }
+        
+        // Advanced Terminal Settings - Font Family
+        const fontFamilySelect = document.getElementById('terminal-font-family');
+        if (fontFamilySelect) {
+            fontFamilySelect.addEventListener('change', () => {
+                this.settingsManager.settings.terminalFontFamily = fontFamilySelect.value;
+                this.settingsManager.save();
+                
+                // Notify components of font change
+                this.settingsManager.dispatchEvent('terminalFontFamilyChanged', {
+                    fontFamily: fontFamilySelect.value
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Theme
+        const terminalThemeSelect = document.getElementById('terminal-theme');
+        if (terminalThemeSelect) {
+            terminalThemeSelect.addEventListener('change', () => {
+                this.settingsManager.settings.terminalTheme = terminalThemeSelect.value;
+                this.settingsManager.save();
+                
+                // Notify components of theme change
+                this.settingsManager.dispatchEvent('terminalThemeChanged', {
+                    theme: terminalThemeSelect.value
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Cursor Style
+        const cursorStyleSelect = document.getElementById('terminal-cursor-style');
+        if (cursorStyleSelect) {
+            cursorStyleSelect.addEventListener('change', () => {
+                this.settingsManager.settings.terminalCursorStyle = cursorStyleSelect.value;
+                this.settingsManager.save();
+                
+                // Notify components of cursor style change
+                this.settingsManager.dispatchEvent('terminalCursorStyleChanged', {
+                    cursorStyle: cursorStyleSelect.value
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Cursor Blink
+        const cursorBlinkToggle = document.getElementById('terminal-cursor-blink');
+        if (cursorBlinkToggle) {
+            cursorBlinkToggle.addEventListener('change', () => {
+                this.settingsManager.settings.terminalCursorBlink = cursorBlinkToggle.checked;
+                this.settingsManager.save();
+                
+                // Notify components of cursor blink change
+                this.settingsManager.dispatchEvent('terminalCursorBlinkChanged', {
+                    cursorBlink: cursorBlinkToggle.checked
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Scrollback
+        const scrollbackToggle = document.getElementById('terminal-scrollback');
+        if (scrollbackToggle) {
+            scrollbackToggle.addEventListener('change', () => {
+                this.settingsManager.settings.terminalScrollback = scrollbackToggle.checked;
+                this.settingsManager.save();
+                
+                // Notify components of scrollback change
+                this.settingsManager.dispatchEvent('terminalScrollbackChanged', {
+                    scrollback: scrollbackToggle.checked
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Scrollback Lines
+        const scrollbackLines = document.getElementById('terminal-scrollback-lines');
+        if (scrollbackLines) {
+            scrollbackLines.addEventListener('change', () => {
+                this.settingsManager.settings.terminalScrollbackLines = parseInt(scrollbackLines.value);
+                this.settingsManager.save();
+                
+                // Notify components of scrollback lines change
+                this.settingsManager.dispatchEvent('terminalScrollbackLinesChanged', {
+                    lines: parseInt(scrollbackLines.value)
+                });
+            });
+        }
+        
+        // Advanced Terminal Settings - Inherit OS Terminal Settings
+        const inheritOSToggle = document.getElementById('terminal-inherit-os');
+        if (inheritOSToggle) {
+            inheritOSToggle.addEventListener('change', () => {
+                this.settingsManager.settings.terminalInheritOS = inheritOSToggle.checked;
+                this.settingsManager.save();
+                
+                // Notify components
+                this.settingsManager.dispatchEvent('terminalInheritOSChanged', {
+                    inherit: inheritOSToggle.checked
+                });
+                
+                // If turned on, try to detect OS terminal settings
+                if (inheritOSToggle.checked) {
+                    this.detectOSTerminalSettings();
+                }
             });
         }
         
@@ -228,6 +365,74 @@ class SettingsUI {
             fontSizeSelect.value = settings.terminalFontSize || 'medium';
         }
         
+        // Advanced Terminal Settings - Terminal Mode
+        const terminalModeSelect = document.getElementById('terminal-mode-select');
+        if (terminalModeSelect) {
+            terminalModeSelect.value = settings.terminalMode || 'advanced';
+        }
+        
+        // Advanced Terminal Settings - Font Size Slider
+        const fontSizeSlider = document.getElementById('terminal-font-size-slider');
+        const fontSizeValue = document.getElementById('terminal-font-size-value');
+        if (fontSizeSlider && fontSizeValue) {
+            const fontSize = settings.terminalFontSizePx || 14;
+            fontSizeSlider.value = fontSize;
+            fontSizeValue.textContent = `${fontSize}px`;
+        }
+        
+        // Advanced Terminal Settings - Font Family
+        const fontFamilySelect = document.getElementById('terminal-font-family');
+        if (fontFamilySelect) {
+            // Find the closest match or default to first option
+            let foundMatch = false;
+            for (let i = 0; i < fontFamilySelect.options.length; i++) {
+                if (fontFamilySelect.options[i].value === settings.terminalFontFamily) {
+                    fontFamilySelect.selectedIndex = i;
+                    foundMatch = true;
+                    break;
+                }
+            }
+            if (!foundMatch && fontFamilySelect.options.length > 0) {
+                fontFamilySelect.selectedIndex = 0;
+            }
+        }
+        
+        // Advanced Terminal Settings - Theme
+        const terminalThemeSelect = document.getElementById('terminal-theme');
+        if (terminalThemeSelect) {
+            terminalThemeSelect.value = settings.terminalTheme || 'default';
+        }
+        
+        // Advanced Terminal Settings - Cursor Style
+        const cursorStyleSelect = document.getElementById('terminal-cursor-style');
+        if (cursorStyleSelect) {
+            cursorStyleSelect.value = settings.terminalCursorStyle || 'block';
+        }
+        
+        // Advanced Terminal Settings - Cursor Blink
+        const cursorBlinkToggle = document.getElementById('terminal-cursor-blink');
+        if (cursorBlinkToggle) {
+            cursorBlinkToggle.checked = settings.terminalCursorBlink !== false;
+        }
+        
+        // Advanced Terminal Settings - Scrollback
+        const scrollbackToggle = document.getElementById('terminal-scrollback');
+        if (scrollbackToggle) {
+            scrollbackToggle.checked = settings.terminalScrollback !== false;
+        }
+        
+        // Advanced Terminal Settings - Scrollback Lines
+        const scrollbackLines = document.getElementById('terminal-scrollback-lines');
+        if (scrollbackLines) {
+            scrollbackLines.value = settings.terminalScrollbackLines || 1000;
+        }
+        
+        // Advanced Terminal Settings - Inherit OS
+        const inheritOSToggle = document.getElementById('terminal-inherit-os');
+        if (inheritOSToggle) {
+            inheritOSToggle.checked = settings.terminalInheritOS === true;
+        }
+        
         // Update chat history toggle
         const chatHistoryToggle = document.getElementById('chat-history-toggle');
         if (chatHistoryToggle) {
@@ -253,6 +458,109 @@ class SettingsUI {
         }
         
         this.applyFontSize();
+    }
+    
+    /**
+     * Detect OS terminal settings when available
+     * Uses a best-effort approach to detect terminal settings from the OS
+     */
+    detectOSTerminalSettings() {
+        // This method uses navigator.userAgent and platform to make educated guesses
+        // about appropriate terminal settings for the OS
+        
+        console.log('Attempting to detect OS terminal settings');
+        
+        const ua = navigator.userAgent;
+        const platform = navigator.platform || '';
+        const settings = this.settingsManager.settings;
+        let osName = 'unknown';
+        let terminalDefaults = {};
+        
+        // Detect OS
+        if (platform.indexOf('Win') !== -1 || ua.indexOf('Windows') !== -1) {
+            osName = 'windows';
+            terminalDefaults = {
+                fontFamily: "'Consolas', monospace",
+                theme: 'dark',
+                fontSize: 14,
+                cursorStyle: 'block'
+            };
+        } else if (platform.indexOf('Mac') !== -1 || ua.indexOf('Macintosh') !== -1) {
+            osName = 'macos';
+            terminalDefaults = {
+                fontFamily: "'Menlo', monospace",
+                theme: 'default',
+                fontSize: 13,
+                cursorStyle: 'block'
+            };
+        } else if (platform.indexOf('Linux') !== -1 || ua.indexOf('Linux') !== -1) {
+            osName = 'linux';
+            terminalDefaults = {
+                fontFamily: "'DejaVu Sans Mono', monospace",
+                theme: 'dark',
+                fontSize: 14,
+                cursorStyle: 'block'
+            };
+        }
+        
+        console.log(`Detected OS: ${osName}, applying terminal defaults`);
+        
+        // Apply OS-specific settings if found
+        if (osName !== 'unknown') {
+            // Find font family select and look for a close match
+            const fontFamilySelect = document.getElementById('terminal-font-family');
+            if (fontFamilySelect && terminalDefaults.fontFamily) {
+                // Look for a close match to the detected font
+                let closestMatch = fontFamilySelect.options[0].value;
+                const targetFont = terminalDefaults.fontFamily.toLowerCase();
+                
+                for (let i = 0; i < fontFamilySelect.options.length; i++) {
+                    const option = fontFamilySelect.options[i].value.toLowerCase();
+                    if (option.indexOf(targetFont.split("'")[1].toLowerCase()) !== -1) {
+                        closestMatch = fontFamilySelect.options[i].value;
+                        break;
+                    }
+                }
+                
+                // Set the closest match
+                settings.terminalFontFamily = closestMatch;
+                fontFamilySelect.value = closestMatch;
+            }
+            
+            // Apply other default settings
+            if (terminalDefaults.theme) {
+                settings.terminalTheme = terminalDefaults.theme;
+                const themeSelect = document.getElementById('terminal-theme');
+                if (themeSelect) themeSelect.value = terminalDefaults.theme;
+            }
+            
+            if (terminalDefaults.fontSize) {
+                settings.terminalFontSizePx = terminalDefaults.fontSize;
+                const fontSizeSlider = document.getElementById('terminal-font-size-slider');
+                const fontSizeValue = document.getElementById('terminal-font-size-value');
+                if (fontSizeSlider) fontSizeSlider.value = terminalDefaults.fontSize;
+                if (fontSizeValue) fontSizeValue.textContent = `${terminalDefaults.fontSize}px`;
+            }
+            
+            if (terminalDefaults.cursorStyle) {
+                settings.terminalCursorStyle = terminalDefaults.cursorStyle;
+                const cursorStyleSelect = document.getElementById('terminal-cursor-style');
+                if (cursorStyleSelect) cursorStyleSelect.value = terminalDefaults.cursorStyle;
+            }
+            
+            // Save settings
+            this.settingsManager.save();
+            
+            // Notify components of changes
+            this.settingsManager.dispatchEvent('terminalSettingsChanged', {
+                settings: {
+                    fontFamily: settings.terminalFontFamily,
+                    theme: settings.terminalTheme,
+                    fontSize: settings.terminalFontSizePx,
+                    cursorStyle: settings.terminalCursorStyle
+                }
+            });
+        }
     }
     
     /**
@@ -327,7 +635,18 @@ class SettingsUI {
                 maxChatHistoryEntries: 50,
                 terminalFontSize: 'medium',
                 hermesIntegration: true,
-                defaultMessageRoute: 'team'
+                defaultMessageRoute: 'team',
+                
+                // Terminal Settings
+                terminalMode: 'advanced',
+                terminalFontSizePx: 14,
+                terminalFontFamily: "'Courier New', monospace",
+                terminalTheme: 'default',
+                terminalCursorStyle: 'block',
+                terminalCursorBlink: true,
+                terminalScrollback: true,
+                terminalScrollbackLines: 1000,
+                terminalInheritOS: false
             };
             
             // Apply defaults
@@ -336,6 +655,20 @@ class SettingsUI {
             
             // Update UI
             this.updateSettingsUI();
+            
+            // Notify components of terminal settings reset
+            this.settingsManager.dispatchEvent('terminalSettingsChanged', {
+                settings: {
+                    mode: defaultSettings.terminalMode,
+                    fontFamily: defaultSettings.terminalFontFamily,
+                    fontSize: defaultSettings.terminalFontSizePx,
+                    theme: defaultSettings.terminalTheme,
+                    cursorStyle: defaultSettings.terminalCursorStyle,
+                    cursorBlink: defaultSettings.terminalCursorBlink,
+                    scrollback: defaultSettings.terminalScrollback,
+                    scrollbackLines: defaultSettings.terminalScrollbackLines
+                }
+            });
             
             // Show confirmation
             alert('All settings have been reset to their defaults.');

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Terma Component Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #222;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #333;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        h1 {
+            color: #0088ff;
+        }
+        button {
+            background: #0066cc;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        .status {
+            margin: 15px 0;
+            padding: 10px;
+            background: #444;
+            border-radius: 4px;
+        }
+        .error {
+            color: #ff5555;
+        }
+        .success {
+            color: #55ff55;
+        }
+        pre {
+            background: #222;
+            padding: 10px;
+            border-radius: 4px;
+            overflow: auto;
+            max-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Terma Component Test</h1>
+        <p>This page will help diagnose issues with the Terma component in Hephaestus UI.</p>
+
+        <div class="status" id="status">
+            Status: Ready to test
+        </div>
+
+        <button id="test-html-panel">Test HTML Panel Visibility</button>
+        <button id="test-terma-component">Test Terma Component Loading</button>
+        <button id="test-terma-terminal">Test Direct Terminal Script</button>
+        
+        <div id="results"></div>
+        
+        <script>
+            // Helper function to log results
+            function log(message, isError = false) {
+                const results = document.getElementById('results');
+                const entry = document.createElement('div');
+                entry.innerHTML = `<p class="${isError ? 'error' : 'success'}">
+                    ${new Date().toLocaleTimeString()}: ${message}
+                </p>`;
+                results.prepend(entry);
+            }
+            
+            // Test HTML panel visibility
+            document.getElementById('test-html-panel').addEventListener('click', function() {
+                log('Opening main UI in new tab...');
+                
+                const newWindow = window.open('/', '_blank');
+                if (!newWindow) {
+                    log('Popup blocked. Please allow popups and try again.', true);
+                    return;
+                }
+                
+                // Wait for window to load, then inject test code
+                newWindow.addEventListener('load', function() {
+                    try {
+                        // Test code to inject
+                        const testCode = `
+                            // Check HTML panel
+                            const htmlPanel = document.getElementById('html-panel');
+                            if (!htmlPanel) {
+                                console.error('HTML panel not found');
+                                alert('ERROR: HTML panel not found');
+                                return;
+                            }
+                            
+                            // Display HTML panel
+                            const panels = document.querySelectorAll('.panel');
+                            panels.forEach(p => p.classList.remove('active'));
+                            htmlPanel.classList.add('active');
+                            htmlPanel.style.display = 'block';
+                            
+                            // Add test content
+                            htmlPanel.innerHTML = '<div style="padding: 20px; color: lime;">HTML Panel Test Successful! The panel is visible.</div>';
+                            
+                            // Update status
+                            console.log('HTML panel test successful');
+                            alert('HTML panel test successful! Panel is now visible with test content.');
+                        `;
+                        
+                        // Inject test code
+                        newWindow.eval(testCode);
+                        
+                        log('Test code injected into main UI');
+                    } catch (error) {
+                        log('Error injecting test code: ' + error.message, true);
+                    }
+                });
+            });
+            
+            // Test Terma component loading
+            document.getElementById('test-terma-component').addEventListener('click', function() {
+                log('Testing Terma component loading...');
+                
+                // Create a test container
+                const testContainer = document.createElement('div');
+                testContainer.id = 'terma-container';
+                testContainer.style.height = '300px';
+                testContainer.style.border = '1px solid #555';
+                testContainer.style.borderRadius = '4px';
+                testContainer.style.marginTop = '20px';
+                
+                // Append to results
+                document.getElementById('results').prepend(testContainer);
+                
+                // Try to load the component HTML
+                fetch('/components/terma/terma-component.html')
+                    .then(response => {
+                        log(`Fetch response: ${response.status} ${response.ok ? 'OK' : 'Failed'}`);
+                        return response.text();
+                    })
+                    .then(html => {
+                        log(`Received HTML content, length: ${html.length} characters`);
+                        
+                        // Show sample of the HTML
+                        const preview = document.createElement('div');
+                        preview.innerHTML = `
+                            <h3>HTML Content Preview:</h3>
+                            <pre>${html.substring(0, 200)}...</pre>
+                        `;
+                        document.getElementById('results').prepend(preview);
+                        
+                        // Set the HTML content
+                        testContainer.innerHTML = html;
+                        log('HTML content added to test container');
+                        
+                        // Try to load the terminal script
+                        const script = document.createElement('script');
+                        script.src = '/scripts/terma/terma-terminal.js';
+                        script.onload = function() {
+                            log('Terminal script loaded successfully');
+                            
+                            // Check if TermaTerminal class exists
+                            if (typeof TermaTerminal !== 'undefined') {
+                                log('TermaTerminal class found');
+                            } else {
+                                log('TermaTerminal class not found', true);
+                            }
+                        };
+                        script.onerror = function() {
+                            log('Failed to load terminal script', true);
+                        };
+                        document.head.appendChild(script);
+                    })
+                    .catch(error => {
+                        log('Error loading Terma component: ' + error.message, true);
+                    });
+            });
+            
+            // Test direct terminal script loading
+            document.getElementById('test-terma-terminal').addEventListener('click', function() {
+                log('Testing direct terminal script loading...');
+                
+                // Try all possible paths
+                const scriptPaths = [
+                    '/scripts/terma/terma-terminal.js',
+                    '/terma/ui/js/terma-terminal.js',
+                    '../Terma/ui/js/terma-terminal.js'
+                ];
+                
+                let loadedAny = false;
+                
+                scriptPaths.forEach(path => {
+                    const script = document.createElement('script');
+                    script.src = path;
+                    
+                    script.onload = function() {
+                        log(`Terminal script loaded successfully from ${path}`);
+                        loadedAny = true;
+                        
+                        // Check if TermaTerminal class exists
+                        if (typeof TermaTerminal !== 'undefined') {
+                            log('TermaTerminal class found after loading ' + path);
+                            
+                            // Show class details
+                            const preview = document.createElement('div');
+                            preview.innerHTML = `
+                                <h3>TermaTerminal Class Details:</h3>
+                                <pre>typeof TermaTerminal: ${typeof TermaTerminal}
+Constructor: ${TermaTerminal.toString().substring(0, 100)}...</pre>
+                            `;
+                            document.getElementById('results').prepend(preview);
+                        } else {
+                            log('TermaTerminal class not found even after loading ' + path, true);
+                        }
+                    };
+                    
+                    script.onerror = function() {
+                        log(`Failed to load terminal script from ${path}`, true);
+                    };
+                    
+                    document.head.appendChild(script);
+                });
+                
+                // Check final status after a delay
+                setTimeout(() => {
+                    if (!loadedAny) {
+                        log('Failed to load terminal script from any path', true);
+                    }
+                    
+                    // Check if TermaTerminal class exists
+                    if (typeof TermaTerminal !== 'undefined') {
+                        log('Final check: TermaTerminal class exists');
+                    } else {
+                        log('Final check: TermaTerminal class does not exist', true);
+                    }
+                }, 2000);
+            });
+            
+            // Update status
+            const statusEl = document.getElementById('status');
+            statusEl.innerHTML = 'Status: Ready - Click a test button to begin';
+        </script>
+    </div>
+</body>
+</html>

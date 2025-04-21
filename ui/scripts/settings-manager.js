@@ -12,6 +12,17 @@ class SettingsManager {
             chatHistoryEnabled: true,
             maxChatHistoryEntries: 50,
             terminalFontSize: 'medium',  // 'small', 'medium', 'large'
+            
+            // Terminal Settings
+            terminalMode: 'advanced',  // 'advanced' or 'simple'
+            terminalFontSizePx: 14,    // pixel size (8-24)
+            terminalFontFamily: "'Courier New', monospace",
+            terminalTheme: 'default',  // 'default', 'light', 'dark', 'monokai', 'solarized'
+            terminalCursorStyle: 'block', // 'block', 'bar', 'underline'
+            terminalCursorBlink: true,
+            terminalScrollback: true,
+            terminalScrollbackLines: 1000,
+            terminalInheritOS: false
         };
         this.eventListeners = {};
         this.initialized = false;
@@ -184,6 +195,7 @@ class SettingsManager {
                 case 'hermes': return 'Hermes - Messages/Data';
                 case 'codex': return 'Codex - Coding';
                 case 'tekton': return 'Tekton - Projects';
+                case 'terma': return 'Terma - Terminal';
                 default: return component;
             }
         } else {
@@ -201,6 +213,7 @@ class SettingsManager {
                 case 'hermes': return 'Messages/Data';
                 case 'codex': return 'Coding';
                 case 'tekton': return 'Projects';
+                case 'terma': return 'Terminal';
                 default: return component;
             }
         }

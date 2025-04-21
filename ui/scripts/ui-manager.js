@@ -121,6 +121,12 @@ class UIManager {
             return;
         }
         
+        // Special case for Terma component
+        if (componentId === 'terma') {
+            this.loadTermaComponent();
+            return;
+        }
+        
         // Simplified component loading for now (will be enhanced in Phase 2)
         // In the full implementation, this would dynamically load the component HTML file
         this.components[componentId] = {
@@ -137,6 +143,75 @@ class UIManager {
         }
         
         console.log(`Loaded component UI: ${componentId}`);
+    }
+    
+    /**
+     * Load the Terma terminal component
+     */
+    loadTermaComponent() {
+        console.log('Loading Terma component...');
+        
+        // Create an empty container in the HTML panel if it doesn't exist
+        const htmlPanel = document.getElementById('html-panel');
+        console.log('HTML panel found:', !!htmlPanel);
+        
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
+            return;
+        }
+        
+        if (!htmlPanel.querySelector('#terma-container')) {
+            console.log('Creating terma-container div');
+            const container = document.createElement('div');
+            container.id = 'terma-container';
+            container.style.height = '100%';
+            htmlPanel.appendChild(container);
+        } else {
+            console.log('terma-container already exists');
+        }
+        
+        // Load the Terma component HTML
+        console.log('Fetching terma-component.html...');
+        fetch('components/terma/terma-component.html')
+            .then(response => {
+                console.log('Fetch response:', response.status, response.ok);
+                return response.text();
+            })
+            .then(html => {
+                console.log('Loaded HTML content, length:', html.length);
+                const termaContainer = document.getElementById('terma-container');
+                console.log('Setting innerHTML on terma-container:', !!termaContainer);
+                
+                if (termaContainer) {
+                    termaContainer.innerHTML = html;
+                    console.log('Added HTML content to terma-container');
+                } else {
+                    console.error('terma-container not found!');
+                }
+                
+                // Register the component
+                this.components['terma'] = {
+                    id: 'terma',
+                    loaded: true,
+                    usesTerminal: false, // Uses HTML panel
+                };
+                
+                // Activate the HTML panel
+                console.log('Activating HTML panel');
+                this.activatePanel('html');
+                
+                console.log('Terma component loaded successfully');
+            })
+            .catch(error => {
+                console.error('Error loading Terma component:', error);
+                // Fallback to terminal
+                this.components['terma'] = {
+                    id: 'terma',
+                    loaded: true,
+                    usesTerminal: true, 
+                };
+                this.activatePanel('terminal');
+            });
     }
     
     /**
@@ -160,14 +235,39 @@ class UIManager {
      * @param {string} panelId - 'terminal', 'html', 'settings', or 'profile'
      */
     activatePanel(panelId) {
+        console.log(`Activating panel: ${panelId}`);
+        
         const panels = document.querySelectorAll('.panel');
+        console.log(`Found ${panels.length} panels`);
+        
         panels.forEach(panel => {
-            if (panel.id === `${panelId}-panel`) {
+            const panelName = panel.id;
+            const shouldBeActive = panel.id === `${panelId}-panel`;
+            console.log(`Panel ${panelName}, should be active: ${shouldBeActive}`);
+            
+            if (shouldBeActive) {
                 panel.classList.add('active');
+                console.log(`Set panel ${panelName} to active`);
+                
+                // Debug panel style
+                console.log(`Panel ${panelName} style:`, panel.style.display, 'classList:', panel.classList);
+                
+                // Force display
+                panel.style.display = 'block';
             } else {
                 panel.classList.remove('active');
+                // Don't hide the panel - let CSS handle it
+                // panel.style.display = 'none';
             }
         });
+        
+        // Get the panel that should be active to double-check its state
+        const activePanel = document.getElementById(`${panelId}-panel`);
+        if (activePanel) {
+            console.log(`Active panel found: ${activePanel.id}, display: ${activePanel.style.display}, classlist: ${activePanel.classList}`);
+        } else {
+            console.error(`Active panel not found: ${panelId}-panel`);
+        }
         
         this.activePanel = panelId;
         tektonUI.activePanel = panelId;
@@ -182,7 +282,7 @@ class UIManager {
             }
         }
         
-        console.log(`Activated panel: ${panelId}`);
+        console.log(`Successfully activated panel: ${panelId}`);
     }
     
     /**

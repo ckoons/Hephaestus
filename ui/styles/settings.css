@@ -6,6 +6,11 @@
   overflow-y: auto;
 }
 
+/* Ensure the settings panel itself is scrollable */
+#settings-panel {
+  overflow-y: auto;
+}
+
 .settings-header {
   display: flex;
   justify-content: space-between;
