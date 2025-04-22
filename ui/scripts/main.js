@@ -118,44 +118,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.uiManager = new UIManager();
     uiManager.init();
     
-    // Add an emergency Terma button for testing
-    const testButton = document.createElement('button');
-    testButton.textContent = '🔄 Load Terma';
-    testButton.style.position = 'fixed';
-    testButton.style.bottom = '10px';
-    testButton.style.right = '10px';
-    testButton.style.zIndex = '9999';
-    testButton.style.padding = '5px 10px';
-    testButton.style.background = '#333';
-    testButton.style.color = '#fff';
-    testButton.style.border = '1px solid #555';
-    testButton.style.borderRadius = '4px';
-    testButton.onclick = function() {
-        console.log('Emergency Terma button clicked');
-        
-        // Show test container
-        const testContainer = document.getElementById('terma-container-test');
-        if (testContainer) testContainer.style.display = 'block';
-        
-        // Try to show HTML panel
-        const htmlPanel = document.getElementById('html-panel');
-        const terminalPanel = document.getElementById('terminal-panel');
-        if (htmlPanel && terminalPanel) {
-            htmlPanel.classList.add('active');
-            terminalPanel.classList.remove('active');
-            console.log('Manually activated HTML panel');
-        }
-        
-        // Try to load Terma component
-        if (window.uiManager && typeof window.uiManager.loadTermaComponent === 'function') {
-            console.log('Calling loadTermaComponent() directly');
-            window.uiManager.loadTermaComponent();
-        } else {
-            console.error('uiManager or loadTermaComponent not available');
-        }
-    };
-    document.body.appendChild(testButton);
-    
     // Initialize terminal
     window.terminalManager = new TerminalManager('terminal');
     terminalManager.init();
