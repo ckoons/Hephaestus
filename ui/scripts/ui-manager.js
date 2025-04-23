@@ -170,48 +170,140 @@ class UIManager {
             console.log('terma-container already exists');
         }
         
-        // Load the Terma component HTML
-        console.log('Fetching terma-component.html...');
-        fetch('components/terma/terma-component.html')
-            .then(response => {
-                console.log('Fetch response:', response.status, response.ok);
-                return response.text();
-            })
-            .then(html => {
-                console.log('Loaded HTML content, length:', html.length);
-                const termaContainer = document.getElementById('terma-container');
-                console.log('Setting innerHTML on terma-container:', !!termaContainer);
+        // Add detailed logging to diagnose issues
+        const termaContainer = document.getElementById('terma-container');
+        
+        if (termaContainer) {
+            // Show loading message
+            termaContainer.innerHTML = `
+                <div style="padding: 20px; color: #f0f0f0; background: #333; height: 100%; overflow: auto;">
+                    <h3>Loading Terma Terminal Component...</h3>
+                    <p>Fetching the terminal component from the server.</p>
+                    <div id="terma-load-status" style="margin-top: 20px; font-family: monospace;"></div>
+                </div>
+            `;
+        }
+        
+        const updateStatus = (message, isError = false) => {
+            const statusEl = document.getElementById('terma-load-status');
+            if (statusEl) {
+                const entry = document.createElement('div');
+                entry.style.color = isError ? '#ff6b6b' : '#4CAF50';
+                entry.style.margin = '5px 0';
+                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+                statusEl.appendChild(entry);
+                statusEl.scrollTop = statusEl.scrollHeight;
+            }
+            console.log(isError ? `ERROR: ${message}` : message);
+        };
+        
+        // Try multiple paths for component HTML
+        const componentPaths = [
+            'components/terma/terma-component.html',
+            '../Terma/ui/hephaestus/terma-component.html',
+            '/components/terma/terma-component.html',
+            '/terma/ui/hephaestus/terma-component.html'
+        ];
+        
+        // Cache busting parameter
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        
+        // Function to attempt loading from a path
+        const tryLoadPath = (pathIndex) => {
+            if (pathIndex >= componentPaths.length) {
+                updateStatus('All component paths failed, showing error view', true);
                 
+                // Show error in terminal
                 if (termaContainer) {
-                    termaContainer.innerHTML = html;
-                    console.log('Added HTML content to terma-container');
-                } else {
-                    console.error('terma-container not found!');
+                    termaContainer.innerHTML = `
+                        <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
+                            <h3>Error: Failed to Load Terma Terminal Component</h3>
+                            <p>The terminal component could not be loaded after trying multiple paths.</p>
+                            <h4>Attempted Paths:</h4>
+                            <ul style="margin-left: 20px; font-family: monospace;">
+                                ${componentPaths.map(path => `<li>${path}</li>`).join('')}
+                            </ul>
+                            <h4>Troubleshooting:</h4>
+                            <ol style="margin-left: 20px;">
+                                <li>Verify that Terma API is running (tekton-status shows Terma API running)</li>
+                                <li>Check that the Terma component was installed in Hephaestus (run install_in_hephaestus.sh)</li>
+                                <li>Restart the Hephaestus UI server</li>
+                                <li>Try opening the browser's network tab to see the exact request failures</li>
+                            </ol>
+                            <p style="margin-top: 20px;">Click the Terma tab again to retry loading.</p>
+                        </div>
+                    `;
                 }
                 
-                // Register the component
-                this.components['terma'] = {
-                    id: 'terma',
-                    loaded: true,
-                    usesTerminal: false, // Uses HTML panel
-                };
-                
-                // Activate the HTML panel
-                console.log('Activating HTML panel');
-                this.activatePanel('html');
-                
-                console.log('Terma component loaded successfully');
-            })
-            .catch(error => {
-                console.error('Error loading Terma component:', error);
-                // Fallback to terminal
+                // Fallback to terminal panel
                 this.components['terma'] = {
                     id: 'terma',
                     loaded: true,
                     usesTerminal: true, 
                 };
                 this.activatePanel('terminal');
-            });
+                return;
+            }
+            
+            const path = componentPaths[pathIndex] + cacheBuster;
+            updateStatus(`Trying to load from: ${path}`);
+            
+            fetch(path)
+                .then(response => {
+                    updateStatus(`Received response: status ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    if (!html || html.trim().length === 0) {
+                        throw new Error('Received empty HTML content');
+                    }
+                    
+                    updateStatus(`Loaded HTML content successfully (${html.length} bytes)`);
+                    
+                    if (termaContainer) {
+                        termaContainer.innerHTML = html;
+                        updateStatus('Added HTML content to container');
+                    } else {
+                        throw new Error('terma-container element disappeared');
+                    }
+                    
+                    // Register the component
+                    this.components['terma'] = {
+                        id: 'terma',
+                        loaded: true,
+                        usesTerminal: false, // Uses HTML panel
+                    };
+                    
+                    // Activate the HTML panel
+                    updateStatus('Activating HTML panel');
+                    this.activatePanel('html');
+                    
+                    updateStatus('Terma component loaded successfully');
+                    
+                    // Attempt to load terma-terminal.js script to ensure it's properly loaded
+                    const scriptElement = document.createElement('script');
+                    scriptElement.src = `/scripts/terma/terma-terminal.js${cacheBuster}`;
+                    scriptElement.onerror = () => {
+                        updateStatus('Failed to load terma-terminal.js script', true);
+                    };
+                    scriptElement.onload = () => {
+                        updateStatus('Successfully loaded terma-terminal.js script');
+                    };
+                    document.head.appendChild(scriptElement);
+                })
+                .catch(error => {
+                    updateStatus(`Failed to load from ${path}: ${error.message}`, true);
+                    
+                    // Try the next path
+                    tryLoadPath(pathIndex + 1);
+                });
+        };
+        
+        // Start the loading process with the first path
+        tryLoadPath(0);
     }
     
     /**

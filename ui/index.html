@@ -167,8 +167,14 @@
     <script src="scripts/storage.js"></script>
     <script src="scripts/websocket.js"></script>
     
-    <!-- Direct load of terma-terminal.js script -->
-    <script src="/scripts/terma/terma-terminal.js"></script>
+    <!-- Direct load of terma-terminal.js script with cache busting -->
+    <script>
+        // Add cache busting timestamp
+        const terminalJsTimestamp = new Date().getTime();
+        const terminalJsScript = document.createElement('script');
+        terminalJsScript.src = `/scripts/terma/terma-terminal.js?t=${terminalJsTimestamp}`;
+        document.head.appendChild(terminalJsScript);
+    </script>
     
     <!-- Add direct Terma handling -->
     <script>
