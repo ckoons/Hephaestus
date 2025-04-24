@@ -102,6 +102,35 @@ window.tektonUI = {
 
 // Initialize the application when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // For testing purposes, let's fetch the component files directly here
+    console.log('DEBUGGING: Testing direct fetch of component files');
+    
+    // Test fetching the component registry
+    fetch('/server/component_registry.json')
+        .then(response => {
+            console.log('Registry response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Registry data:', data);
+        })
+        .catch(error => {
+            console.error('Error fetching registry:', error);
+        });
+    
+    // Test fetching the Rhetor component HTML
+    fetch('/components/rhetor/rhetor-component.html')
+        .then(response => {
+            console.log('Rhetor HTML response status:', response.status);
+            return response.text();
+        })
+        .then(html => {
+            console.log('Rhetor HTML (first 100 chars):', html.substring(0, 100));
+        })
+        .catch(error => {
+            console.error('Error fetching Rhetor HTML:', error);
+        });
+    
     // Check for cache-busting version to ensure fresh content
     fetch('./.cache-version?' + new Date().getTime())
         .then(response => response.text())
@@ -129,21 +158,20 @@ document.addEventListener('DOMContentLoaded', function() {
     window.websocketManager = new WebSocketManager();
     websocketManager.connect();
     
-    // Set up button handlers
-    document.getElementById('budget-button').addEventListener('click', function() {
-        tektonUI.showModal('Budget', '<div class="budget-panel"><h3>Resource Usage</h3><p>AI Credits: 2,450 / 5,000</p><p>Storage: 1.2 GB / 10 GB</p><p>API Calls: 325 / 1,000</p></div>');
-    });
-    
-    document.getElementById('profile-button').addEventListener('click', function() {
-        tektonUI.showModal('Profile', '<div class="profile-panel"><h3>User Profile</h3><p>Name: Admin User</p><p>Role: System Administrator</p><p>Last Login: Today at 12:34 PM</p></div>');
-    });
-    
-    // Settings button now opens the settings panel instead of a modal
-    document.getElementById('settings-button').addEventListener('click', function() {
-        if (window.uiManager) {
-            uiManager.showSettingsPanel();
-        }
-    });
+    // Override the budget button to use our component instead of a modal
+    const budgetButton = document.getElementById('budget-button');
+    if (budgetButton) {
+        budgetButton.addEventListener('click', function() {
+            console.log('Budget button clicked - loading budget component');
+            if (window.uiManager) {
+                // Use the UI Manager to load the budget component
+                window.uiManager.loadBudgetComponent();
+            } else {
+                // Fallback to modal if UI Manager not available
+                tektonUI.showModal('Budget', '<div class="budget-panel"><h3>Resource Usage</h3><p>AI Credits: 2,450 / 5,000</p><p>Storage: 1.2 GB / 10 GB</p><p>API Calls: 325 / 1,000</p></div>');
+            }
+        });
+    }
     
     // Set up status indicators for demo
     setTimeout(() => {

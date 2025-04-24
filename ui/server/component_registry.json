@@ -59,10 +59,33 @@
     {
       "id": "rhetor",
       "name": "Rhetor",
-      "description": "Context-aware communication",
+      "description": "LLM management and prompt engineering",
       "icon": "💬",
-      "defaultMode": "terminal",
-      "capabilities": ["context_switching", "communication_management"]
+      "defaultMode": "html",
+      "capabilities": ["llm_management", "prompt_engineering", "communication_management", "budget_management"],
+      "componentPath": "components/rhetor/rhetor-component.html",
+      "scripts": [
+        "scripts/rhetor/rhetor-component.js"
+      ],
+      "styles": [
+        "styles/rhetor/rhetor-component.css"
+      ]
+    },
+    {
+      "id": "budget",
+      "name": "Budget",
+      "description": "LLM cost tracking and budget management",
+      "icon": "📊",
+      "defaultMode": "html",
+      "capabilities": ["cost_tracking", "budget_management", "usage_reporting"],
+      "componentPath": "components/budget/budget-dashboard.html",
+      "scripts": [
+        "scripts/budget/budget-dashboard.js"
+      ],
+      "styles": [
+        "styles/budget/budget-component.css"
+      ],
+      "dependencies": ["rhetor"]
     },
     {
       "id": "hermes",

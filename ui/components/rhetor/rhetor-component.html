@@ -1,0 +1,530 @@
+<!-- Rhetor Component UI Template -->
+<div class="rhetor-container">
+  <!-- Tabbed Navigation -->
+  <div class="rhetor-tabs">
+    <div class="tab-button active" data-tab="providers">Providers</div>
+    <div class="tab-button" data-tab="templates">Templates</div>
+    <div class="tab-button" data-tab="conversations">Conversations</div>
+    <div class="tab-button" data-tab="budget">Budget</div>
+    <div class="tab-button" data-tab="settings">Settings</div>
+  </div>
+
+  <!-- Provider Selection Tab Content -->
+  <div class="tab-content active" id="providers-content">
+    <div class="rhetor-section-header">
+      <h2>LLM Providers</h2>
+      <div class="rhetor-controls">
+        <button class="control-button primary-button" id="save-provider">Set Default</button>
+        <button class="control-button" id="test-provider">Test Connection</button>
+      </div>
+    </div>
+    
+    <!-- Provider Selection Form -->
+    <div class="provider-selector">
+      <div class="form-row">
+        <label for="provider-select">Provider</label>
+        <select id="provider-select" class="rhetor-select">
+          <option value="anthropic">Anthropic</option>
+          <option value="openai">OpenAI</option>
+          <option value="ollama">Ollama (Local)</option>
+          <option value="simulated">Simulated (Fallback)</option>
+        </select>
+      </div>
+      
+      <div class="form-row">
+        <label for="model-select">Model</label>
+        <select id="model-select" class="rhetor-select">
+          <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+          <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+          <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+        </select>
+      </div>
+      
+      <div class="form-row">
+        <label for="temperature-slider">Temperature</label>
+        <div class="slider-container">
+          <input type="range" id="temperature-slider" min="0" max="1" step="0.1" value="0.7">
+          <span class="slider-value">0.7</span>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <label for="max-tokens">Max Output Tokens</label>
+        <input type="number" id="max-tokens" value="1000" min="100" max="4096">
+      </div>
+    </div>
+    
+    <div class="provider-stats">
+      <div class="stat-card">
+        <div class="stat-label">Connection Status</div>
+        <div class="stat-value connected">Connected</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Daily Usage</div>
+        <div class="stat-value">542K tokens</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Estimated Cost</div>
+        <div class="stat-value">$2.47</div>
+      </div>
+    </div>
+    
+    <div class="model-tier-table">
+      <h3>Available Models by Tier</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Tier</th>
+            <th>Model</th>
+            <th>Provider</th>
+            <th>Cost / 1K Tokens</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="tier-badge free">Free</span></td>
+            <td>llama3</td>
+            <td>Ollama</td>
+            <td>$0.00</td>
+          </tr>
+          <tr>
+            <td><span class="tier-badge low">Low</span></td>
+            <td>Claude 3 Haiku</td>
+            <td>Anthropic</td>
+            <td>$0.00125</td>
+          </tr>
+          <tr>
+            <td><span class="tier-badge medium">Medium</span></td>
+            <td>Claude 3 Sonnet</td>
+            <td>Anthropic</td>
+            <td>$0.015</td>
+          </tr>
+          <tr>
+            <td><span class="tier-badge high">High</span></td>
+            <td>Claude 3 Opus</td>
+            <td>Anthropic</td>
+            <td>$0.075</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Template Management Tab Content -->
+  <div class="tab-content" id="templates-content">
+    <div class="rhetor-section-header">
+      <h2>Template Management</h2>
+      <div class="rhetor-controls">
+        <button class="control-button primary-button" id="create-template">New Template</button>
+        <select id="template-category" class="rhetor-select">
+          <option value="all">All Categories</option>
+          <option value="system">System</option>
+          <option value="task">Task</option>
+          <option value="component">Component</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="template-list">
+      <!-- Template Items -->
+      <div class="template-item">
+        <div class="template-header">
+          <div class="template-name">System Core Prompt</div>
+          <div class="template-category-badge system">system</div>
+          <div class="template-version">v1.2</div>
+        </div>
+        <div class="template-description">
+          Core system prompt for general AI interactions
+        </div>
+        <div class="template-footer">
+          <button class="template-action-button">Edit</button>
+          <button class="template-action-button">Test</button>
+          <button class="template-action-button">History</button>
+        </div>
+      </div>
+      
+      <div class="template-item">
+        <div class="template-header">
+          <div class="template-name">Code Generation</div>
+          <div class="template-category-badge task">task</div>
+          <div class="template-version">v2.1</div>
+        </div>
+        <div class="template-description">
+          Template for generating code with specific formatting
+        </div>
+        <div class="template-footer">
+          <button class="template-action-button">Edit</button>
+          <button class="template-action-button">Test</button>
+          <button class="template-action-button">History</button>
+        </div>
+      </div>
+      
+      <div class="template-item">
+        <div class="template-header">
+          <div class="template-name">Terma Console Prompt</div>
+          <div class="template-category-badge component">component</div>
+          <div class="template-version">v1.0</div>
+        </div>
+        <div class="template-description">
+          Terminal-specific prompt template for Terma component
+        </div>
+        <div class="template-footer">
+          <button class="template-action-button">Edit</button>
+          <button class="template-action-button">Test</button>
+          <button class="template-action-button">History</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Template Editor (hidden by default) -->
+    <div class="template-editor" id="template-editor" style="display: none;">
+      <h3>Edit Template: <span id="edit-template-name">System Core Prompt</span></h3>
+      <div class="form-row">
+        <label for="template-name-input">Template Name</label>
+        <input type="text" id="template-name-input" value="System Core Prompt">
+      </div>
+      <div class="form-row">
+        <label for="template-category-input">Category</label>
+        <select id="template-category-input">
+          <option value="system">System</option>
+          <option value="task">Task</option>
+          <option value="component">Component</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="template-description-input">Description</label>
+        <textarea id="template-description-input">Core system prompt for general AI interactions</textarea>
+      </div>
+      <div class="form-row">
+        <label for="template-content">Template Content</label>
+        <div class="code-editor-container">
+          <textarea id="template-content" class="code-editor">You are an AI assistant that is part of the Tekton system. Your role is to provide helpful, accurate, and ethical assistance. 
+
+Available context:
+{{ context }}
+
+User query:
+{{ query }}</textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="control-button secondary-button" id="cancel-template-edit">Cancel</button>
+        <button class="control-button" id="test-template">Test</button>
+        <button class="control-button primary-button" id="save-template">Save Template</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Conversation History Tab Content -->
+  <div class="tab-content" id="conversations-content">
+    <div class="rhetor-section-header">
+      <h2>Conversation History</h2>
+      <div class="rhetor-controls">
+        <input type="text" id="conversation-search" placeholder="Search conversations...">
+        <button class="control-button" id="refresh-conversations">Refresh</button>
+      </div>
+    </div>
+    
+    <div class="conversation-container">
+      <div class="conversation-list">
+        <!-- Context Items -->
+        <div class="conversation-item active">
+          <div class="conversation-name">General Chat</div>
+          <div class="conversation-time">3 min ago</div>
+          <div class="conversation-preview">Discussion about LLM model selection</div>
+        </div>
+        
+        <div class="conversation-item">
+          <div class="conversation-name">Code Review</div>
+          <div class="conversation-time">1 hour ago</div>
+          <div class="conversation-preview">Python code review for budget manager</div>
+        </div>
+        
+        <div class="conversation-item">
+          <div class="conversation-name">UI Planning</div>
+          <div class="conversation-time">Yesterday</div>
+          <div class="conversation-preview">Discussion about Hephaestus integration</div>
+        </div>
+      </div>
+      
+      <div class="conversation-detail">
+        <div class="conversation-header">
+          <h3>General Chat</h3>
+          <div class="conversation-actions">
+            <button class="control-button small-button">Export</button>
+            <button class="control-button small-button">Delete</button>
+          </div>
+        </div>
+        
+        <div class="conversation-messages">
+          <div class="conversation-message user">
+            <div class="message-content">
+              <div class="message-text">Which model would you recommend for code generation tasks?</div>
+              <div class="message-time">3:45 PM</div>
+            </div>
+          </div>
+          
+          <div class="conversation-message ai">
+            <div class="message-content">
+              <div class="message-text">For code generation tasks, I would recommend Claude 3 Sonnet as it offers a good balance between performance and cost. It's particularly effective for generating code with proper formatting and documentation. If you're working with a limited budget, you might consider using Llama 3 through Ollama which is free but may not be as accurate for complex coding tasks.</div>
+              <div class="message-meta">
+                <div class="message-model">Claude 3 Sonnet</div>
+                <div class="message-time">3:46 PM</div>
+                <div class="message-tokens">312 tokens ($0.005)</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="conversation-message user">
+            <div class="message-content">
+              <div class="message-text">Thanks! And for document summarization?</div>
+              <div class="message-time">3:48 PM</div>
+            </div>
+          </div>
+          
+          <div class="conversation-message ai">
+            <div class="message-content">
+              <div class="message-text">For document summarization, Claude 3 Haiku would be sufficient in most cases. It's cost-effective while still providing high-quality summaries. For very complex technical documents or legal texts where nuance is critical, you might want to use Claude 3 Sonnet instead.</div>
+              <div class="message-meta">
+                <div class="message-model">Claude 3 Sonnet</div>
+                <div class="message-time">3:49 PM</div>
+                <div class="message-tokens">230 tokens ($0.003)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Budget Dashboard Tab Content -->
+  <div class="tab-content" id="budget-content">
+    <div class="rhetor-section-header">
+      <h2>Budget Dashboard</h2>
+      <div class="rhetor-controls">
+        <select id="budget-period" class="rhetor-select">
+          <option value="day">Today</option>
+          <option value="week">This Week</option>
+          <option value="month">This Month</option>
+        </select>
+        <button class="control-button" id="refresh-budget">Refresh</button>
+      </div>
+    </div>
+    
+    <div class="budget-overview">
+      <div class="budget-card">
+        <div class="budget-card-header">
+          <div class="budget-card-title">Daily Usage</div>
+          <div class="budget-card-subtitle">Today</div>
+        </div>
+        <div class="budget-card-value">
+          <div class="budget-amount">$2.47</div>
+          <div class="budget-limit">/ $5.00</div>
+        </div>
+        <div class="budget-progress">
+          <div class="budget-progress-bar" style="width: 49.4%"></div>
+        </div>
+        <div class="budget-card-footer">49.4% of daily limit</div>
+      </div>
+      
+      <div class="budget-card">
+        <div class="budget-card-header">
+          <div class="budget-card-title">Weekly Usage</div>
+          <div class="budget-card-subtitle">This Week</div>
+        </div>
+        <div class="budget-card-value">
+          <div class="budget-amount">$12.89</div>
+          <div class="budget-limit">/ $25.00</div>
+        </div>
+        <div class="budget-progress">
+          <div class="budget-progress-bar" style="width: 51.6%"></div>
+        </div>
+        <div class="budget-card-footer">51.6% of weekly limit</div>
+      </div>
+      
+      <div class="budget-card">
+        <div class="budget-card-header">
+          <div class="budget-card-title">Monthly Usage</div>
+          <div class="budget-card-subtitle">April 2025</div>
+        </div>
+        <div class="budget-card-value">
+          <div class="budget-amount">$36.75</div>
+          <div class="budget-limit">/ $100.00</div>
+        </div>
+        <div class="budget-progress">
+          <div class="budget-progress-bar" style="width: 36.8%"></div>
+        </div>
+        <div class="budget-card-footer">36.8% of monthly limit</div>
+      </div>
+    </div>
+    
+    <div class="budget-charts">
+      <div class="chart-container">
+        <h3>Usage by Provider</h3>
+        <div class="pie-chart-placeholder">
+          <!-- Pie chart will be rendered here by JavaScript -->
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="color-box anthropic"></div>
+              <div class="legend-label">Anthropic: $27.50</div>
+            </div>
+            <div class="legend-item">
+              <div class="color-box openai"></div>
+              <div class="legend-label">OpenAI: $9.25</div>
+            </div>
+            <div class="legend-item">
+              <div class="color-box ollama"></div>
+              <div class="legend-label">Ollama: $0.00</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="chart-container">
+        <h3>Daily Trend</h3>
+        <div class="bar-chart-placeholder">
+          <!-- Bar chart will be rendered here by JavaScript -->
+          <div class="chart-legend">
+            <div class="legend-item">
+              <div class="color-box input-tokens"></div>
+              <div class="legend-label">Input Tokens</div>
+            </div>
+            <div class="legend-item">
+              <div class="color-box output-tokens"></div>
+              <div class="legend-label">Output Tokens</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="usage-breakdown">
+      <h3>Usage Breakdown</h3>
+      <table class="usage-table">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Provider</th>
+            <th>Model</th>
+            <th>Tokens</th>
+            <th>Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Terma</td>
+            <td>Anthropic</td>
+            <td>Claude 3 Sonnet</td>
+            <td>230,450</td>
+            <td>$3.46</td>
+          </tr>
+          <tr>
+            <td>Ergon</td>
+            <td>Anthropic</td>
+            <td>Claude 3 Haiku</td>
+            <td>543,120</td>
+            <td>$0.68</td>
+          </tr>
+          <tr>
+            <td>Athena</td>
+            <td>OpenAI</td>
+            <td>GPT-4</td>
+            <td>104,300</td>
+            <td>$6.26</td>
+          </tr>
+          <tr>
+            <td>Codex</td>
+            <td>Ollama</td>
+            <td>Llama 3</td>
+            <td>1,250,680</td>
+            <td>$0.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Settings Tab Content -->
+  <div class="tab-content" id="settings-content">
+    <div class="rhetor-section-header">
+      <h2>Budget Settings</h2>
+      <div class="rhetor-controls">
+        <button class="control-button primary-button" id="save-budget-settings">Save Settings</button>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>Budget Limits</h3>
+      
+      <div class="form-row">
+        <label for="daily-budget">Daily Budget Limit</label>
+        <div class="input-with-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="daily-budget" value="5.00" step="0.01" min="0">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <label for="weekly-budget">Weekly Budget Limit</label>
+        <div class="input-with-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="weekly-budget" value="25.00" step="0.01" min="0">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <label for="monthly-budget">Monthly Budget Limit</label>
+        <div class="input-with-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="monthly-budget" value="100.00" step="0.01" min="0">
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>Enforcement Policy</h3>
+      
+      <div class="form-row">
+        <label for="enforcement-policy">When Budget Limit is Reached</label>
+        <select id="enforcement-policy">
+          <option value="ignore">Track Only (No Enforcement)</option>
+          <option value="warn">Show Warnings</option>
+          <option value="enforce" selected>Enforce Limits (Auto Downgrade)</option>
+        </select>
+      </div>
+      
+      <div class="form-row">
+        <label for="allow-free-models">Allow Free Models When Budget Depleted</label>
+        <input type="checkbox" id="allow-free-models" checked>
+      </div>
+      
+      <div class="form-row">
+        <label for="warning-threshold">Warning Threshold</label>
+        <div class="slider-container">
+          <input type="range" id="warning-threshold" min="50" max="100" step="5" value="80">
+          <span class="slider-value">80%</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-section">
+      <h3>Provider-Specific Budgets</h3>
+      
+      <div class="form-row">
+        <label for="anthropic-budget">Anthropic Monthly Budget</label>
+        <div class="input-with-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="anthropic-budget" value="80.00" step="0.01" min="0">
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <label for="openai-budget">OpenAI Monthly Budget</label>
+        <div class="input-with-prefix">
+          <span class="input-prefix">$</span>
+          <input type="number" id="openai-budget" value="20.00" step="0.01" min="0">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

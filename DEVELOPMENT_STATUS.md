@@ -54,6 +54,20 @@ The Hephaestus UI system has undergone significant improvements, with a focus on
 
 ### 2. New Component UIs
 
+#### Rhetor Component (Completed)
+- Created LLM provider selection interface
+- Implemented template management system
+- Added conversation history viewer
+- Built comprehensive budget dashboard
+- Implemented settings management
+
+#### Budget Dashboard (Completed)
+- Created usage tracking visualization
+- Implemented budget limit configuration
+- Added provider-specific budget allocation
+- Built detailed usage reporting interface
+- Implemented enforcement policy management
+
 #### Tekton Dashboard
 - Create system status overview component
 - Implement resource usage monitoring displays
@@ -125,7 +139,7 @@ The Hephaestus UI system has undergone significant improvements, with a focus on
 
 ### Short-term (2-4 weeks)
 1. Terminal-like interface for Ergon tab
-2. Tekton Dashboard component implementation
+2. Component integration with Rhetor budget management API
 3. Basic drag-and-drop functionality
 4. High-priority accessibility fixes
 
@@ -154,6 +168,13 @@ The Hephaestus UI system has undergone significant improvements, with a focus on
 - Implement user preference storage in Engram
 - Add session restoration from Engram memory
 - Implement UI context awareness using Engram
+
+### Rhetor Integration (Completed)
+- Integrated LLM management UI with Rhetor service
+- Implemented budget tracking and visualization
+- Added template management for prompt engineering
+- Created conversation history management interface
+- Implemented provider selection and configuration UI
 
 ### LLM Adapter Integration
 - Enhance UI assistance panels with LLM integration
