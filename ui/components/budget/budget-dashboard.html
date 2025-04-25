@@ -2,93 +2,93 @@
 <div class="budget-container">
   <!-- Tabbed Navigation -->
   <div class="budget-tabs">
-    <div class="tab-button active" data-tab="dashboard">Dashboard</div>
-    <div class="tab-button" data-tab="details">Usage Details</div>
-    <div class="tab-button" data-tab="settings">Budget Settings</div>
-    <div class="tab-button" data-tab="alerts">Alerts</div>
+    <div class="budget-tabs__button budget-tabs__button--active" data-tab="dashboard">Dashboard</div>
+    <div class="budget-tabs__button" data-tab="details">Usage Details</div>
+    <div class="budget-tabs__button" data-tab="settings">Budget Settings</div>
+    <div class="budget-tabs__button" data-tab="alerts">Alerts</div>
   </div>
 
   <!-- Dashboard Tab Content -->
-  <div class="tab-content active" id="dashboard-content">
-    <div class="budget-section-header">
-      <h2>Budget Dashboard</h2>
-      <div class="budget-controls">
-        <select id="period-select" class="chart-select">
+  <div class="budget-tabs__content budget-tabs__content--active" id="dashboard-content">
+    <div class="budget-header">
+      <h2 class="budget-header__title">Budget Dashboard</h2>
+      <div class="budget-header__controls">
+        <select id="period-select" class="budget-form__select">
           <option value="daily">Daily View</option>
           <option value="weekly">Weekly View</option>
           <option value="monthly" selected>Monthly View</option>
         </select>
-        <button class="control-button" id="refresh-dashboard">Refresh</button>
+        <button class="budget-button" id="refresh-dashboard">Refresh</button>
       </div>
     </div>
     
     <div class="budget-dashboard">
       <!-- Budget Summary Cards -->
       <div class="budget-summary">
-        <div class="budget-summary-card">
-          <div class="budget-card-header">
-            <div class="budget-card-title">Daily Spend</div>
-            <div class="budget-card-period">Today</div>
+        <div class="budget-card">
+          <div class="budget-card__header">
+            <div class="budget-card__title">Daily Spend</div>
+            <div class="budget-card__period">Today</div>
           </div>
-          <div class="budget-amount-container">
-            <div class="budget-amount">$2.47</div>
-            <div class="budget-limit">/ $5.00</div>
+          <div class="budget-card__amount-container">
+            <div class="budget-card__amount">$2.47</div>
+            <div class="budget-card__limit">/ $5.00</div>
           </div>
-          <div class="budget-progress">
-            <div class="budget-progress-bar" style="width: 49.4%"></div>
+          <div class="budget-card__progress">
+            <div class="budget-card__progress-bar" style="width: 49.4%"></div>
           </div>
-          <div class="budget-card-footer">
+          <div class="budget-card__footer">
             <div>49.4% of daily limit</div>
             <div>Today</div>
           </div>
         </div>
         
-        <div class="budget-summary-card">
-          <div class="budget-card-header">
-            <div class="budget-card-title">Weekly Spend</div>
-            <div class="budget-card-period">This Week</div>
+        <div class="budget-card">
+          <div class="budget-card__header">
+            <div class="budget-card__title">Weekly Spend</div>
+            <div class="budget-card__period">This Week</div>
           </div>
-          <div class="budget-amount-container">
-            <div class="budget-amount">$12.89</div>
-            <div class="budget-limit">/ $25.00</div>
+          <div class="budget-card__amount-container">
+            <div class="budget-card__amount">$12.89</div>
+            <div class="budget-card__limit">/ $25.00</div>
           </div>
-          <div class="budget-progress">
-            <div class="budget-progress-bar" style="width: 51.6%"></div>
+          <div class="budget-card__progress">
+            <div class="budget-card__progress-bar" style="width: 51.6%"></div>
           </div>
-          <div class="budget-card-footer">
+          <div class="budget-card__footer">
             <div>51.6% of weekly limit</div>
             <div>Apr 15 - Apr 21, 2025</div>
           </div>
         </div>
         
-        <div class="budget-summary-card">
-          <div class="budget-card-header">
-            <div class="budget-card-title">Monthly Spend</div>
-            <div class="budget-card-period">April 2025</div>
+        <div class="budget-card">
+          <div class="budget-card__header">
+            <div class="budget-card__title">Monthly Spend</div>
+            <div class="budget-card__period">April 2025</div>
           </div>
-          <div class="budget-amount-container">
-            <div class="budget-amount">$36.75</div>
-            <div class="budget-limit">/ $100.00</div>
+          <div class="budget-card__amount-container">
+            <div class="budget-card__amount">$36.75</div>
+            <div class="budget-card__limit">/ $100.00</div>
           </div>
-          <div class="budget-progress">
-            <div class="budget-progress-bar" style="width: 36.8%"></div>
+          <div class="budget-card__progress">
+            <div class="budget-card__progress-bar" style="width: 36.8%"></div>
           </div>
-          <div class="budget-card-footer">
+          <div class="budget-card__footer">
             <div>36.8% of monthly limit</div>
             <div>Apr 1 - Apr 30, 2025</div>
           </div>
         </div>
         
-        <div class="budget-summary-card">
-          <div class="budget-card-header">
-            <div class="budget-card-title">Token Usage</div>
-            <div class="budget-card-period">Last 24 Hours</div>
+        <div class="budget-card">
+          <div class="budget-card__header">
+            <div class="budget-card__title">Token Usage</div>
+            <div class="budget-card__period">Last 24 Hours</div>
           </div>
-          <div class="budget-amount-container">
-            <div class="budget-amount">1.2M</div>
-            <div class="budget-limit">tokens</div>
+          <div class="budget-card__amount-container">
+            <div class="budget-card__amount">1.2M</div>
+            <div class="budget-card__limit">tokens</div>
           </div>
-          <div class="budget-card-footer">
+          <div class="budget-card__footer">
             <div>Input: 542K</div>
             <div>Output: 658K</div>
           </div>
@@ -96,86 +96,86 @@
       </div>
       
       <!-- Charts Section -->
-      <div class="budget-charts-section">
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3 class="chart-card-title">Spend by Provider</h3>
-            <div class="chart-controls">
-              <select class="chart-select">
+      <div class="budget-charts">
+        <div class="budget-chart-card">
+          <div class="budget-chart-card__header">
+            <h3 class="budget-chart-card__title">Spend by Provider</h3>
+            <div class="budget-chart-card__controls">
+              <select class="budget-form__select">
                 <option value="provider">By Provider</option>
                 <option value="model">By Model</option>
                 <option value="component">By Component</option>
               </select>
             </div>
           </div>
-          <div class="chart-container">
-            <div class="chart-placeholder" id="provider-pie-chart">
+          <div class="budget-chart-card__container">
+            <div class="budget-chart-card__placeholder" id="provider-pie-chart">
               <!-- Chart will be rendered here by JavaScript -->
               <div>Provider Distribution Chart</div>
               <div>(Placeholder)</div>
             </div>
           </div>
-          <div class="chart-legend">
-            <div class="legend-item">
-              <span class="legend-color" style="background-color: #7356BF;"></span>
-              <span>Anthropic: $27.50</span>
+          <div class="budget-chart-card__legend">
+            <div class="budget-legend-item">
+              <span class="budget-legend-item__color" style="background-color: #7356BF;"></span>
+              <span class="budget-legend-item__label">Anthropic: $27.50</span>
             </div>
-            <div class="legend-item">
-              <span class="legend-color" style="background-color: #10A283;"></span>
-              <span>OpenAI: $9.25</span>
+            <div class="budget-legend-item">
+              <span class="budget-legend-item__color" style="background-color: #10A283;"></span>
+              <span class="budget-legend-item__label">OpenAI: $9.25</span>
             </div>
-            <div class="legend-item">
-              <span class="legend-color" style="background-color: #FF6600;"></span>
-              <span>Ollama: $0.00</span>
+            <div class="budget-legend-item">
+              <span class="budget-legend-item__color" style="background-color: #FF6600;"></span>
+              <span class="budget-legend-item__label">Ollama: $0.00</span>
             </div>
           </div>
         </div>
         
-        <div class="chart-card">
-          <div class="chart-card-header">
-            <h3 class="chart-card-title">Daily Spend Trend</h3>
-            <div class="chart-controls">
-              <select class="chart-select">
+        <div class="budget-chart-card">
+          <div class="budget-chart-card__header">
+            <h3 class="budget-chart-card__title">Daily Spend Trend</h3>
+            <div class="budget-chart-card__controls">
+              <select class="budget-form__select">
                 <option value="7days">Last 7 Days</option>
                 <option value="30days" selected>Last 30 Days</option>
                 <option value="90days">Last 90 Days</option>
               </select>
             </div>
           </div>
-          <div class="chart-container">
-            <div class="chart-placeholder" id="trend-chart">
+          <div class="budget-chart-card__container">
+            <div class="budget-chart-card__placeholder" id="trend-chart">
               <!-- Chart will be rendered here by JavaScript -->
               <div>Daily Spend Trend Chart</div>
               <div>(Placeholder)</div>
             </div>
           </div>
-          <div class="chart-legend">
-            <div class="legend-item">
-              <span class="legend-color" style="background-color: #3B82F6;"></span>
-              <span>Actual Spend</span>
+          <div class="budget-chart-card__legend">
+            <div class="budget-legend-item">
+              <span class="budget-legend-item__color" style="background-color: #3B82F6;"></span>
+              <span class="budget-legend-item__label">Actual Spend</span>
             </div>
-            <div class="legend-item">
-              <span class="legend-color" style="background-color: #94A3B8;"></span>
-              <span>Budget Limit</span>
+            <div class="budget-legend-item">
+              <span class="budget-legend-item__color" style="background-color: #94A3B8;"></span>
+              <span class="budget-legend-item__label">Budget Limit</span>
             </div>
           </div>
         </div>
       </div>
       
       <!-- Top Usage Section -->
-      <div class="budget-detail-section">
-        <div class="budget-detail-header">
-          <h3>Top Usage</h3>
-          <div class="budget-detail-controls">
-            <select class="chart-select">
+      <div class="budget-detail">
+        <div class="budget-detail__header">
+          <h3 class="budget-detail__title">Top Usage</h3>
+          <div class="budget-detail__controls">
+            <select class="budget-form__select">
               <option value="component">By Component</option>
               <option value="model" selected>By Model</option>
               <option value="task">By Task Type</option>
             </select>
           </div>
         </div>
-        <div class="budget-detail-table-container">
-          <table class="budget-detail-table">
+        <div class="budget-table-container">
+          <table class="budget-table">
             <thead>
               <tr>
                 <th>Model</th>
@@ -188,28 +188,28 @@
             <tbody>
               <tr>
                 <td>Claude 3 Sonnet</td>
-                <td><span class="model-badge anthropic">Anthropic</span></td>
+                <td><span class="budget-badge budget-badge--anthropic">Anthropic</span></td>
                 <td>230,450</td>
                 <td>$3.46</td>
                 <td>34.6%</td>
               </tr>
               <tr>
                 <td>Claude 3 Haiku</td>
-                <td><span class="model-badge anthropic">Anthropic</span></td>
+                <td><span class="budget-badge budget-badge--anthropic">Anthropic</span></td>
                 <td>543,120</td>
                 <td>$0.68</td>
                 <td>6.8%</td>
               </tr>
               <tr>
                 <td>GPT-4</td>
-                <td><span class="model-badge openai">OpenAI</span></td>
+                <td><span class="budget-badge budget-badge--openai">OpenAI</span></td>
                 <td>104,300</td>
                 <td>$6.26</td>
                 <td>62.6%</td>
               </tr>
               <tr>
                 <td>Llama 3</td>
-                <td><span class="model-badge ollama">Ollama</span></td>
+                <td><span class="budget-badge budget-badge--ollama">Ollama</span></td>
                 <td>1,250,680</td>
                 <td>$0.00</td>
                 <td>0.0%</td>
@@ -222,18 +222,18 @@
   </div>
 
   <!-- Usage Details Tab Content -->
-  <div class="tab-content" id="details-content">
-    <div class="budget-section-header">
-      <h2>Usage Details</h2>
-      <div class="budget-controls">
-        <input type="date" class="chart-select" id="start-date" value="2025-04-01">
-        <input type="date" class="chart-select" id="end-date" value="2025-04-21">
-        <button class="control-button" id="filter-usage">Apply Filter</button>
+  <div class="budget-tabs__content" id="details-content">
+    <div class="budget-header">
+      <h2 class="budget-header__title">Usage Details</h2>
+      <div class="budget-header__controls">
+        <input type="date" class="budget-form__input" id="start-date" value="2025-04-01">
+        <input type="date" class="budget-form__input" id="end-date" value="2025-04-21">
+        <button class="budget-button" id="filter-usage">Apply Filter</button>
       </div>
     </div>
     
-    <div class="budget-detail-table-container">
-      <table class="budget-detail-table">
+    <div class="budget-table-container">
+      <table class="budget-table">
         <thead>
           <tr>
             <th>Date & Time</th>
@@ -248,7 +248,7 @@
           <tr>
             <td>2025-04-21 15:42</td>
             <td>Terma</td>
-            <td><span class="model-badge anthropic">Claude 3 Sonnet</span></td>
+            <td><span class="budget-badge budget-badge--anthropic">Claude 3 Sonnet</span></td>
             <td>chat</td>
             <td>4,320</td>
             <td>$0.06</td>
@@ -256,7 +256,7 @@
           <tr>
             <td>2025-04-21 14:15</td>
             <td>Ergon</td>
-            <td><span class="model-badge anthropic">Claude 3 Haiku</span></td>
+            <td><span class="budget-badge budget-badge--anthropic">Claude 3 Haiku</span></td>
             <td>agent_creation</td>
             <td>12,450</td>
             <td>$0.02</td>
@@ -264,7 +264,7 @@
           <tr>
             <td>2025-04-21 10:33</td>
             <td>Athena</td>
-            <td><span class="model-badge openai">GPT-4</span></td>
+            <td><span class="budget-badge budget-badge--openai">GPT-4</span></td>
             <td>knowledge_retrieval</td>
             <td>3,280</td>
             <td>$0.19</td>
@@ -272,7 +272,7 @@
           <tr>
             <td>2025-04-20 18:22</td>
             <td>Codex</td>
-            <td><span class="model-badge ollama">Llama 3</span></td>
+            <td><span class="budget-badge budget-badge--ollama">Llama 3</span></td>
             <td>code_completion</td>
             <td>45,320</td>
             <td>$0.00</td>
@@ -280,7 +280,7 @@
           <tr>
             <td>2025-04-20 16:05</td>
             <td>Terma</td>
-            <td><span class="model-badge anthropic">Claude 3 Sonnet</span></td>
+            <td><span class="budget-badge budget-badge--anthropic">Claude 3 Sonnet</span></td>
             <td>chat</td>
             <td>8,730</td>
             <td>$0.13</td>
@@ -288,7 +288,7 @@
           <tr>
             <td>2025-04-20 11:47</td>
             <td>Ergon</td>
-            <td><span class="model-badge anthropic">Claude 3 Haiku</span></td>
+            <td><span class="budget-badge budget-badge--anthropic">Claude 3 Haiku</span></td>
             <td>workflow_planning</td>
             <td>15,680</td>
             <td>$0.02</td>
@@ -296,7 +296,7 @@
           <tr>
             <td>2025-04-19 22:15</td>
             <td>Athena</td>
-            <td><span class="model-badge openai">GPT-4</span></td>
+            <td><span class="budget-badge budget-badge--openai">GPT-4</span></td>
             <td>data_analysis</td>
             <td>7,620</td>
             <td>$0.46</td>
@@ -305,56 +305,56 @@
       </table>
     </div>
     
-    <div class="pagination" style="margin-top: 20px; text-align: center;">
-      <button class="control-button">Previous</button>
-      <span style="margin: 0 10px;">Page 1 of 14</span>
-      <button class="control-button">Next</button>
+    <div class="budget-pagination">
+      <button class="budget-button budget-button--small">Previous</button>
+      <span class="budget-pagination__indicator">Page 1 of 14</span>
+      <button class="budget-button budget-button--small">Next</button>
     </div>
   </div>
 
   <!-- Settings Tab Content -->
-  <div class="tab-content" id="settings-content">
-    <div class="budget-section-header">
-      <h2>Budget Settings</h2>
-      <div class="budget-controls">
-        <button class="control-button primary-button" id="save-budget-settings">Save Settings</button>
+  <div class="budget-tabs__content" id="settings-content">
+    <div class="budget-header">
+      <h2 class="budget-header__title">Budget Settings</h2>
+      <div class="budget-header__controls">
+        <button class="budget-button budget-button--primary" id="save-budget-settings">Save Settings</button>
       </div>
     </div>
     
-    <div class="budget-settings-container">
+    <div class="budget-settings">
       <!-- Budget Limits Section -->
-      <div class="budget-settings-section">
-        <div class="budget-settings-header">
-          <h3>Budget Limits</h3>
+      <div class="budget-settings__section">
+        <div class="budget-settings__header">
+          <h3 class="budget-settings__title">Budget Limits</h3>
         </div>
-        <div class="budget-settings-form">
-          <div class="form-group">
-            <label for="daily-limit">Daily Budget Limit</label>
-            <div class="form-input">
-              <span class="form-input-prefix">$</span>
-              <input type="number" id="daily-limit" value="5.00" min="0" step="0.01">
+        <div class="budget-settings__form">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="daily-limit">Daily Budget Limit</label>
+            <div class="budget-form__input-container">
+              <span class="budget-form__input-prefix">$</span>
+              <input type="number" id="daily-limit" class="budget-form__input" value="5.00" min="0" step="0.01">
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="weekly-limit">Weekly Budget Limit</label>
-            <div class="form-input">
-              <span class="form-input-prefix">$</span>
-              <input type="number" id="weekly-limit" value="25.00" min="0" step="0.01">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="weekly-limit">Weekly Budget Limit</label>
+            <div class="budget-form__input-container">
+              <span class="budget-form__input-prefix">$</span>
+              <input type="number" id="weekly-limit" class="budget-form__input" value="25.00" min="0" step="0.01">
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="monthly-limit">Monthly Budget Limit</label>
-            <div class="form-input">
-              <span class="form-input-prefix">$</span>
-              <input type="number" id="monthly-limit" value="100.00" min="0" step="0.01">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="monthly-limit">Monthly Budget Limit</label>
+            <div class="budget-form__input-container">
+              <span class="budget-form__input-prefix">$</span>
+              <input type="number" id="monthly-limit" class="budget-form__input" value="100.00" min="0" step="0.01">
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="enforce-policy">Enforcement Policy</label>
-            <select id="enforce-policy" class="form-select">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="enforce-policy">Enforcement Policy</label>
+            <select id="enforce-policy" class="budget-form__select">
               <option value="ignore">Track Only (No Enforcement)</option>
               <option value="warn">Show Warnings</option>
               <option value="enforce" selected>Enforce Limits (Auto Downgrade)</option>
@@ -364,63 +364,63 @@
       </div>
       
       <!-- Provider Budgets Section -->
-      <div class="budget-settings-section">
-        <div class="budget-settings-header">
-          <h3>Provider Budgets</h3>
+      <div class="budget-settings__section">
+        <div class="budget-settings__header">
+          <h3 class="budget-settings__title">Provider Budgets</h3>
         </div>
-        <div class="budget-settings-form">
-          <div class="form-group">
-            <label for="anthropic-limit">Anthropic Monthly Budget</label>
-            <div class="form-input">
-              <span class="form-input-prefix">$</span>
-              <input type="number" id="anthropic-limit" value="80.00" min="0" step="0.01">
+        <div class="budget-settings__form">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="anthropic-limit">Anthropic Monthly Budget</label>
+            <div class="budget-form__input-container">
+              <span class="budget-form__input-prefix">$</span>
+              <input type="number" id="anthropic-limit" class="budget-form__input" value="80.00" min="0" step="0.01">
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="openai-limit">OpenAI Monthly Budget</label>
-            <div class="form-input">
-              <span class="form-input-prefix">$</span>
-              <input type="number" id="openai-limit" value="20.00" min="0" step="0.01">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="openai-limit">OpenAI Monthly Budget</label>
+            <div class="budget-form__input-container">
+              <span class="budget-form__input-prefix">$</span>
+              <input type="number" id="openai-limit" class="budget-form__input" value="20.00" min="0" step="0.01">
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="enable-provider-limits">Enable Provider-Specific Limits</label>
-            <div class="form-switch">
-              <input type="checkbox" id="enable-provider-limits" checked>
-              <span>Enabled</span>
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="enable-provider-limits">Enable Provider-Specific Limits</label>
+            <div class="budget-form__switch">
+              <input type="checkbox" id="enable-provider-limits" class="budget-form__checkbox" checked>
+              <span class="budget-form__switch-label">Enabled</span>
             </div>
           </div>
         </div>
       </div>
       
       <!-- Advanced Settings Section -->
-      <div class="budget-settings-section">
-        <div class="budget-settings-header">
-          <h3>Advanced Settings</h3>
+      <div class="budget-settings__section">
+        <div class="budget-settings__header">
+          <h3 class="budget-settings__title">Advanced Settings</h3>
         </div>
-        <div class="budget-settings-form">
-          <div class="form-group">
-            <label for="warning-threshold">Warning Threshold</label>
-            <div class="form-input">
-              <input type="number" id="warning-threshold" value="80" min="1" max="100">
-              <span class="form-input-prefix">%</span>
+        <div class="budget-settings__form">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="warning-threshold">Warning Threshold</label>
+            <div class="budget-form__input-container">
+              <input type="number" id="warning-threshold" class="budget-form__input" value="80" min="1" max="100">
+              <span class="budget-form__input-suffix">%</span>
             </div>
-            <span style="font-size: 12px; color: var(--text-color-secondary);">Show warnings when usage reaches this percentage of the limit</span>
+            <span class="budget-form__help-text">Show warnings when usage reaches this percentage of the limit</span>
           </div>
           
-          <div class="form-group">
-            <label for="allow-free-models">Allow Free Models When Budget Depleted</label>
-            <div class="form-switch">
-              <input type="checkbox" id="allow-free-models" checked>
-              <span>Enabled</span>
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="allow-free-models">Allow Free Models When Budget Depleted</label>
+            <div class="budget-form__switch">
+              <input type="checkbox" id="allow-free-models" class="budget-form__checkbox" checked>
+              <span class="budget-form__switch-label">Enabled</span>
             </div>
           </div>
           
-          <div class="form-group">
-            <label for="reset-day">Budget Reset Day (Monthly)</label>
-            <select id="reset-day" class="form-select">
+          <div class="budget-form__group">
+            <label class="budget-form__label" for="reset-day">Budget Reset Day (Monthly)</label>
+            <select id="reset-day" class="budget-form__select">
               <option value="1" selected>1st of month</option>
               <option value="15">15th of month</option>
               <option value="last">Last day of month</option>
@@ -432,70 +432,70 @@
   </div>
 
   <!-- Alerts Tab Content -->
-  <div class="tab-content" id="alerts-content">
-    <div class="budget-section-header">
-      <h2>Budget Alerts</h2>
-      <div class="budget-controls">
-        <button class="control-button" id="clear-alerts">Clear All</button>
+  <div class="budget-tabs__content" id="alerts-content">
+    <div class="budget-header">
+      <h2 class="budget-header__title">Budget Alerts</h2>
+      <div class="budget-header__controls">
+        <button class="budget-button" id="clear-alerts">Clear All</button>
       </div>
     </div>
     
-    <div class="budget-settings-section">
-      <div class="budget-settings-header">
-        <h3>Active Alerts</h3>
+    <div class="budget-settings__section">
+      <div class="budget-settings__header">
+        <h3 class="budget-settings__title">Active Alerts</h3>
       </div>
       
-      <div class="alert-list">
-        <div class="alert-item">
-          <div class="alert-info">
-            <div class="alert-icon warning">!</div>
-            <div class="alert-details">
-              <div class="alert-title">Weekly Budget Warning</div>
-              <div class="alert-description">Weekly budget is at 82% of limit ($20.50 of $25.00)</div>
+      <div class="budget-alert-list">
+        <div class="budget-alert">
+          <div class="budget-alert__info">
+            <div class="budget-alert__icon budget-alert__icon--warning">!</div>
+            <div class="budget-alert__details">
+              <div class="budget-alert__title">Weekly Budget Warning</div>
+              <div class="budget-alert__description">Weekly budget is at 82% of limit ($20.50 of $25.00)</div>
             </div>
           </div>
-          <div class="alert-actions">
-            <button class="control-button small-button">Dismiss</button>
+          <div class="budget-alert__actions">
+            <button class="budget-button budget-button--small">Dismiss</button>
           </div>
         </div>
         
-        <div class="alert-item">
-          <div class="alert-info">
-            <div class="alert-icon info">i</div>
-            <div class="alert-details">
-              <div class="alert-title">OpenAI Budget Update</div>
-              <div class="alert-description">OpenAI provider reached 90% of its monthly allocation</div>
+        <div class="budget-alert">
+          <div class="budget-alert__info">
+            <div class="budget-alert__icon budget-alert__icon--info">i</div>
+            <div class="budget-alert__details">
+              <div class="budget-alert__title">OpenAI Budget Update</div>
+              <div class="budget-alert__description">OpenAI provider reached 90% of its monthly allocation</div>
             </div>
           </div>
-          <div class="alert-actions">
-            <button class="control-button small-button">Dismiss</button>
+          <div class="budget-alert__actions">
+            <button class="budget-button budget-button--small">Dismiss</button>
           </div>
         </div>
       </div>
     </div>
     
-    <div class="budget-settings-section">
-      <div class="budget-settings-header">
-        <h3>Alert Settings</h3>
+    <div class="budget-settings__section">
+      <div class="budget-settings__header">
+        <h3 class="budget-settings__title">Alert Settings</h3>
       </div>
       
-      <div class="budget-settings-form">
-        <div class="form-group">
-          <label for="enable-email-alerts">Email Alerts</label>
-          <div class="form-switch">
-            <input type="checkbox" id="enable-email-alerts" checked>
-            <span>Enabled</span>
+      <div class="budget-settings__form">
+        <div class="budget-form__group">
+          <label class="budget-form__label" for="enable-email-alerts">Email Alerts</label>
+          <div class="budget-form__switch">
+            <input type="checkbox" id="enable-email-alerts" class="budget-form__checkbox" checked>
+            <span class="budget-form__switch-label">Enabled</span>
           </div>
         </div>
         
-        <div class="form-group">
-          <label for="alert-email">Alert Email Address</label>
-          <input type="email" id="alert-email" value="admin@example.com" class="form-select">
+        <div class="budget-form__group">
+          <label class="budget-form__label" for="alert-email">Alert Email Address</label>
+          <input type="email" id="alert-email" class="budget-form__input" value="admin@example.com">
         </div>
         
-        <div class="form-group">
-          <label for="alert-frequency">Alert Frequency</label>
-          <select id="alert-frequency" class="form-select">
+        <div class="budget-form__group">
+          <label class="budget-form__label" for="alert-frequency">Alert Frequency</label>
+          <select id="alert-frequency" class="budget-form__select">
             <option value="immediate">Immediate</option>
             <option value="daily" selected>Daily Summary</option>
             <option value="weekly">Weekly Summary</option>
@@ -503,8 +503,8 @@
         </div>
       </div>
       
-      <div class="form-actions">
-        <button class="control-button primary-button" id="save-alert-settings">Save Alert Settings</button>
+      <div class="budget-form__actions">
+        <button class="budget-button budget-button--primary" id="save-alert-settings">Save Alert Settings</button>
       </div>
     </div>
   </div>

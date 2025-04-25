@@ -1,0 +1,120 @@
+<!-- Profile Component UI Template with BEM naming -->
+<div class="profile-container">
+  <div class="profile-header">
+    <h2 class="profile-header__title">User Profile</h2>
+    <div class="profile-header__controls">
+      <button class="profile-button profile-button--primary" id="save-profile">Save Profile</button>
+    </div>
+  </div>
+  
+  <!-- Personal Information -->
+  <div class="profile-section">
+    <h3 class="profile-section__title">Personal Information</h3>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">Given Name</div>
+        <div class="profile-field__control">
+          <input type="text" id="given-name" placeholder="First/Given Name" class="profile-input">
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">Family Name</div>
+        <div class="profile-field__control">
+          <input type="text" id="family-name" placeholder="Last/Family Name" class="profile-input">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Contact Information -->
+  <div class="profile-section">
+    <h3 class="profile-section__title">Contact Information</h3>
+    
+    <div class="profile-field">
+      <div class="profile-field__label">Email Addresses</div>
+      <div class="profile-field__description">
+        Add one or more email addresses. The first one will be used as your primary email.
+      </div>
+      <div id="email-container" class="profile-emails">
+        <div class="profile-emails__header">
+          <button class="profile-button profile-button--secondary" id="add-email">
+            <span class="profile-button__icon">+</span>
+            <span class="profile-button__label">Add Email</span>
+          </button>
+        </div>
+        <div id="email-fields" class="profile-emails__fields">
+          <!-- Email fields will be added here -->
+          <div class="profile-emails__item">
+            <input type="email" class="profile-input profile-input--email" placeholder="Email Address">
+            <button class="profile-button profile-button--remove">
+              <span class="profile-button__icon">-</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">Phone Number</div>
+        <div class="profile-field__control">
+          <input type="tel" id="phone-number" placeholder="Phone Number" class="profile-input">
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Social Accounts -->
+  <div class="profile-section">
+    <h3 class="profile-section__title">Social Accounts</h3>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">X / Twitter</div>
+        <div class="profile-field__control">
+          <input type="text" id="x-account" placeholder="@username" class="profile-input">
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">BlueSky</div>
+        <div class="profile-field__control">
+          <input type="text" id="bluesky-account" placeholder="@username" class="profile-input">
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">WeChat</div>
+        <div class="profile-field__control">
+          <input type="text" id="wechat-account" placeholder="WeChat ID" class="profile-input">
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">WhatsApp</div>
+        <div class="profile-field__control">
+          <input type="text" id="whatsapp-account" placeholder="WhatsApp ID" class="profile-input">
+        </div>
+      </div>
+    </div>
+    
+    <div class="profile-field">
+      <div class="profile-field__row">
+        <div class="profile-field__label">GitHub</div>
+        <div class="profile-field__control">
+          <input type="text" id="github-account" placeholder="GitHub username" class="profile-input">
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

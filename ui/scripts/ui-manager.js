@@ -1,6 +1,7 @@
 /**
  * UI Manager
  * Handles UI state, component switching, and panel management
+ * Updated to use Shadow DOM component isolation
  */
 
 class UIManager {
@@ -8,12 +9,20 @@ class UIManager {
         this.components = {};
         this.activeComponent = 'tekton'; // Default component
         this.activePanel = 'terminal'; // Default panel (terminal, html, or settings)
+        this.useShadowDOM = true; // Flag to control Shadow DOM usage for backward compatibility
+        
+        // Shared services and utilities
+        this.services = {};
+        this.componentUtils = null;
     }
     
     /**
      * Initialize the UI manager
      */
     init() {
+        // Initialize component utilities if not already loaded
+        this._initializeComponentUtils();
+        
         // Load the component registry
         this.loadComponentRegistry();
         
@@ -56,7 +65,37 @@ class UIManager {
         // Set initial active component
         this.activateComponent(this.activeComponent);
         
-        console.log('UI Manager initialized');
+        console.log('UI Manager initialized (Shadow DOM: ' + (this.useShadowDOM ? 'enabled' : 'disabled') + ')');
+    }
+    
+    /**
+     * Initialize component utilities for shared functionality
+     */
+    _initializeComponentUtils() {
+        // If already initialized globally, use the existing instance
+        if (window.componentUtils) {
+            this.componentUtils = window.componentUtils;
+            return;
+        }
+        
+        // Otherwise check if the script was loaded but not initialized
+        if (window.ComponentUtils) {
+            this.componentUtils = new ComponentUtils().init();
+            window.componentUtils = this.componentUtils;
+        } else {
+            // Dynamically load the component utilities script if not loaded
+            console.log('Loading component utilities script...');
+            const script = document.createElement('script');
+            script.src = '/scripts/component-utils.js';
+            script.onload = () => {
+                console.log('Component utilities script loaded');
+                // The script will initialize itself on DOMContentLoaded
+            };
+            script.onerror = (error) => {
+                console.error('Error loading component utilities script:', error);
+            };
+            document.head.appendChild(script);
+        }
     }
     
     /**
@@ -192,12 +231,92 @@ class UIManager {
      * Load a component's UI
      * @param {string} componentId - ID of the component to load
      */
-    loadComponentUI(componentId) {
+    async loadComponentUI(componentId) {
         // If we've already loaded this component, just activate it
         if (this.components[componentId]) {
             this.activateComponentUI(componentId);
             return;
         }
+        
+        // Get HTML panel for component rendering
+        const htmlPanel = document.getElementById('html-panel');
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
+            return;
+        }
+        
+        // If using Shadow DOM for components and the component loader is available
+        if (this.useShadowDOM && window.componentLoader) {
+            console.log(`Loading component ${componentId} with Shadow DOM isolation`);
+            
+            // For backwards compatibility with special components during migration
+            // In future phases, we'll convert these components to use Shadow DOM
+            const specialComponents = ['rhetor', 'budget', 'terma'];
+            
+            if (specialComponents.includes(componentId)) {
+                console.log(`Special component ${componentId} detected - using direct loading during migration`);
+                this._loadSpecialComponent(componentId);
+                return;
+            }
+            
+            try {
+                // Clear any existing content in the HTML panel
+                // In the future, we'll support multiple components being visible at once
+                htmlPanel.innerHTML = '';
+                
+                // Create a container for the component
+                const container = document.createElement('div');
+                container.id = `${componentId}-container`;
+                container.className = 'shadow-component-container';
+                container.style.height = '100%';
+                container.style.width = '100%';
+                htmlPanel.appendChild(container);
+                
+                // Load the component using the component loader
+                const component = await window.componentLoader.loadComponent(componentId, container);
+                
+                if (component) {
+                    // Register the component
+                    this.components[componentId] = {
+                        id: componentId,
+                        loaded: true,
+                        usesTerminal: false, // Shadow DOM components use HTML panel
+                        shadowComponent: true, // Mark as a shadow DOM component
+                        container
+                    };
+                    
+                    // Activate the HTML panel
+                    this.activatePanel('html');
+                    
+                    console.log(`Component ${componentId} loaded successfully with Shadow DOM`);
+                } else {
+                    console.error(`Failed to load component ${componentId} with Shadow DOM`);
+                    
+                    // Fallback to terminal panel
+                    this.components[componentId] = {
+                        id: componentId,
+                        loaded: true,
+                        usesTerminal: true,
+                    };
+                    this.activatePanel('terminal');
+                }
+            } catch (error) {
+                console.error(`Error loading component ${componentId} with Shadow DOM:`, error);
+                
+                // Fallback to terminal panel
+                this.components[componentId] = {
+                    id: componentId,
+                    loaded: true,
+                    usesTerminal: true,
+                };
+                this.activatePanel('terminal');
+            }
+            
+            return;
+        }
+        
+        // Legacy component loading (without Shadow DOM)
+        console.log(`Loading component ${componentId} using legacy method`);
         
         // Check if we have registry data for this component
         if (this.componentMap && this.componentMap[componentId]) {
@@ -211,26 +330,41 @@ class UIManager {
             }
         }
         
-        // Special case for Terma component
+        // Handle special component cases
+        this._loadSpecialComponent(componentId);
+    }
+    
+    /**
+     * Load special component types
+     * This is for backward compatibility during the migration
+     * @param {string} componentId - ID of the component to load
+     */
+    _loadSpecialComponent(componentId) {
+        // Special case for Terma component - still using legacy approach
         if (componentId === 'terma') {
             this.loadTermaComponent();
             return;
         }
         
-        // Special case for Rhetor component
+        // Special case for Rhetor component - now using Shadow DOM
         if (componentId === 'rhetor') {
             this.loadRhetorComponent();
             return;
         }
         
-        // Special case for Budget component
+        // Special case for Budget component - now using Shadow DOM
         if (componentId === 'budget') {
             this.loadBudgetComponent();
             return;
         }
         
-        // Simplified component loading for now (will be enhanced in Phase 2)
-        // In the full implementation, this would dynamically load the component HTML file
+        // Special case for Settings component - now using Shadow DOM
+        if (componentId === 'settings') {
+            this.loadSettingsComponent();
+            return;
+        }
+        
+        // Default component loading for components without special handling
         this.components[componentId] = {
             id: componentId,
             loaded: true,
@@ -580,14 +714,32 @@ class UIManager {
      */
     activateComponentUI(componentId) {
         const component = this.components[componentId];
-        if (component) {
-            // Activate the appropriate panel for this component
-            if (component.usesTerminal) {
-                this.activatePanel('terminal');
-            } else {
-                this.activatePanel('html');
+        if (!component) {
+            console.error(`Component ${componentId} not found, cannot activate`);
+            return;
+        }
+        
+        // Activate the appropriate panel for this component
+        if (component.usesTerminal) {
+            this.activatePanel('terminal');
+        } else {
+            this.activatePanel('html');
+            
+            // Special handling for shadow DOM components
+            if (component.shadowComponent && component.container) {
+                // Make sure only this component's container is visible
+                const containers = document.querySelectorAll('.shadow-component-container');
+                containers.forEach(container => {
+                    if (container.id === `${componentId}-container`) {
+                        container.style.display = 'block';
+                    } else {
+                        container.style.display = 'none';
+                    }
+                });
             }
         }
+        
+        console.log(`Activated UI for component: ${componentId}`);
     }
     
     /**
@@ -674,12 +826,93 @@ class UIManager {
      * Show the settings panel
      */
     showSettingsPanel() {
-        this.activatePanel('settings');
-        console.log('Showing settings panel');
+        console.log('Showing settings panel with Shadow DOM isolation');
         
-        // Initialize settings UI if it hasn't been initialized
-        if (window.settingsUI && !window.settingsUI.initialized) {
-            window.settingsUI.init();
+        // Load the Settings component using Shadow DOM isolation
+        this.loadSettingsComponent();
+    }
+    
+    /**
+     * Load the Settings component using Shadow DOM isolation
+     */
+    loadSettingsComponent() {
+        // First, set the activeComponent to 'settings'
+        this.activeComponent = 'settings';
+        tektonUI.activeComponent = 'settings';
+        
+        // Get HTML panel for component rendering
+        const htmlPanel = document.getElementById('html-panel');
+        
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
+            return;
+        }
+        
+        // Clear the HTML panel
+        htmlPanel.innerHTML = '';
+        
+        // Create a container for the component
+        const container = document.createElement('div');
+        container.id = 'settings-container';
+        container.className = 'shadow-component-container';
+        container.style.height = '100%';
+        container.style.width = '100%';
+        container.style.position = 'relative';
+        htmlPanel.appendChild(container);
+        
+        // Activate the HTML panel to ensure it's visible
+        this.activatePanel('html');
+        
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('settings', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['settings'] = {
+                            id: 'settings',
+                            loaded: true,
+                            usesTerminal: false,
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Settings component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Settings component with Shadow DOM');
+                        
+                        // Fallback to traditional settings panel
+                        this.activatePanel('settings');
+                        console.log('Falling back to traditional settings panel');
+                        
+                        // Initialize settings UI if it hasn't been initialized
+                        if (window.settingsUI && !window.settingsUI.initialized) {
+                            window.settingsUI.init();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading Settings component:', error);
+                    
+                    // Fallback to traditional settings panel
+                    this.activatePanel('settings');
+                    console.log('Falling back to traditional settings panel');
+                    
+                    // Initialize settings UI if it hasn't been initialized
+                    if (window.settingsUI && !window.settingsUI.initialized) {
+                        window.settingsUI.init();
+                    }
+                });
+        } else {
+            console.error('Component loader not available, falling back to traditional settings panel');
+            
+            // Fallback to traditional panel
+            this.activatePanel('settings');
+            
+            // Initialize settings UI if it hasn't been initialized
+            if (window.settingsUI && !window.settingsUI.initialized) {
+                window.settingsUI.init();
+            }
         }
     }
     
@@ -687,443 +920,277 @@ class UIManager {
      * Show the profile panel
      */
     showProfilePanel() {
-        this.activatePanel('profile');
-        console.log('Showing profile panel');
+        console.log('Showing profile panel with Shadow DOM isolation');
         
-        // Initialize profile UI if it hasn't been initialized
-        if (window.profileUI && !window.profileUI.initialized) {
-            window.profileUI.init();
+        // Load the Profile component using Shadow DOM isolation
+        this.loadProfileComponent();
+    }
+    
+    /**
+     * Load the Profile component using Shadow DOM isolation
+     */
+    loadProfileComponent() {
+        // First, set the activeComponent to 'profile'
+        this.activeComponent = 'profile';
+        tektonUI.activeComponent = 'profile';
+        
+        // Get HTML panel for component rendering
+        const htmlPanel = document.getElementById('html-panel');
+        
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
+            return;
+        }
+        
+        // Clear the HTML panel
+        htmlPanel.innerHTML = '';
+        
+        // Create a container for the component
+        const container = document.createElement('div');
+        container.id = 'profile-container';
+        container.className = 'shadow-component-container';
+        container.style.height = '100%';
+        container.style.width = '100%';
+        container.style.position = 'relative';
+        htmlPanel.appendChild(container);
+        
+        // Activate the HTML panel to ensure it's visible
+        this.activatePanel('html');
+        
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('profile', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['profile'] = {
+                            id: 'profile',
+                            loaded: true,
+                            usesTerminal: false,
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Profile component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Profile component with Shadow DOM');
+                        
+                        // Fallback to traditional profile panel
+                        this.activatePanel('profile');
+                        console.log('Falling back to traditional profile panel');
+                        
+                        // Initialize profile UI if it hasn't been initialized
+                        if (window.profileUI && !window.profileUI.initialized) {
+                            window.profileUI.init();
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading Profile component:', error);
+                    
+                    // Fallback to traditional profile panel
+                    this.activatePanel('profile');
+                    console.log('Falling back to traditional profile panel');
+                    
+                    // Initialize profile UI if it hasn't been initialized
+                    if (window.profileUI && !window.profileUI.initialized) {
+                        window.profileUI.init();
+                    }
+                });
+        } else {
+            console.error('Component loader not available, falling back to traditional profile panel');
+            
+            // Fallback to traditional panel
+            this.activatePanel('profile');
+            
+            // Initialize profile UI if it hasn't been initialized
+            if (window.profileUI && !window.profileUI.initialized) {
+                window.profileUI.init();
+            }
         }
     }
     
     /**
-     * Load the Rhetor component
+     * Load the Rhetor component using the Component Loader with Shadow DOM
      */
     loadRhetorComponent() {
-        console.log('Loading Rhetor component...');
+        console.log('Loading Rhetor component with Shadow DOM isolation...');
         
         // First, set the activeComponent to 'rhetor'
         this.activeComponent = 'rhetor';
         tektonUI.activeComponent = 'rhetor';
         
-        // Create an empty container in the HTML panel if it doesn't exist
+        // Get HTML panel for component rendering
         const htmlPanel = document.getElementById('html-panel');
-        console.log('HTML panel found:', !!htmlPanel);
         
         if (!htmlPanel) {
             console.error('HTML panel not found!');
             return;
         }
         
-        // IMPORTANT: Clear the HTML panel completely
+        // Clear the HTML panel
         htmlPanel.innerHTML = '';
         
-        // Create a new container
-        console.log('Creating rhetor-container div');
+        // Create a container for the component
         const container = document.createElement('div');
         container.id = 'rhetor-container';
+        container.className = 'shadow-component-container';
         container.style.height = '100%';
         container.style.width = '100%';
-        container.style.overflow = 'auto';
-        container.style.position = 'absolute';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.backgroundColor = 'var(--bg-primary, #1e1e1e)';
+        container.style.position = 'relative';
         htmlPanel.appendChild(container);
         
-        // Add detailed logging to diagnose issues
-        const rhetorContainer = document.getElementById('rhetor-container');
-        
-        if (rhetorContainer) {
-            // Show loading message
-            rhetorContainer.innerHTML = `
-                <div style="padding: 20px; color: #f0f0f0; background: #333; height: 100%; overflow: auto;">
-                    <h3>Loading Rhetor Component...</h3>
-                    <p>Fetching the LLM management component from the server.</p>
-                    <div id="rhetor-load-status" style="margin-top: 20px; font-family: monospace;"></div>
-                </div>
-            `;
-        }
-        
-        const updateStatus = (message, isError = false) => {
-            const statusEl = document.getElementById('rhetor-load-status');
-            if (statusEl) {
-                const entry = document.createElement('div');
-                entry.style.color = isError ? '#ff6b6b' : '#4CAF50';
-                entry.style.margin = '5px 0';
-                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
-                statusEl.appendChild(entry);
-                statusEl.scrollTop = statusEl.scrollHeight;
-            }
-            console.log(isError ? `ERROR: ${message}` : message);
-        };
-        
-        // Cache busting parameter
-        const cacheBuster = `?t=${new Date().getTime()}`;
-        const componentPath = 'components/rhetor/rhetor-component.html' + cacheBuster;
-        
-        updateStatus(`Loading from: ${componentPath}`);
-        
-        // First, activate the HTML panel to ensure it's visible
+        // Activate the HTML panel to ensure it's visible
         this.activatePanel('html');
         
-        fetch(componentPath)
-            .then(response => {
-                updateStatus(`Received response: status ${response.status}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                if (!html || html.trim().length === 0) {
-                    throw new Error('Received empty HTML content');
-                }
-                
-                updateStatus(`Loaded HTML content successfully (${html.length} bytes)`);
-                
-                if (rhetorContainer) {
-                    // Create a wrapper to isolate the component content
-                    const componentWrapper = document.createElement('div');
-                    componentWrapper.className = 'component-wrapper';
-                    componentWrapper.style.height = '100%';
-                    componentWrapper.style.width = '100%';
-                    componentWrapper.style.position = 'relative';
-                    componentWrapper.style.overflow = 'auto';
-                    componentWrapper.style.padding = '0';
-                    componentWrapper.style.margin = '0';
-                    
-                    // Set the HTML content within the wrapper
-                    componentWrapper.innerHTML = html;
-                    
-                    // Clear container and append the wrapper
-                    rhetorContainer.innerHTML = '';
-                    rhetorContainer.appendChild(componentWrapper);
-                    
-                    updateStatus('Added HTML content to container');
-                } else {
-                    throw new Error('rhetor-container element disappeared');
-                }
-                
-                // Register the component
-                this.components['rhetor'] = {
-                    id: 'rhetor',
-                    loaded: true,
-                    usesTerminal: false, // Uses HTML panel
-                };
-                
-                updateStatus('Rhetor component loaded successfully');
-                
-                // Load the CSS stylesheet with special rules to prevent css leaking
-                const styleElement = document.createElement('style');
-                styleElement.textContent = `
-                    #rhetor-container {
-                        all: initial;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background-color: var(--bg-primary, #1e1e1e);
-                        color: var(--text-primary, #f0f0f0);
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        box-sizing: border-box;
-                        overflow: auto;
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('rhetor', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['rhetor'] = {
+                            id: 'rhetor',
+                            loaded: true,
+                            usesTerminal: false,
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Rhetor component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Rhetor component with Shadow DOM');
+                        
+                        // Fallback to terminal panel
+                        this.components['rhetor'] = {
+                            id: 'rhetor',
+                            loaded: true,
+                            usesTerminal: true,
+                        };
+                        this.activatePanel('terminal');
                     }
+                })
+                .catch(error => {
+                    console.error('Error loading Rhetor component:', error);
                     
-                    #rhetor-container .component-wrapper {
-                        display: block;
-                        width: 100%;
-                        height: 100%;
-                        overflow: auto;
-                    }
-                `;
-                document.head.appendChild(styleElement);
-                
-                // Load the regular component CSS
-                const stylesheetElement = document.createElement('link');
-                stylesheetElement.rel = 'stylesheet';
-                stylesheetElement.href = `/styles/rhetor/rhetor-component.css${cacheBuster}`;
-                document.head.appendChild(stylesheetElement);
-                
-                // Load the JavaScript
-                const scriptElement = document.createElement('script');
-                scriptElement.src = `/scripts/rhetor/rhetor-component.js${cacheBuster}`;
-                scriptElement.onerror = () => {
-                    updateStatus('Failed to load rhetor-component.js script', true);
-                };
-                scriptElement.onload = () => {
-                    updateStatus('Successfully loaded rhetor-component.js script');
-                    
-                    // Add tab event handlers (after script is loaded)
-                    setTimeout(() => {
-                        const tabs = document.querySelectorAll('.rhetor-tabs .tab-button');
-                        tabs.forEach(tab => {
-                            tab.addEventListener('click', () => {
-                                const tabName = tab.getAttribute('data-tab');
-                                
-                                // Deactivate all tabs
-                                tabs.forEach(t => t.classList.remove('active'));
-                                document.querySelectorAll('.tab-content').forEach(content => {
-                                    content.classList.remove('active');
-                                });
-                                
-                                // Activate selected tab
-                                tab.classList.add('active');
-                                const contentElement = document.getElementById(`${tabName}-content`);
-                                if (contentElement) {
-                                    contentElement.classList.add('active');
-                                }
-                            });
-                        });
-                    }, 100);
-                };
-                document.head.appendChild(scriptElement);
-            })
-            .catch(error => {
-                updateStatus(`Failed to load Rhetor component: ${error.message}`, true);
-                
-                // Show error in container
-                if (rhetorContainer) {
-                    rhetorContainer.innerHTML = `
-                        <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
-                            <h3>Error: Failed to Load Rhetor Component</h3>
-                            <p>The Rhetor component could not be loaded: ${error.message}</p>
-                            <h4>Troubleshooting:</h4>
-                            <ol style="margin-left: 20px;">
-                                <li>Verify that Rhetor API is running (tekton-status shows Rhetor API running)</li>
-                                <li>Check that the component files exist in the correct locations</li>
-                                <li>Restart the Hephaestus UI server</li>
-                                <li>Try opening the browser's network tab to see the exact request failures</li>
-                            </ol>
-                            <p style="margin-top: 20px;">Click the Rhetor tab again to retry loading.</p>
-                        </div>
-                    `;
-                }
-                
-                // Fallback to terminal panel
-                this.components['rhetor'] = {
-                    id: 'rhetor',
-                    loaded: true,
-                    usesTerminal: true,
-                };
-                this.activatePanel('terminal');
-            });
+                    // Fallback to terminal panel
+                    this.components['rhetor'] = {
+                        id: 'rhetor',
+                        loaded: true,
+                        usesTerminal: true,
+                    };
+                    this.activatePanel('terminal');
+                });
+        } else {
+            console.error('Component loader not available, cannot load Rhetor component');
+            
+            // Show error in container
+            container.innerHTML = `
+                <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
+                    <h3>Error: Component Loader Not Available</h3>
+                    <p>The Shadow DOM component loader is not available. Please check that main.js initializes the component loader correctly.</p>
+                </div>
+            `;
+            
+            // Fallback to terminal panel
+            this.components['rhetor'] = {
+                id: 'rhetor',
+                loaded: true,
+                usesTerminal: true,
+            };
+        }
     }
     
     /**
-     * Load the Budget component
+     * Load the Budget component using the Component Loader with Shadow DOM
      */
     loadBudgetComponent() {
-        console.log('Loading Budget component...');
+        console.log('Loading Budget component with Shadow DOM isolation...');
         
         // First, set the activeComponent to 'budget'
         this.activeComponent = 'budget';
         tektonUI.activeComponent = 'budget';
         
-        // Create an empty container in the HTML panel if it doesn't exist
+        // Get HTML panel for component rendering
         const htmlPanel = document.getElementById('html-panel');
-        console.log('HTML panel found:', !!htmlPanel);
         
         if (!htmlPanel) {
             console.error('HTML panel not found!');
             return;
         }
         
-        // IMPORTANT: Clear the HTML panel completely
+        // Clear the HTML panel
         htmlPanel.innerHTML = '';
         
-        // Create a new container
-        console.log('Creating budget-container div');
+        // Create a container for the component
         const container = document.createElement('div');
         container.id = 'budget-container';
+        container.className = 'shadow-component-container';
         container.style.height = '100%';
         container.style.width = '100%';
-        container.style.overflow = 'auto';
-        container.style.position = 'absolute';
-        container.style.top = '0';
-        container.style.left = '0';
-        container.style.backgroundColor = 'var(--bg-primary, #1e1e1e)';
+        container.style.position = 'relative';
         htmlPanel.appendChild(container);
         
-        // Add detailed logging to diagnose issues
-        const budgetContainer = document.getElementById('budget-container');
-        
-        if (budgetContainer) {
-            // Show loading message
-            budgetContainer.innerHTML = `
-                <div style="padding: 20px; color: #f0f0f0; background: #333; height: 100%; overflow: auto;">
-                    <h3>Loading Budget Dashboard Component...</h3>
-                    <p>Fetching the budget management component from the server.</p>
-                    <div id="budget-load-status" style="margin-top: 20px; font-family: monospace;"></div>
-                </div>
-            `;
-        }
-        
-        const updateStatus = (message, isError = false) => {
-            const statusEl = document.getElementById('budget-load-status');
-            if (statusEl) {
-                const entry = document.createElement('div');
-                entry.style.color = isError ? '#ff6b6b' : '#4CAF50';
-                entry.style.margin = '5px 0';
-                entry.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
-                statusEl.appendChild(entry);
-                statusEl.scrollTop = statusEl.scrollHeight;
-            }
-            console.log(isError ? `ERROR: ${message}` : message);
-        };
-        
-        // Cache busting parameter
-        const cacheBuster = `?t=${new Date().getTime()}`;
-        const componentPath = 'components/budget/budget-dashboard.html' + cacheBuster;
-        
-        updateStatus(`Loading from: ${componentPath}`);
-        
-        // First, activate the HTML panel to ensure it's visible
+        // Activate the HTML panel to ensure it's visible
         this.activatePanel('html');
         
-        fetch(componentPath)
-            .then(response => {
-                updateStatus(`Received response: status ${response.status}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-                }
-                return response.text();
-            })
-            .then(html => {
-                if (!html || html.trim().length === 0) {
-                    throw new Error('Received empty HTML content');
-                }
-                
-                updateStatus(`Loaded HTML content successfully (${html.length} bytes)`);
-                
-                if (budgetContainer) {
-                    // Create a wrapper to isolate the component content
-                    const componentWrapper = document.createElement('div');
-                    componentWrapper.className = 'component-wrapper';
-                    componentWrapper.style.height = '100%';
-                    componentWrapper.style.width = '100%';
-                    componentWrapper.style.position = 'relative';
-                    componentWrapper.style.overflow = 'auto';
-                    componentWrapper.style.padding = '0';
-                    componentWrapper.style.margin = '0';
-                    
-                    // Set the HTML content within the wrapper
-                    componentWrapper.innerHTML = html;
-                    
-                    // Clear container and append the wrapper
-                    budgetContainer.innerHTML = '';
-                    budgetContainer.appendChild(componentWrapper);
-                    
-                    updateStatus('Added HTML content to container');
-                } else {
-                    throw new Error('budget-container element disappeared');
-                }
-                
-                // Register the component
-                this.components['budget'] = {
-                    id: 'budget',
-                    loaded: true,
-                    usesTerminal: false, // Uses HTML panel
-                };
-                
-                updateStatus('Budget component loaded successfully');
-                
-                // Load the CSS stylesheet with special rules to prevent css leaking
-                const styleElement = document.createElement('style');
-                styleElement.textContent = `
-                    #budget-container {
-                        all: initial;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background-color: var(--bg-primary, #1e1e1e);
-                        color: var(--text-primary, #f0f0f0);
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        box-sizing: border-box;
-                        overflow: auto;
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('budget', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['budget'] = {
+                            id: 'budget',
+                            loaded: true,
+                            usesTerminal: false,
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Budget component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Budget component with Shadow DOM');
+                        
+                        // Fallback to terminal panel
+                        this.components['budget'] = {
+                            id: 'budget',
+                            loaded: true,
+                            usesTerminal: true,
+                        };
+                        this.activatePanel('terminal');
                     }
+                })
+                .catch(error => {
+                    console.error('Error loading Budget component:', error);
                     
-                    #budget-container .component-wrapper {
-                        display: block;
-                        width: 100%;
-                        height: 100%;
-                        overflow: auto;
-                    }
-                `;
-                document.head.appendChild(styleElement);
-                
-                // Load the regular component CSS
-                const stylesheetElement = document.createElement('link');
-                stylesheetElement.rel = 'stylesheet';
-                stylesheetElement.href = `/styles/budget/budget-component.css${cacheBuster}`;
-                document.head.appendChild(stylesheetElement);
-                
-                // Load the JavaScript
-                const scriptElement = document.createElement('script');
-                scriptElement.src = `/scripts/budget/budget-dashboard.js${cacheBuster}`;
-                scriptElement.onerror = () => {
-                    updateStatus('Failed to load budget-dashboard.js script', true);
-                };
-                scriptElement.onload = () => {
-                    updateStatus('Successfully loaded budget-dashboard.js script');
-                    
-                    // Add tab event handlers (after script is loaded)
-                    setTimeout(() => {
-                        const tabs = document.querySelectorAll('.budget-tabs .tab-button');
-                        tabs.forEach(tab => {
-                            tab.addEventListener('click', () => {
-                                const tabName = tab.getAttribute('data-tab');
-                                
-                                // Deactivate all tabs
-                                tabs.forEach(t => t.classList.remove('active'));
-                                document.querySelectorAll('.tab-content').forEach(content => {
-                                    content.classList.remove('active');
-                                });
-                                
-                                // Activate selected tab
-                                tab.classList.add('active');
-                                const contentElement = document.getElementById(`${tabName}-content`);
-                                if (contentElement) {
-                                    contentElement.classList.add('active');
-                                }
-                            });
-                        });
-                    }, 100);
-                };
-                document.head.appendChild(scriptElement);
-            })
-            .catch(error => {
-                updateStatus(`Failed to load Budget component: ${error.message}`, true);
-                
-                // Show error in container
-                if (budgetContainer) {
-                    budgetContainer.innerHTML = `
-                        <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
-                            <h3>Error: Failed to Load Budget Component</h3>
-                            <p>The Budget component could not be loaded: ${error.message}</p>
-                            <h4>Troubleshooting:</h4>
-                            <ol style="margin-left: 20px;">
-                                <li>Verify that Rhetor API is running (tekton-status shows Rhetor API running)</li>
-                                <li>Check that the component files exist in the correct locations</li>
-                                <li>Restart the Hephaestus UI server</li>
-                                <li>Try opening the browser's network tab to see the exact request failures</li>
-                            </ol>
-                            <p style="margin-top: 20px;">Click the Budget tab again to retry loading.</p>
-                        </div>
-                    `;
-                }
-                
-                // Fallback to terminal panel
-                this.components['budget'] = {
-                    id: 'budget',
-                    loaded: true,
-                    usesTerminal: true,
-                };
-                this.activatePanel('terminal');
-            });
+                    // Fallback to terminal panel
+                    this.components['budget'] = {
+                        id: 'budget',
+                        loaded: true,
+                        usesTerminal: true,
+                    };
+                    this.activatePanel('terminal');
+                });
+        } else {
+            console.error('Component loader not available, cannot load Budget component');
+            
+            // Show error in container
+            container.innerHTML = `
+                <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
+                    <h3>Error: Component Loader Not Available</h3>
+                    <p>The Shadow DOM component loader is not available. Please check that main.js initializes the component loader correctly.</p>
+                </div>
+            `;
+            
+            // Fallback to terminal panel
+            this.components['budget'] = {
+                id: 'budget',
+                loaded: true,
+                usesTerminal: true,
+            };
+        }
+    }
     }
     
     /**

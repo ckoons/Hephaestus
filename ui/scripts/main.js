@@ -143,6 +143,11 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(() => console.log('No cache version file found, using existing files'));
     
+    // Initialize component loader (must be initialized before UI manager)
+    if (!window.componentLoader) {
+        console.error('Component loader not initialized, will be using legacy component loading');
+    }
+    
     // Initialize UI manager
     window.uiManager = new UIManager();
     uiManager.init();

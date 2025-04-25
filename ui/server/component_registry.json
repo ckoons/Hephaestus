@@ -1,12 +1,70 @@
 {
   "components": [
     {
+      "id": "profile",
+      "name": "Profile",
+      "description": "User profile management",
+      "icon": "👤",
+      "defaultMode": "html",
+      "capabilities": ["profile_management", "user_info", "shadow_dom", "component_isolation"],
+      "componentPath": "components/profile/profile-component.html",
+      "scripts": [
+        "scripts/profile/profile-service.js",
+        "scripts/profile/profile-component.js"
+      ],
+      "styles": [
+        "styles/profile/profile-component.css"
+      ],
+      "usesShadowDom": true
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "description": "Application settings and preferences",
+      "icon": "⚙️",
+      "defaultMode": "html",
+      "capabilities": ["settings_management", "theme_management", "shadow_dom", "component_isolation"],
+      "componentPath": "components/settings/settings-component.html",
+      "scripts": [
+        "scripts/settings/settings-service.js",
+        "scripts/settings/settings-component.js"
+      ],
+      "styles": [
+        "styles/settings/settings-component.css"
+      ],
+      "usesShadowDom": true
+    },
+    {
+      "id": "test",
+      "name": "Test Component",
+      "description": "Shadow DOM isolation test component",
+      "icon": "🧪",
+      "defaultMode": "html",
+      "capabilities": ["testing", "shadow_dom", "component_isolation"],
+      "componentPath": "components/test/test-component.html",
+      "scripts": [
+        "scripts/test/test-component.js"
+      ],
+      "styles": [
+        "styles/test/test-component.css"
+      ]
+    },
+    {
       "id": "terma",
       "name": "Terma",
       "description": "Advanced terminal environment",
       "icon": "🖥️",
       "defaultMode": "html",
-      "capabilities": ["terminal", "command_execution", "shell_access"]
+      "capabilities": ["terminal", "command_execution", "shell_access", "shadow_dom", "component_isolation"],
+      "componentPath": "components/terma/terma-component.html",
+      "scripts": [
+        "scripts/terma/terma-service.js",
+        "scripts/terma/terma-component.js"
+      ],
+      "styles": [
+        "styles/terma/terma-component.css"
+      ],
+      "usesShadowDom": true
     },
     {
       "id": "tekton",
@@ -62,14 +120,15 @@
       "description": "LLM management and prompt engineering",
       "icon": "💬",
       "defaultMode": "html",
-      "capabilities": ["llm_management", "prompt_engineering", "communication_management", "budget_management"],
+      "capabilities": ["llm_management", "prompt_engineering", "communication_management", "budget_management", "shadow_dom", "component_isolation"],
       "componentPath": "components/rhetor/rhetor-component.html",
       "scripts": [
         "scripts/rhetor/rhetor-component.js"
       ],
       "styles": [
         "styles/rhetor/rhetor-component.css"
-      ]
+      ],
+      "usesShadowDom": true
     },
     {
       "id": "budget",
@@ -77,7 +136,7 @@
       "description": "LLM cost tracking and budget management",
       "icon": "📊",
       "defaultMode": "html",
-      "capabilities": ["cost_tracking", "budget_management", "usage_reporting"],
+      "capabilities": ["cost_tracking", "budget_management", "usage_reporting", "shadow_dom", "component_isolation"],
       "componentPath": "components/budget/budget-dashboard.html",
       "scripts": [
         "scripts/budget/budget-dashboard.js"
@@ -85,7 +144,7 @@
       "styles": [
         "styles/budget/budget-component.css"
       ],
-      "dependencies": ["rhetor"]
+      "usesShadowDom": true
     },
     {
       "id": "hermes",

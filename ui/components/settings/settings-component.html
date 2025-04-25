@@ -1,0 +1,313 @@
+<!-- Settings Component UI Template -->
+<div class="settings-container">
+  <div class="settings-header">
+    <h2 class="settings-header__title">Settings</h2>
+    <div class="settings-header__controls">
+      <button class="settings-button settings-button--primary" id="save-all-settings">Save All Settings</button>
+    </div>
+  </div>
+  
+  <!-- Theme Settings -->
+  <div class="settings-section">
+    <h3 class="settings-section__title">Theme Settings</h3>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">UI Mode</div>
+        <div class="settings-controls settings-theme-mode">
+          <button class="settings-theme-mode__button" data-mode="light">
+            <span class="settings-theme-mode__icon">☀️</span>
+            <span class="settings-theme-mode__label">Light</span>
+          </button>
+          <button class="settings-theme-mode__button settings-theme-mode__button--active" data-mode="dark">
+            <span class="settings-theme-mode__icon">🌙</span>
+            <span class="settings-theme-mode__label">Dark</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Accent Color</div>
+        <div class="settings-controls settings-theme-color">
+          <button class="settings-theme-color__button settings-theme-color__button--active" data-color="blue" style="--color: #007bff">
+            <span class="settings-theme-color__dot"></span>
+            <span class="settings-theme-color__label">Blue</span>
+          </button>
+          <button class="settings-theme-color__button" data-color="green" style="--color: #28a745">
+            <span class="settings-theme-color__dot"></span>
+            <span class="settings-theme-color__label">Green</span>
+          </button>
+          <button class="settings-theme-color__button" data-color="purple" style="--color: #6f42c1">
+            <span class="settings-theme-color__dot"></span>
+            <span class="settings-theme-color__label">Purple</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- UI Settings -->
+  <div class="settings-section">
+    <h3 class="settings-section__title">Interface Settings</h3>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Show Greek Names</div>
+        <div class="settings-control">
+          <label class="settings-toggle">
+            <input type="checkbox" id="greek-names-toggle" checked>
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-description">
+        When enabled, components will be displayed with their Greek names (e.g., "Ergon - Tools/Agents/Workflows"). 
+        When disabled, only functional names will be shown (e.g., "Tools/Agents/Workflows").
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Terminal Font Size</div>
+        <div class="settings-control">
+          <select id="terminal-font-size" class="settings-select">
+            <option value="small">Small</option>
+            <option value="medium" selected>Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Terminal Settings -->
+  <div class="settings-section">
+    <h3 class="settings-section__title">Terminal Settings</h3>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Terminal Mode</div>
+        <div class="settings-control">
+          <select id="terminal-mode-select" class="settings-select">
+            <option value="advanced">Advanced Terminal (Terma)</option>
+            <option value="simple">Simple Terminal</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-description">
+        Choose between the advanced Terma terminal or a simple terminal interface.
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Font Size</div>
+        <div class="settings-control">
+          <input type="range" id="terminal-font-size-slider" class="settings-slider" min="8" max="24" value="14">
+          <span id="terminal-font-size-value" class="settings-slider-value">14px</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Font Family</div>
+        <div class="settings-control">
+          <select id="terminal-font-family" class="settings-select">
+            <option value="'Courier New', monospace">Courier New</option>
+            <option value="'Source Code Pro', monospace">Source Code Pro</option>
+            <option value="'Fira Code', monospace">Fira Code</option>
+            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Theme</div>
+        <div class="settings-control">
+          <select id="terminal-theme" class="settings-select">
+            <option value="default">Default</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+            <option value="monokai">Monokai</option>
+            <option value="solarized">Solarized</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Cursor Style</div>
+        <div class="settings-control">
+          <select id="terminal-cursor-style" class="settings-select">
+            <option value="block">Block</option>
+            <option value="bar">Bar</option>
+            <option value="underline">Underline</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Cursor Blink</div>
+        <div class="settings-control">
+          <label class="settings-toggle">
+            <input type="checkbox" id="terminal-cursor-blink" checked>
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Enable Scrollback</div>
+        <div class="settings-control">
+          <label class="settings-toggle">
+            <input type="checkbox" id="terminal-scrollback" checked>
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Scrollback Lines</div>
+        <div class="settings-control">
+          <input type="number" id="terminal-scrollback-lines" class="settings-input" min="100" max="10000" value="1000">
+        </div>
+      </div>
+      <div class="settings-description">
+        Number of lines to keep in terminal history.
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Inherit OS Terminal Settings</div>
+        <div class="settings-control">
+          <label class="settings-toggle">
+            <input type="checkbox" id="terminal-inherit-os">
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-description">
+        When enabled, try to use system terminal settings (when available).
+      </div>
+    </div>
+  </div>
+  
+  <!-- Chat Settings -->
+  <div class="settings-section">
+    <h3 class="settings-section__title">Chat Settings</h3>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Save Chat History</div>
+        <div class="settings-control">
+          <label class="settings-toggle">
+            <input type="checkbox" id="chat-history-toggle" checked>
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-description">
+        When enabled, your chat conversations will be saved between sessions.
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Max History Entries</div>
+        <div class="settings-control">
+          <select id="chat-history-limit" class="settings-select">
+            <option value="20">20 messages</option>
+            <option value="50" selected>50 messages</option>
+            <option value="100">100 messages</option>
+            <option value="200">200 messages</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-description">
+        Maximum number of messages to keep in history per chat.
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Clear All Chat History</div>
+        <div class="settings-control">
+          <button class="settings-button settings-button--danger" id="clear-chat-history">
+            Clear History
+          </button>
+        </div>
+      </div>
+      <div class="settings-description settings-description--warning">
+        Warning: This will permanently delete all saved chat conversations.
+      </div>
+    </div>
+  </div>
+  
+  <!-- Hermes Integration Settings -->
+  <div class="settings-section">
+    <h3 class="settings-section__title">Hermes Integration</h3>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Register Terminals with Hermes</div>
+        <div class="settings-control">
+          <label class="settings-toggle">
+            <input type="checkbox" id="hermes-integration-toggle" checked>
+            <span class="settings-toggle__slider"></span>
+          </label>
+        </div>
+      </div>
+      <div class="settings-description">
+        When enabled, all chat terminals will register with Hermes message bus for AI communication.
+      </div>
+    </div>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Default Message Route</div>
+        <div class="settings-control">
+          <select id="default-message-route" class="settings-select">
+            <option value="direct">Direct (one-to-one)</option>
+            <option value="team" selected>Team (relevant LLMs)</option>
+            <option value="broadcast">Broadcast (all LLMs)</option>
+          </select>
+        </div>
+      </div>
+      <div class="settings-description">
+        Default routing behavior for messages without explicit targets.
+      </div>
+    </div>
+  </div>
+  
+  <!-- System Settings -->
+  <div class="settings-section">
+    <h3 class="settings-section__title">System</h3>
+    
+    <div class="settings-group">
+      <div class="settings-row">
+        <div class="settings-label">Reset All Settings</div>
+        <div class="settings-control">
+          <button class="settings-button settings-button--danger" id="reset-all-settings">
+            Reset to Defaults
+          </button>
+        </div>
+      </div>
+      <div class="settings-description settings-description--warning">
+        Warning: This will reset all settings to their default values.
+      </div>
+    </div>
+  </div>
+</div>
