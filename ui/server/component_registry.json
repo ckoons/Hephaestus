@@ -148,10 +148,20 @@
     {
       "id": "telos",
       "name": "Telos",
-      "description": "Requirements and goal management",
+      "description": "Requirements management, tracing and validation",
       "icon": "🎯",
       "defaultMode": "html",
-      "capabilities": ["requirements_management", "goal_tracking", "criteria_validation"]
+      "capabilities": ["requirements_management", "requirement_tracing", "requirement_validation", "hierarchical_visualization", "prometheus_integration", "shadow_dom", "component_isolation", "state_management"],
+      "componentPath": "components/telos/telos-component.html",
+      "scripts": [
+        "scripts/telos/telos-service.js",
+        "scripts/telos/telos-component.js",
+        "scripts/telos/telos-integration.js"
+      ],
+      "styles": [
+        "styles/telos/telos.css"
+      ],
+      "usesShadowDom": true
     },
     {
       "id": "athena",
