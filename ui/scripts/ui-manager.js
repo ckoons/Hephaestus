@@ -169,6 +169,20 @@ class UIManager {
             return;
         }
         
+        // SPECIAL CASE: Direct component loading for Hermes
+        if (componentId === 'hermes') {
+            console.log('DIRECT LOADING HERMES COMPONENT');
+            this.loadHermesComponent();
+            return;
+        }
+        
+        // SPECIAL CASE: Direct component loading for Engram
+        if (componentId === 'engram') {
+            console.log('DIRECT LOADING ENGRAM COMPONENT');
+            this.loadEngramComponent();
+            return;
+        }
+        
         // Update active component in UI
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -251,7 +265,7 @@ class UIManager {
             
             // For backwards compatibility with special components during migration
             // In future phases, we'll convert these components to use Shadow DOM
-            const specialComponents = ['rhetor', 'budget', 'terma'];
+            const specialComponents = ['rhetor', 'budget', 'terma', 'engram'];
             
             if (specialComponents.includes(componentId)) {
                 console.log(`Special component ${componentId} detected - using direct loading during migration`);
@@ -361,6 +375,12 @@ class UIManager {
         // Special case for Settings component - now using Shadow DOM
         if (componentId === 'settings') {
             this.loadSettingsComponent();
+            return;
+        }
+        
+        // Special case for Engram component - now using Shadow DOM
+        if (componentId === 'engram') {
+            this.loadEngramComponent();
             return;
         }
         
@@ -1191,6 +1211,187 @@ class UIManager {
             };
         }
     }
+    
+    /**
+     * Load the Hermes component using the Component Loader with Shadow DOM
+     */
+    loadHermesComponent() {
+        console.log('Loading Hermes component with Shadow DOM isolation...');
+        
+        // First, set the activeComponent to 'hermes'
+        this.activeComponent = 'hermes';
+        tektonUI.activeComponent = 'hermes';
+        
+        // Get HTML panel for component rendering
+        const htmlPanel = document.getElementById('html-panel');
+        
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
+            return;
+        }
+        
+        // Clear the HTML panel
+        htmlPanel.innerHTML = '';
+        
+        // Create a container for the component
+        const container = document.createElement('div');
+        container.id = 'hermes-container';
+        container.className = 'shadow-component-container';
+        container.style.height = '100%';
+        container.style.width = '100%';
+        container.style.position = 'relative';
+        htmlPanel.appendChild(container);
+        
+        // Activate the HTML panel to ensure it's visible
+        this.activatePanel('html');
+        
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('hermes', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['hermes'] = {
+                            id: 'hermes',
+                            loaded: true,
+                            usesTerminal: false,
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Hermes component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Hermes component with Shadow DOM');
+                        
+                        // Fallback to terminal panel
+                        this.components['hermes'] = {
+                            id: 'hermes',
+                            loaded: true,
+                            usesTerminal: true,
+                        };
+                        this.activatePanel('terminal');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading Hermes component:', error);
+                    
+                    // Fallback to terminal panel
+                    this.components['hermes'] = {
+                        id: 'hermes',
+                        loaded: true,
+                        usesTerminal: true,
+                    };
+                    this.activatePanel('terminal');
+                });
+        } else {
+            console.error('Component loader not available, cannot load Hermes component');
+            
+            // Show error in container
+            container.innerHTML = `
+                <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
+                    <h3>Error: Component Loader Not Available</h3>
+                    <p>The Shadow DOM component loader is not available. Please check that main.js initializes the component loader correctly.</p>
+                </div>
+            `;
+            
+            // Fallback to terminal panel
+            this.components['hermes'] = {
+                id: 'hermes',
+                loaded: true,
+                usesTerminal: true,
+            };
+        }
+    }
+    
+    /**
+     * Load the Engram component using the Component Loader with Shadow DOM
+     */
+    loadEngramComponent() {
+        console.log('Loading Engram component with Shadow DOM isolation...');
+        
+        // First, set the activeComponent to 'engram'
+        this.activeComponent = 'engram';
+        tektonUI.activeComponent = 'engram';
+        
+        // Get HTML panel for component rendering
+        const htmlPanel = document.getElementById('html-panel');
+        
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
+            return;
+        }
+        
+        // Clear the HTML panel
+        htmlPanel.innerHTML = '';
+        
+        // Create a container for the component
+        const container = document.createElement('div');
+        container.id = 'engram-container';
+        container.className = 'shadow-component-container';
+        container.style.height = '100%';
+        container.style.width = '100%';
+        container.style.position = 'relative';
+        htmlPanel.appendChild(container);
+        
+        // Activate the HTML panel to ensure it's visible
+        this.activatePanel('html');
+        
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('engram', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['engram'] = {
+                            id: 'engram',
+                            loaded: true,
+                            usesTerminal: false,
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Engram component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Engram component with Shadow DOM');
+                        
+                        // Fallback to terminal panel
+                        this.components['engram'] = {
+                            id: 'engram',
+                            loaded: true,
+                            usesTerminal: true,
+                        };
+                        this.activatePanel('terminal');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading Engram component:', error);
+                    
+                    // Fallback to terminal panel
+                    this.components['engram'] = {
+                        id: 'engram',
+                        loaded: true,
+                        usesTerminal: true,
+                    };
+                    this.activatePanel('terminal');
+                });
+        } else {
+            console.error('Component loader not available, cannot load Engram component');
+            
+            // Show error in container
+            container.innerHTML = `
+                <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
+                    <h3>Error: Component Loader Not Available</h3>
+                    <p>The Shadow DOM component loader is not available. Please check that main.js initializes the component loader correctly.</p>
+                </div>
+            `;
+            
+            // Fallback to terminal panel
+            this.components['engram'] = {
+                id: 'engram',
+                loaded: true,
+                usesTerminal: true,
+            };
+        }
     }
     
     /**

@@ -1,0 +1,405 @@
+<!-- Engram Component UI Template -->
+<div class="engram-container">
+  <div class="engram-header">
+    <h2 class="engram-header__title">Engram Memory</h2>
+    <div class="engram-header__controls">
+      <button class="engram-button engram-button--primary" id="refresh-memory">
+        <span class="engram-button__icon">🔄</span>
+        <span class="engram-button__text">Refresh</span>
+      </button>
+      <select id="view-mode" class="engram-select">
+        <option value="list" selected>List View</option>
+        <option value="grid">Grid View</option>
+        <option value="graph">Graph View</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- Tabs -->
+  <div class="engram-tabs">
+    <button class="engram-tabs__button engram-tabs__button--active" data-tab="browse">
+      <span class="engram-tabs__icon">🗃️</span>
+      <span class="engram-tabs__label">Browse</span>
+    </button>
+    <button class="engram-tabs__button" data-tab="search">
+      <span class="engram-tabs__icon">🔍</span>
+      <span class="engram-tabs__label">Search</span>
+    </button>
+    <button class="engram-tabs__button" data-tab="compartments">
+      <span class="engram-tabs__icon">📁</span>
+      <span class="engram-tabs__label">Compartments</span>
+    </button>
+    <button class="engram-tabs__button" data-tab="statistics">
+      <span class="engram-tabs__icon">📊</span>
+      <span class="engram-tabs__label">Statistics</span>
+    </button>
+  </div>
+  
+  <!-- Tab Content -->
+  <div class="engram-tab-content">
+    <!-- Browse Tab -->
+    <div class="engram-tab-panel engram-tab-panel--active" data-panel="browse">
+      <div class="engram-panel-header">
+        <div class="engram-search">
+          <input type="text" id="browse-search" class="engram-search__input" placeholder="Filter memories...">
+          <select id="browse-compartment-filter" class="engram-select">
+            <option value="all">All Compartments</option>
+            <!-- Compartment options will be added dynamically -->
+          </select>
+        </div>
+        <div class="engram-view-controls">
+          <button class="engram-view-controls__button engram-view-controls__button--active" data-view="list">
+            <span class="engram-view-controls__icon">≡</span>
+          </button>
+          <button class="engram-view-controls__button" data-view="grid">
+            <span class="engram-view-controls__icon">⊞</span>
+          </button>
+          <button class="engram-view-controls__button" data-view="graph">
+            <span class="engram-view-controls__icon">⬢</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Memory List View (Default) -->
+      <div class="engram-memory-view engram-memory-view--list" id="memory-list-view">
+        <div class="engram-memory-list__filters">
+          <div class="engram-filter-group">
+            <label class="engram-filter-label">Sort By</label>
+            <select id="sort-field" class="engram-select">
+              <option value="timestamp" selected>Date Added</option>
+              <option value="lastAccessed">Last Accessed</option>
+              <option value="importance">Importance</option>
+              <option value="title">Title</option>
+            </select>
+            <select id="sort-direction" class="engram-select">
+              <option value="desc" selected>Descending</option>
+              <option value="asc">Ascending</option>
+            </select>
+          </div>
+          <div class="engram-filter-group">
+            <label class="engram-filter-label">Tags</label>
+            <div class="engram-tag-filter" id="memory-tag-filter">
+              <!-- Tag filters will be added dynamically -->
+            </div>
+          </div>
+        </div>
+        
+        <div class="engram-memory-list" id="memory-list-container">
+          <!-- Memory items will be dynamically inserted here -->
+          <div class="engram-memory-list__loading">
+            Loading memories...
+          </div>
+        </div>
+      </div>
+      
+      <!-- Memory Grid View (Hidden by default) -->
+      <div class="engram-memory-view engram-memory-view--grid" id="memory-grid-view" style="display: none;">
+        <div class="engram-memory-grid" id="memory-grid-container">
+          <!-- Memory grid items will be dynamically inserted here -->
+        </div>
+      </div>
+      
+      <!-- Memory Graph View (Hidden by default) -->
+      <div class="engram-memory-view engram-memory-view--graph" id="memory-graph-view" style="display: none;">
+        <div class="engram-memory-graph">
+          <canvas id="memory-graph-canvas"></canvas>
+        </div>
+        <div class="engram-memory-graph__controls">
+          <div class="engram-graph-control">
+            <label>Zoom</label>
+            <input type="range" id="graph-zoom" min="0.1" max="2" step="0.1" value="1">
+          </div>
+          <div class="engram-graph-control">
+            <label>Link Strength</label>
+            <input type="range" id="graph-link-strength" min="0.1" max="1" step="0.1" value="0.5">
+          </div>
+          <div class="engram-graph-control">
+            <button class="engram-button" id="reset-graph">Reset View</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Search Tab -->
+    <div class="engram-tab-panel" data-panel="search">
+      <div class="engram-panel-header">
+        <div class="engram-panel-header__title">Memory Search</div>
+      </div>
+      
+      <div class="engram-search-interface">
+        <div class="engram-search-form">
+          <div class="engram-search-form__main">
+            <input type="text" id="search-query" class="engram-search-form__input" placeholder="Enter search query...">
+            <select id="search-type" class="engram-select">
+              <option value="semantic" selected>Semantic</option>
+              <option value="keyword">Keyword</option>
+              <option value="tag">Tag</option>
+              <option value="combined">Combined</option>
+            </select>
+            <button class="engram-button engram-button--primary" id="search-submit">Search</button>
+          </div>
+          
+          <div class="engram-search-form__advanced">
+            <div class="engram-search-form__group">
+              <label class="engram-search-form__label">Compartments</label>
+              <select id="search-compartments" class="engram-select" multiple>
+                <!-- Compartment options will be added dynamically -->
+              </select>
+            </div>
+            
+            <div class="engram-search-form__group">
+              <label class="engram-search-form__label">Date Range</label>
+              <div class="engram-date-range">
+                <input type="datetime-local" id="search-start-date" class="engram-date-input">
+                <span class="engram-date-range__separator">to</span>
+                <input type="datetime-local" id="search-end-date" class="engram-date-input">
+              </div>
+            </div>
+            
+            <div class="engram-search-form__group">
+              <label class="engram-search-form__label">Limit Results</label>
+              <input type="number" id="search-limit" class="engram-number-input" value="50" min="1" max="1000">
+            </div>
+          </div>
+        </div>
+        
+        <div class="engram-search-results">
+          <div class="engram-search-results__header">
+            <h3 class="engram-search-results__title">Results</h3>
+            <span class="engram-search-results__count" id="result-count">0 results</span>
+          </div>
+          
+          <div class="engram-search-results__container" id="search-results-container">
+            <!-- Search results will be dynamically inserted here -->
+            <div class="engram-search-results__placeholder">
+              Enter a search query and click Search to see results
+            </div>
+          </div>
+        </div>
+        
+        <div class="engram-search-history">
+          <h3 class="engram-search-history__title">Recent Searches</h3>
+          <div class="engram-search-history__container" id="search-history-container">
+            <!-- Search history will be dynamically inserted here -->
+            <div class="engram-search-history__placeholder">
+              Your recent searches will appear here
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Compartments Tab -->
+    <div class="engram-tab-panel" data-panel="compartments">
+      <div class="engram-panel-header">
+        <div class="engram-panel-header__title">Memory Compartments</div>
+        <div class="engram-panel-controls">
+          <button class="engram-button engram-button--primary" id="create-compartment">
+            <span class="engram-button__icon">➕</span>
+            <span class="engram-button__text">Create Compartment</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="engram-compartments">
+        <div class="engram-compartments__list">
+          <div class="engram-filter-group">
+            <input type="text" id="compartment-search" class="engram-search__input" placeholder="Filter compartments...">
+          </div>
+          <div class="engram-compartment-list" id="compartment-list-container">
+            <!-- Compartment items will be dynamically inserted here -->
+            <div class="engram-compartment-list__loading">
+              Loading compartments...
+            </div>
+          </div>
+        </div>
+        
+        <div class="engram-compartments__details" id="compartment-details">
+          <div class="engram-compartments__placeholder">
+            <p>Select a compartment to view details</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Statistics Tab -->
+    <div class="engram-tab-panel" data-panel="statistics">
+      <div class="engram-panel-header">
+        <div class="engram-panel-header__title">Memory Statistics</div>
+        <div class="engram-panel-controls">
+          <button class="engram-button" id="refresh-stats">Refresh</button>
+          <button class="engram-button" id="export-stats">Export</button>
+        </div>
+      </div>
+      
+      <div class="engram-statistics">
+        <div class="engram-stats-overview">
+          <div class="engram-stats-card" id="total-memories-card">
+            <div class="engram-stats-card__title">Total Memories</div>
+            <div class="engram-stats-card__value">--</div>
+            <div class="engram-stats-card__trend"></div>
+          </div>
+          
+          <div class="engram-stats-card" id="total-compartments-card">
+            <div class="engram-stats-card__title">Compartments</div>
+            <div class="engram-stats-card__value">--</div>
+          </div>
+          
+          <div class="engram-stats-card" id="recent-activity-card">
+            <div class="engram-stats-card__title">Recent Activity</div>
+            <div class="engram-stats-card__value">--</div>
+            <div class="engram-stats-card__trend"></div>
+          </div>
+          
+          <div class="engram-stats-card" id="memory-usage-card">
+            <div class="engram-stats-card__title">Memory Usage</div>
+            <div class="engram-stats-card__value">--</div>
+            <div class="engram-stats-card__percentage"></div>
+          </div>
+        </div>
+        
+        <div class="engram-stats-charts">
+          <div class="engram-chart-container">
+            <h3 class="engram-chart-container__title">Memory Growth Over Time</h3>
+            <canvas id="memory-growth-chart"></canvas>
+          </div>
+          
+          <div class="engram-chart-container">
+            <h3 class="engram-chart-container__title">Memory by Compartment</h3>
+            <canvas id="compartment-distribution-chart"></canvas>
+          </div>
+          
+          <div class="engram-chart-container">
+            <h3 class="engram-chart-container__title">Access Frequency</h3>
+            <canvas id="access-frequency-chart"></canvas>
+          </div>
+          
+          <div class="engram-chart-container">
+            <h3 class="engram-chart-container__title">Tag Distribution</h3>
+            <canvas id="tag-distribution-chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Memory Entry Modal (hidden by default) -->
+  <div class="engram-modal" id="memory-modal" style="display: none;">
+    <div class="engram-modal__overlay"></div>
+    <div class="engram-modal__content">
+      <div class="engram-modal__header">
+        <h3 class="engram-modal__title" id="memory-modal-title">Memory Details</h3>
+        <button class="engram-modal__close" id="close-memory-modal">&times;</button>
+      </div>
+      <div class="engram-modal__body" id="memory-modal-body">
+        <!-- Modal content will be added dynamically -->
+      </div>
+      <div class="engram-modal__footer">
+        <button class="engram-button engram-button--danger" id="delete-memory-button">Delete</button>
+        <button class="engram-button engram-button--secondary" id="memory-modal-cancel">Close</button>
+        <button class="engram-button engram-button--primary" id="edit-memory-button">Edit</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Compartment Modal (hidden by default) -->
+  <div class="engram-modal" id="compartment-modal" style="display: none;">
+    <div class="engram-modal__overlay"></div>
+    <div class="engram-modal__content">
+      <div class="engram-modal__header">
+        <h3 class="engram-modal__title" id="compartment-modal-title">Create Compartment</h3>
+        <button class="engram-modal__close" id="close-compartment-modal">&times;</button>
+      </div>
+      <div class="engram-modal__body">
+        <form id="compartment-form" class="engram-form">
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="compartment-name">Name</label>
+            <input type="text" id="compartment-name" class="engram-form__input" required>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="compartment-description">Description</label>
+            <textarea id="compartment-description" class="engram-form__textarea"></textarea>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="compartment-type">Type</label>
+            <select id="compartment-type" class="engram-form__select">
+              <option value="general">General</option>
+              <option value="conversation">Conversation</option>
+              <option value="knowledge">Knowledge</option>
+              <option value="system">System</option>
+            </select>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="compartment-retention">Retention Period (days)</label>
+            <input type="number" id="compartment-retention" class="engram-form__input" value="30" min="1">
+          </div>
+        </form>
+      </div>
+      <div class="engram-modal__footer">
+        <button class="engram-button engram-button--secondary" id="compartment-modal-cancel">Cancel</button>
+        <button class="engram-button engram-button--primary" id="compartment-modal-submit">Create</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Memory Entry Edit Modal (hidden by default) -->
+  <div class="engram-modal" id="memory-edit-modal" style="display: none;">
+    <div class="engram-modal__overlay"></div>
+    <div class="engram-modal__content engram-modal__content--large">
+      <div class="engram-modal__header">
+        <h3 class="engram-modal__title" id="memory-edit-modal-title">Edit Memory Entry</h3>
+        <button class="engram-modal__close" id="close-memory-edit-modal">&times;</button>
+      </div>
+      <div class="engram-modal__body">
+        <form id="memory-edit-form" class="engram-form">
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="memory-title">Title</label>
+            <input type="text" id="memory-title" class="engram-form__input" required>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="memory-content">Content</label>
+            <textarea id="memory-content" class="engram-form__textarea" rows="10" required></textarea>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="memory-compartment">Compartment</label>
+            <select id="memory-compartment" class="engram-form__select">
+              <!-- Compartment options will be added dynamically -->
+            </select>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="memory-tags">Tags (comma separated)</label>
+            <input type="text" id="memory-tags" class="engram-form__input">
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label" for="memory-importance">Importance</label>
+            <select id="memory-importance" class="engram-form__select">
+              <option value="low">Low</option>
+              <option value="medium" selected>Medium</option>
+              <option value="high">High</option>
+              <option value="critical">Critical</option>
+            </select>
+          </div>
+          <div class="engram-form__group">
+            <label class="engram-form__label">Metadata</label>
+            <div id="memory-metadata" class="engram-metadata-editor">
+              <!-- Metadata key-value pairs will be added dynamically -->
+              <div class="engram-metadata-row">
+                <input type="text" class="engram-metadata-key" placeholder="Key">
+                <input type="text" class="engram-metadata-value" placeholder="Value">
+                <button type="button" class="engram-metadata-remove">×</button>
+              </div>
+              <button type="button" id="add-metadata" class="engram-button engram-button--small">Add Metadata</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="engram-modal__footer">
+        <button class="engram-button engram-button--secondary" id="memory-edit-modal-cancel">Cancel</button>
+        <button class="engram-button engram-button--primary" id="memory-edit-modal-submit">Save Changes</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast notifications container -->
+  <div class="engram-notifications" id="engram-notifications-container"></div>
+</div>

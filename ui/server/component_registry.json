@@ -1,6 +1,23 @@
 {
   "components": [
     {
+      "id": "engram",
+      "name": "Engram",
+      "description": "Memory and context management",
+      "icon": "💾",
+      "defaultMode": "html",
+      "capabilities": ["memory_management", "context_storage", "shadow_dom", "component_isolation"],
+      "componentPath": "components/engram/engram-component.html",
+      "scripts": [
+        "scripts/engram/engram-service.js",
+        "scripts/engram/engram-component.js"
+      ],
+      "styles": [
+        "styles/engram/engram-component.css"
+      ],
+      "usesShadowDom": true
+    },
+    {
       "id": "profile",
       "name": "Profile",
       "description": "User profile management",
@@ -120,9 +137,10 @@
       "description": "LLM management and prompt engineering",
       "icon": "💬",
       "defaultMode": "html",
-      "capabilities": ["llm_management", "prompt_engineering", "communication_management", "budget_management", "shadow_dom", "component_isolation"],
+      "capabilities": ["llm_management", "prompt_engineering", "communication_management", "budget_management", "shadow_dom", "component_isolation", "state_management"],
       "componentPath": "components/rhetor/rhetor-component.html",
       "scripts": [
+        "scripts/rhetor/rhetor-service.js",
         "scripts/rhetor/rhetor-component.js"
       ],
       "styles": [
@@ -149,10 +167,19 @@
     {
       "id": "hermes",
       "name": "Hermes",
-      "description": "Message bus and data management",
+      "description": "Message bus and service registry visualization",
       "icon": "📨",
-      "defaultMode": "terminal",
-      "capabilities": ["message_routing", "data_management", "service_discovery"]
+      "defaultMode": "html",
+      "capabilities": ["message_routing", "service_discovery", "state_management", "shadow_dom", "component_isolation"],
+      "componentPath": "components/hermes/hermes-component.html",
+      "scripts": [
+        "scripts/hermes/hermes-service.js",
+        "scripts/hermes/hermes-component.js"
+      ],
+      "styles": [
+        "styles/hermes/hermes-component.css"
+      ],
+      "usesShadowDom": true
     },
     {
       "id": "codex",

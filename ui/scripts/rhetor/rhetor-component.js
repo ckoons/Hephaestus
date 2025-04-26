@@ -1,16 +1,15 @@
 /**
  * Rhetor Component JavaScript
  * Main controller for the Rhetor UI component in Hephaestus
- * Updated to work with Shadow DOM isolation
+ * Updated to use State Management Pattern with Shadow DOM isolation
  */
 
 (function(component) {
   // Reference to the component's shadow root
   const root = component.root;
   
-  // Initialize the Rhetor client
-  let rhetorClient = null;
-  let activeBudgetManager = null;
+  // Reference to the Rhetor service
+  let rhetorService = null;
   
   // Initialize the component when mounted
   initRhetorComponent();
@@ -23,7 +22,7 @@
    */
   function initRhetorComponent() {
     setupTabNavigation();
-    initRhetorClient();
+    initRhetorService();
     initProviderSelector();
     initTemplateManager();
     initConversationViewer();
@@ -44,52 +43,165 @@
    * Clean up component resources when unmounted
    */
   function cleanupRhetorComponent() {
-    // Disconnect from WebSocket if connected
-    if (rhetorClient && rhetorClient.ws) {
-      try {
-        rhetorClient.ws.close();
-      } catch (error) {
-        console.error('Error closing WebSocket:', error);
+    // Unsubscribe from service events
+    if (rhetorService) {
+      // Remove event listeners from service
+      rhetorService.removeEventListener('connected', handleConnected);
+      rhetorService.removeEventListener('connectionFailed', handleConnectionFailed);
+      rhetorService.removeEventListener('providersUpdated', handleProvidersUpdated);
+      rhetorService.removeEventListener('modelsUpdated', handleModelsUpdated);
+      rhetorService.removeEventListener('settingsUpdated', handleSettingsUpdated);
+      rhetorService.removeEventListener('budgetUpdated', handleBudgetUpdated);
+      rhetorService.removeEventListener('error', handleServiceError);
+      rhetorService.removeEventListener('websocketConnected', handleWebSocketConnected);
+      rhetorService.removeEventListener('websocketDisconnected', handleWebSocketDisconnected);
+      rhetorService.removeEventListener('message', handleServiceMessage);
+    }
+  }
+  
+  /**
+   * Initialize the Rhetor service connection
+   */
+  function initRhetorService() {
+    // Get the service from the global registry
+    rhetorService = window.tektonUI.services.rhetorService;
+    
+    if (!rhetorService) {
+      console.error('Rhetor service not found in global registry');
+      showNotification('Rhetor service unavailable', 'error');
+      return;
+    }
+    
+    // Subscribe to service events
+    rhetorService.addEventListener('connected', handleConnected);
+    rhetorService.addEventListener('connectionFailed', handleConnectionFailed);
+    rhetorService.addEventListener('providersUpdated', handleProvidersUpdated);
+    rhetorService.addEventListener('modelsUpdated', handleModelsUpdated);
+    rhetorService.addEventListener('settingsUpdated', handleSettingsUpdated);
+    rhetorService.addEventListener('budgetUpdated', handleBudgetUpdated);
+    rhetorService.addEventListener('error', handleServiceError);
+    rhetorService.addEventListener('websocketConnected', handleWebSocketConnected);
+    rhetorService.addEventListener('websocketDisconnected', handleWebSocketDisconnected);
+    rhetorService.addEventListener('message', handleServiceMessage);
+    
+    // Get current connection status
+    const state = rhetorService.getState();
+    updateConnectionStatus(state.connected);
+    
+    // Connect to service if not already connected
+    if (!state.connected) {
+      rhetorService.connect().then(() => {
+        // Service will emit events that will update UI
+      });
+    } else {
+      // Initialize UI with current state
+      initializeUIFromState(state);
+    }
+  }
+  
+  /**
+   * Initialize UI from current service state
+   */
+  function initializeUIFromState(state) {
+    // Update connection status
+    updateConnectionStatus(state.connected);
+    
+    // Update providers if available
+    if (state.providers && state.providers.length > 0) {
+      updateProviderSelect(state.providers);
+    }
+    
+    // Update selected provider and model
+    if (state.selectedProvider) {
+      const providerSelect = component.$('#provider-select');
+      if (providerSelect) {
+        providerSelect.value = state.selectedProvider;
       }
     }
     
-    // Remove any global event listeners
-    rhetorClient = null;
-    activeBudgetManager = null;
-  }
-  
-  /**
-   * Initialize the Rhetor client connection
-   */
-  function initRhetorClient() {
-    // Initialize the Rhetor client
-    rhetorClient = new RhetorClient({
-      rhetorUrl: 'http://localhost:8300',
-      componentId: 'hephaestus-ui',
-      autoReconnect: true
-    });
-    
-    // Connect to Rhetor
-    connectToRhetor();
-    
-    // Set up status event handlers
-    rhetorClient.on('status', handleStatus);
-    rhetorClient.on('error', handleError);
-  }
-  
-  /**
-   * Connect to the Rhetor service
-   */
-  async function connectToRhetor() {
-    try {
-      await rhetorClient.connect();
-      updateConnectionStatus(true);
-      loadProviders();
-      fetchBudgetData();
-    } catch (error) {
-      console.error('Failed to connect to Rhetor:', error);
-      updateConnectionStatus(false);
+    if (state.selectedModel) {
+      const modelSelect = component.$('#model-select');
+      if (modelSelect) {
+        modelSelect.value = state.selectedModel;
+      }
     }
+    
+    // Update budget data if available
+    if (state.budget) {
+      updateBudgetUI(state.budget);
+    }
+  }
+  
+  /**
+   * Handle connected event from service
+   */
+  function handleConnected(event) {
+    updateConnectionStatus(true);
+    showNotification('Connected to Rhetor service', 'success');
+  }
+  
+  /**
+   * Handle connection failed event from service
+   */
+  function handleConnectionFailed(event) {
+    updateConnectionStatus(false);
+    showNotification(`Failed to connect to Rhetor: ${event.detail.error}`, 'error');
+  }
+  
+  /**
+   * Handle providers updated event from service
+   */
+  function handleProvidersUpdated(event) {
+    updateProviderSelect(event.detail.providers);
+  }
+  
+  /**
+   * Handle models updated event from service
+   */
+  function handleModelsUpdated(event) {
+    updateModelSelect(event.detail.provider, event.detail.models);
+  }
+  
+  /**
+   * Handle settings updated event from service
+   */
+  function handleSettingsUpdated(event) {
+    updateSettingsUI(event.detail.settings);
+  }
+  
+  /**
+   * Handle budget updated event from service
+   */
+  function handleBudgetUpdated(event) {
+    updateBudgetUI(event.detail.budget);
+  }
+  
+  /**
+   * Handle error event from service
+   */
+  function handleServiceError(event) {
+    showNotification(event.detail.error, 'error');
+  }
+  
+  /**
+   * Handle WebSocket connected event from service
+   */
+  function handleWebSocketConnected(event) {
+    console.log('WebSocket connected');
+  }
+  
+  /**
+   * Handle WebSocket disconnected event from service
+   */
+  function handleWebSocketDisconnected(event) {
+    console.log('WebSocket disconnected');
+  }
+  
+  /**
+   * Handle message event from service
+   */
+  function handleServiceMessage(event) {
+    console.log('Service message:', event.detail);
   }
   
   /**
@@ -107,41 +219,6 @@
         statusElement.classList.remove('rhetor-stat-card__value--connected');
         statusElement.classList.add('rhetor-stat-card__value--disconnected');
       }
-    }
-  }
-  
-  /**
-   * Handle Rhetor status updates
-   */
-  function handleStatus(status) {
-    // Update UI based on status information
-    if (status.budget && activeBudgetManager) {
-      activeBudgetManager.updateBudgetData(status.budget);
-    }
-  }
-  
-  /**
-   * Handle Rhetor errors
-   */
-  function handleError(error) {
-    console.error('Rhetor error:', error);
-    // Display error notification
-    const errorMessage = error.message || 'Unknown error occurred';
-    
-    // Create a notification element
-    const notification = document.createElement('div');
-    notification.className = 'rhetor-notification rhetor-notification--error';
-    notification.textContent = errorMessage;
-    
-    // Add to container
-    const container = component.$('.rhetor-container');
-    if (container) {
-      container.appendChild(notification);
-      
-      // Auto-remove after 5 seconds
-      setTimeout(() => {
-        notification.remove();
-      }, 5000);
     }
   }
   
@@ -184,7 +261,7 @@
       // Handle provider selection change
       providerSelect.addEventListener('change', async () => {
         const provider = providerSelect.value;
-        await loadModelsForProvider(provider);
+        await rhetorService.getModels(provider, true); // Force refresh
       });
       
       // Handle save button click
@@ -200,93 +277,80 @@
   }
   
   /**
-   * Load available providers from Rhetor
+   * Update the provider selection dropdown
    */
-  async function loadProviders() {
-    if (!rhetorClient) return;
+  function updateProviderSelect(providers) {
+    const providerSelect = component.$('#provider-select');
     
-    try {
-      const providers = await rhetorClient.getProviders();
-      const providerSelect = component.$('#provider-select');
+    if (providerSelect && providers && providers.length > 0) {
+      // Clear the select
+      providerSelect.innerHTML = '';
       
-      if (providerSelect && providers && providers.length > 0) {
-        // Clear the select
-        providerSelect.innerHTML = '';
-        
-        // Add providers to select
-        providers.forEach(provider => {
-          const option = document.createElement('option');
-          option.value = provider.id;
-          option.textContent = provider.name;
-          providerSelect.appendChild(option);
-        });
-        
-        // Load models for the selected provider
-        const selectedProvider = providerSelect.value;
-        await loadModelsForProvider(selectedProvider);
-      }
+      // Add providers to select
+      providers.forEach(provider => {
+        const option = document.createElement('option');
+        option.value = provider.id;
+        option.textContent = provider.name;
+        providerSelect.appendChild(option);
+      });
       
-      // Load current provider settings
-      const settings = await rhetorClient.getSettings();
-      if (settings && settings.default_provider) {
-        providerSelect.value = settings.default_provider;
-        await loadModelsForProvider(settings.default_provider);
-        
-        if (settings.default_model) {
-          const modelSelect = component.$('#model-select');
-          if (modelSelect) {
-            modelSelect.value = settings.default_model;
-          }
-        }
-        
-        if (settings.temperature) {
-          const temperatureSlider = component.$('#temperature-slider');
-          const sliderValue = component.$('.rhetor-slider__value');
-          
-          if (temperatureSlider) {
-            temperatureSlider.value = settings.temperature;
-            if (sliderValue) {
-              sliderValue.textContent = settings.temperature;
-            }
-          }
-        }
-        
-        if (settings.max_tokens) {
-          const maxTokens = component.$('#max-tokens');
-          if (maxTokens) {
-            maxTokens.value = settings.max_tokens;
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load providers:', error);
+      // Load models for the selected provider
+      const selectedProvider = providerSelect.value;
+      rhetorService.getModels(selectedProvider);
     }
   }
   
   /**
-   * Load models for the selected provider
+   * Update the model selection dropdown
    */
-  async function loadModelsForProvider(provider) {
-    if (!rhetorClient) return;
+  function updateModelSelect(provider, models) {
+    const modelSelect = component.$('#model-select');
     
-    try {
-      const models = await rhetorClient.getModels(provider);
-      const modelSelect = component.$('#model-select');
+    if (modelSelect && models && models.length > 0) {
+      // Clear the select
+      modelSelect.innerHTML = '';
       
-      if (modelSelect && models && models.length > 0) {
-        // Clear the select
-        modelSelect.innerHTML = '';
-        
-        // Add models to select
-        models.forEach(model => {
-          const option = document.createElement('option');
-          option.value = model.id;
-          option.textContent = model.name;
-          modelSelect.appendChild(option);
-        });
+      // Add models to select
+      models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.id;
+        option.textContent = model.name;
+        modelSelect.appendChild(option);
+      });
+    }
+  }
+  
+  /**
+   * Update the settings UI with current settings
+   */
+  function updateSettingsUI(settings) {
+    const providerSelect = component.$('#provider-select');
+    const modelSelect = component.$('#model-select');
+    const temperatureSlider = component.$('#temperature-slider');
+    const sliderValue = component.$('.rhetor-slider__value');
+    const maxTokens = component.$('#max-tokens');
+    
+    if (settings.defaultProvider && providerSelect) {
+      providerSelect.value = settings.defaultProvider;
+      
+      // Load models for this provider if needed
+      rhetorService.getModels(settings.defaultProvider);
+    }
+    
+    if (settings.defaultModel && modelSelect) {
+      modelSelect.value = settings.defaultModel;
+    }
+    
+    if (settings.temperature && temperatureSlider) {
+      temperatureSlider.value = settings.temperature;
+      
+      if (sliderValue) {
+        sliderValue.textContent = settings.temperature;
       }
-    } catch (error) {
-      console.error(`Failed to load models for provider ${provider}:`, error);
+    }
+    
+    if (settings.maxTokens && maxTokens) {
+      maxTokens.value = settings.maxTokens;
     }
   }
   
@@ -294,7 +358,7 @@
    * Save provider settings
    */
   async function saveProviderSettings() {
-    if (!rhetorClient) return;
+    if (!rhetorService) return;
     
     const providerSelect = component.$('#provider-select');
     const modelSelect = component.$('#model-select');
@@ -310,12 +374,10 @@
       };
       
       try {
-        await rhetorClient.saveSettings(settings);
-        // Show success message
-        showNotification('Settings saved successfully', 'success');
+        await rhetorService.saveSettings(settings);
+        // UI will be updated via the settingsUpdated event
       } catch (error) {
         console.error('Failed to save settings:', error);
-        // Show error message
         showNotification('Failed to save settings. Check console for details.', 'error');
       }
     }
@@ -325,7 +387,7 @@
    * Test the provider connection
    */
   async function testProviderConnection() {
-    if (!rhetorClient) return;
+    if (!rhetorService) return;
     
     const providerSelect = component.$('#provider-select');
     const modelSelect = component.$('#model-select');
@@ -335,7 +397,7 @@
       const model = modelSelect.value;
       
       try {
-        const result = await rhetorClient.testConnection(provider, model);
+        const result = await rhetorService.testConnection(provider, model);
         
         if (result.success) {
           showNotification(`Connection successful. Provider: ${provider}, Model: ${model}`, 'success');
@@ -458,6 +520,14 @@
         testTemplateInEditor();
       });
     }
+    
+    // Load templates from service
+    if (rhetorService) {
+      rhetorService.getTemplates().then(templates => {
+        // In a real implementation, this would update the template list
+        console.log('Templates loaded:', templates);
+      });
+    }
   }
   
   /**
@@ -499,7 +569,7 @@
         // Editing existing template
         if (templateNameSpan) templateNameSpan.textContent = templateName;
         
-        // In a real implementation, fetch the template data from Rhetor
+        // In a real implementation, fetch the template data from service
         // For now, we'll just use the UI data
         const templateItem = Array.from(component.$$('.rhetor-template-item')).find(
           item => item.querySelector('.rhetor-template-item__name').textContent === templateName
@@ -540,21 +610,38 @@
   /**
    * Save template
    */
-  function saveTemplate() {
-    // In a real implementation, this would save the template to Rhetor
-    // For demo purposes, we'll just hide the editor
-    hideTemplateEditor();
+  async function saveTemplate() {
+    if (!rhetorService) return;
     
-    // Show success message
-    showNotification('Template saved successfully', 'success');
+    const templateNameInput = component.$('#template-name-input');
+    const templateCategoryInput = component.$('#template-category-input');
+    const templateDescriptionInput = component.$('#template-description-input');
+    const templateContent = component.$('#template-content');
+    
+    if (templateNameInput && templateCategoryInput && templateDescriptionInput && templateContent) {
+      const template = {
+        name: templateNameInput.value,
+        category: templateCategoryInput.value,
+        description: templateDescriptionInput.value,
+        content: templateContent.value
+      };
+      
+      try {
+        await rhetorService.saveTemplate(template);
+        hideTemplateEditor();
+        showNotification('Template saved successfully', 'success');
+      } catch (error) {
+        console.error('Failed to save template:', error);
+        showNotification('Failed to save template. Check console for details.', 'error');
+      }
+    }
   }
   
   /**
    * Test a template
    */
   function testTemplate(templateName) {
-    // In a real implementation, this would test the template with Rhetor
-    // For demo purposes, just show a notification
+    // In a real implementation, this would use the service to test the template
     showNotification(`Testing template: ${templateName}`, 'info');
   }
   
@@ -562,8 +649,7 @@
    * Test the template currently in the editor
    */
   function testTemplateInEditor() {
-    // In a real implementation, this would test the template with Rhetor
-    // For demo purposes, just show a notification
+    // In a real implementation, this would use the service to test the template
     showNotification('Testing template in editor', 'info');
   }
   
@@ -571,8 +657,7 @@
    * Show template version history
    */
   function showTemplateHistory(templateName) {
-    // In a real implementation, this would show the template history
-    // For demo purposes, just show a notification
+    // In a real implementation, this would use the service to show template history
     showNotification(`Template history for: ${templateName}`, 'info');
   }
   
@@ -605,6 +690,14 @@
         loadConversation(conversationName);
       });
     });
+    
+    // Load conversations from service
+    if (rhetorService) {
+      rhetorService.getConversations().then(conversations => {
+        // In a real implementation, this would update the conversation list
+        console.log('Conversations loaded:', conversations);
+      });
+    }
   }
   
   /**
@@ -629,18 +722,26 @@
   /**
    * Refresh conversation list
    */
-  function refreshConversations() {
-    // In a real implementation, this would fetch conversations from Rhetor
-    // For demo purposes, just show a notification
-    showNotification('Refreshing conversations...', 'info');
+  async function refreshConversations() {
+    if (!rhetorService) return;
+    
+    try {
+      await rhetorService.getConversations(true); // Force refresh
+      showNotification('Conversations refreshed', 'success');
+    } catch (error) {
+      console.error('Failed to refresh conversations:', error);
+      showNotification('Failed to refresh conversations', 'error');
+    }
   }
   
   /**
    * Load a specific conversation
    */
-  function loadConversation(conversationName) {
-    // In a real implementation, this would fetch conversation details from Rhetor
-    // For demo purposes, update the conversation header
+  async function loadConversation(conversationName) {
+    if (!rhetorService) return;
+    
+    // In a real implementation, we would have conversation IDs
+    // For demo purposes, just update the conversation header
     const conversationHeader = component.$('.rhetor-conversation-detail__header h3');
     
     if (conversationHeader) {
@@ -661,20 +762,12 @@
     }
     
     if (refreshButton) {
-      refreshButton.addEventListener('click', fetchBudgetData);
+      refreshButton.addEventListener('click', refreshBudgetData);
     }
     
     if (saveBudgetSettingsButton) {
       saveBudgetSettingsButton.addEventListener('click', saveBudgetSettings);
     }
-    
-    // Initialize budget manager
-    activeBudgetManager = {
-      updateBudgetData: function(budgetData) {
-        // Update budget cards and charts
-        console.log('Budget data updated:', budgetData);
-      }
-    };
     
     // Initialize range sliders
     const sliders = component.$$('input[type="range"]');
@@ -696,30 +789,32 @@
         }
       }
     });
+    
+    // Fetch initial budget data
+    if (rhetorService) {
+      refreshBudgetData();
+    }
   }
   
   /**
    * Update budget period and refresh data
    */
   function updateBudgetPeriod() {
-    fetchBudgetData();
+    refreshBudgetData();
   }
   
   /**
-   * Fetch budget data from Rhetor
+   * Refresh budget data from service
    */
-  async function fetchBudgetData() {
-    if (!rhetorClient) return;
+  async function refreshBudgetData() {
+    if (!rhetorService) return;
     
     try {
-      const period = component.$('#budget-period')?.value || 'month';
-      const budgetData = await rhetorClient.getBudgetData(period);
-      
-      if (budgetData) {
-        updateBudgetUI(budgetData);
-      }
+      const period = component.$('#budget-period')?.value || 'monthly';
+      await rhetorService.getBudget(period, true); // Force refresh
     } catch (error) {
-      console.error('Failed to fetch budget data:', error);
+      console.error('Failed to refresh budget data:', error);
+      showNotification('Failed to refresh budget data', 'error');
     }
   }
   
@@ -727,15 +822,75 @@
    * Update budget UI with data
    */
   function updateBudgetUI(budgetData) {
-    // In a real implementation, this would update all budget UI elements
-    console.log('Updating budget UI with data:', budgetData);
+    if (!budgetData) return;
+    
+    // Update budget usage card
+    const usedElement = component.$('.budget-card__value--used');
+    const remainingElement = component.$('.budget-card__value--remaining');
+    const limitElement = component.$('.budget-card__value--limit');
+    const progressBar = component.$('.budget-progress__bar');
+    
+    if (usedElement) {
+      usedElement.textContent = `$${budgetData.used.toFixed(2)}`;
+    }
+    
+    if (remainingElement) {
+      remainingElement.textContent = `$${budgetData.remaining.toFixed(2)}`;
+    }
+    
+    if (limitElement) {
+      limitElement.textContent = `$${budgetData.limit.toFixed(2)}`;
+    }
+    
+    if (progressBar) {
+      const percentage = budgetData.limit > 0 ? (budgetData.used / budgetData.limit) * 100 : 0;
+      progressBar.style.width = `${Math.min(percentage, 100)}%`;
+      
+      // Update color based on usage
+      if (percentage > 90) {
+        progressBar.style.backgroundColor = '#dc3545'; // Red
+      } else if (percentage > 75) {
+        progressBar.style.backgroundColor = '#ffc107'; // Yellow
+      } else {
+        progressBar.style.backgroundColor = '#28a745'; // Green
+      }
+    }
+    
+    // Update budget form fields
+    const dailyBudget = component.$('#daily-budget');
+    const weeklyBudget = component.$('#weekly-budget');
+    const monthlyBudget = component.$('#monthly-budget');
+    const warningThreshold = component.$('#warning-threshold');
+    const thresholdValue = warningThreshold?.closest('.rhetor-slider-container')?.querySelector('.rhetor-slider__value');
+    
+    if (budgetData.limits) {
+      if (dailyBudget && budgetData.limits.daily) {
+        dailyBudget.value = budgetData.limits.daily;
+      }
+      
+      if (weeklyBudget && budgetData.limits.weekly) {
+        weeklyBudget.value = budgetData.limits.weekly;
+      }
+      
+      if (monthlyBudget && budgetData.limits.monthly) {
+        monthlyBudget.value = budgetData.limits.monthly;
+      }
+    }
+    
+    if (budgetData.alerts && warningThreshold) {
+      warningThreshold.value = budgetData.alerts.threshold;
+      
+      if (thresholdValue) {
+        thresholdValue.textContent = `${budgetData.alerts.threshold}%`;
+      }
+    }
   }
   
   /**
    * Save budget settings
    */
   async function saveBudgetSettings() {
-    if (!rhetorClient) return;
+    if (!rhetorService) return;
     
     const dailyBudget = component.$('#daily-budget')?.value;
     const weeklyBudget = component.$('#weekly-budget')?.value;
@@ -760,238 +915,11 @@
     };
     
     try {
-      await rhetorClient.saveBudgetSettings(settings);
-      // Show success message
-      showNotification('Budget settings saved successfully', 'success');
+      await rhetorService.saveBudgetSettings(settings);
+      // UI will be updated via the budgetUpdated event
     } catch (error) {
       console.error('Failed to save budget settings:', error);
-      // Show error message
       showNotification('Failed to save budget settings. Check console for details.', 'error');
-    }
-  }
-  
-  /**
-   * RhetorClient class for communicating with the Rhetor API
-   */
-  class RhetorClient {
-    constructor(options) {
-      this.baseUrl = options.rhetorUrl || 'http://localhost:8300';
-      this.componentId = options.componentId || 'hephaestus-ui';
-      this.autoReconnect = options.autoReconnect || true;
-      this.connected = false;
-      this.ws = null;
-      this.eventHandlers = {
-        status: [],
-        error: [],
-        typing: []
-      };
-      
-      // Bind methods
-      this.connect = this.connect.bind(this);
-      this._handleWebSocketMessage = this._handleWebSocketMessage.bind(this);
-      this._reconnect = this._reconnect.bind(this);
-    }
-    
-    /**
-     * Connect to the Rhetor WebSocket API
-     */
-    async connect() {
-      return new Promise((resolve, reject) => {
-        try {
-          this.ws = new WebSocket(`ws://${this.baseUrl.replace(/^https?:\/\//, '')}/ws`);
-          
-          this.ws.onopen = () => {
-            this.connected = true;
-            
-            // Send identification message
-            this.ws.send(JSON.stringify({
-              type: 'IDENTIFY',
-              component_id: this.componentId
-            }));
-            
-            console.log('Connected to Rhetor WebSocket');
-            resolve();
-          };
-          
-          this.ws.onmessage = this._handleWebSocketMessage;
-          
-          this.ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            this._triggerEvent('error', { message: 'WebSocket connection error' });
-            
-            if (!this.connected) {
-              reject(new Error('Failed to connect to Rhetor'));
-            }
-          };
-          
-          this.ws.onclose = () => {
-            console.log('WebSocket connection closed');
-            this.connected = false;
-            
-            if (this.autoReconnect) {
-              setTimeout(this._reconnect, 5000);
-            }
-            
-            this._triggerEvent('status', { connected: false });
-          };
-        } catch (error) {
-          console.error('Failed to connect to Rhetor:', error);
-          reject(error);
-        }
-      });
-    }
-    
-    /**
-     * Reconnect to the WebSocket
-     */
-    _reconnect() {
-      if (!this.connected) {
-        console.log('Attempting to reconnect to Rhetor...');
-        this.connect().catch(error => {
-          console.error('Reconnection failed:', error);
-          setTimeout(this._reconnect, 5000);
-        });
-      }
-    }
-    
-    /**
-     * Handle WebSocket messages
-     */
-    _handleWebSocketMessage(event) {
-      try {
-        const message = JSON.parse(event.data);
-        
-        switch (message.type) {
-          case 'STATUS':
-            this._triggerEvent('status', message.data);
-            break;
-          case 'TYPING':
-            this._triggerEvent('typing', message.data.isTyping, message.data.contextId);
-            break;
-          case 'ERROR':
-            this._triggerEvent('error', { message: message.data.message });
-            break;
-          default:
-            console.log('Unhandled message type:', message.type);
-        }
-      } catch (error) {
-        console.error('Error handling WebSocket message:', error);
-      }
-    }
-    
-    /**
-     * Register an event handler
-     */
-    on(eventName, handler) {
-      if (this.eventHandlers[eventName]) {
-        this.eventHandlers[eventName].push(handler);
-      }
-    }
-    
-    /**
-     * Trigger an event
-     */
-    _triggerEvent(eventName, ...args) {
-      if (this.eventHandlers[eventName]) {
-        this.eventHandlers[eventName].forEach(handler => {
-          try {
-            handler(...args);
-          } catch (error) {
-            console.error(`Error in ${eventName} handler:`, error);
-          }
-        });
-      }
-    }
-    
-    /**
-     * Get available providers
-     */
-    async getProviders() {
-      return this._get('/providers');
-    }
-    
-    /**
-     * Get models for a provider
-     */
-    async getModels(provider) {
-      return this._get(`/providers/${provider}/models`);
-    }
-    
-    /**
-     * Get current settings
-     */
-    async getSettings() {
-      return this._get('/settings');
-    }
-    
-    /**
-     * Save settings
-     */
-    async saveSettings(settings) {
-      return this._post('/settings', settings);
-    }
-    
-    /**
-     * Test connection to a provider and model
-     */
-    async testConnection(provider, model) {
-      return this._post('/test_connection', { provider, model });
-    }
-    
-    /**
-     * Get budget data
-     */
-    async getBudgetData(period = 'month') {
-      return this._get(`/budget?period=${period}`);
-    }
-    
-    /**
-     * Save budget settings
-     */
-    async saveBudgetSettings(settings) {
-      return this._post('/budget/settings', settings);
-    }
-    
-    /**
-     * Send a GET request to the Rhetor API
-     */
-    async _get(endpoint) {
-      try {
-        const response = await fetch(`${this.baseUrl}${endpoint}`);
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
-        }
-        
-        return await response.json();
-      } catch (error) {
-        console.error(`GET ${endpoint} failed:`, error);
-        throw error;
-      }
-    }
-    
-    /**
-     * Send a POST request to the Rhetor API
-     */
-    async _post(endpoint, data) {
-      try {
-        const response = await fetch(`${this.baseUrl}${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(data)
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
-        }
-        
-        return await response.json();
-      } catch (error) {
-        console.error(`POST ${endpoint} failed:`, error);
-        throw error;
-      }
     }
   }
 })(component);

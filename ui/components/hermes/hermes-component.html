@@ -1,0 +1,258 @@
+<!-- Hermes Component UI Template -->
+<div class="hermes-container">
+  <div class="hermes-header">
+    <h2 class="hermes-header__title">Hermes Message Bus</h2>
+    <div class="hermes-header__controls">
+      <button class="hermes-button hermes-button--primary" id="refresh-registry">
+        <span class="hermes-button__icon">🔄</span>
+        <span class="hermes-button__text">Refresh</span>
+      </button>
+      <select id="auto-refresh-interval" class="hermes-select">
+        <option value="0">Manual Refresh</option>
+        <option value="5000">Refresh: 5s</option>
+        <option value="10000" selected>Refresh: 10s</option>
+        <option value="30000">Refresh: 30s</option>
+        <option value="60000">Refresh: 1m</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- Tabs -->
+  <div class="hermes-tabs">
+    <button class="hermes-tabs__button hermes-tabs__button--active" data-tab="registry">
+      <span class="hermes-tabs__icon">📋</span>
+      <span class="hermes-tabs__label">Service Registry</span>
+    </button>
+    <button class="hermes-tabs__button" data-tab="messaging">
+      <span class="hermes-tabs__icon">📨</span>
+      <span class="hermes-tabs__label">Message Monitor</span>
+    </button>
+    <button class="hermes-tabs__button" data-tab="connections">
+      <span class="hermes-tabs__icon">🔌</span>
+      <span class="hermes-tabs__label">Connections</span>
+    </button>
+    <button class="hermes-tabs__button" data-tab="history">
+      <span class="hermes-tabs__icon">📜</span>
+      <span class="hermes-tabs__label">Message History</span>
+    </button>
+  </div>
+  
+  <!-- Tab Content -->
+  <div class="hermes-tab-content">
+    <!-- Registry Tab -->
+    <div class="hermes-tab-panel hermes-tab-panel--active" data-panel="registry">
+      <div class="hermes-panel-header">
+        <div class="hermes-search">
+          <input type="text" id="registry-search" class="hermes-search__input" placeholder="Search components...">
+          <select id="filter-type" class="hermes-select">
+            <option value="all">All Types</option>
+            <option value="hermes">Hermes</option>
+            <option value="rhetor">Rhetor</option>
+            <option value="engram">Engram</option>
+            <option value="terma">Terma</option>
+          </select>
+        </div>
+        <div class="hermes-view-controls">
+          <button class="hermes-view-controls__button hermes-view-controls__button--active" data-view="grid">
+            <span class="hermes-view-controls__icon">⊞</span>
+          </button>
+          <button class="hermes-view-controls__button" data-view="list">
+            <span class="hermes-view-controls__icon">≡</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Service Registry Grid View -->
+      <div class="hermes-registry-view hermes-registry-view--grid" id="registry-grid-view">
+        <!-- Component cards will be dynamically inserted here -->
+        <div class="hermes-registry__loading">
+          Loading services...
+        </div>
+      </div>
+      
+      <!-- Service Registry List View (Hidden by default) -->
+      <div class="hermes-registry-view hermes-registry-view--list" id="registry-list-view" style="display: none;">
+        <table class="hermes-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Component</th>
+              <th>Type</th>
+              <th>Endpoint</th>
+              <th>Capabilities</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="registry-table-body">
+            <!-- Service rows will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Messaging Tab -->
+    <div class="hermes-tab-panel" data-panel="messaging">
+      <div class="hermes-panel-header">
+        <div class="hermes-panel-header__title">Live Message Monitor</div>
+        <div class="hermes-panel-controls">
+          <button class="hermes-button" id="clear-messages">Clear</button>
+          <button class="hermes-button" id="pause-messages">
+            <span id="pause-icon">⏸️</span> Pause
+          </button>
+        </div>
+      </div>
+      
+      <div class="hermes-messaging">
+        <div class="hermes-messaging__sidebar">
+          <div class="hermes-filter-section">
+            <h3 class="hermes-filter-section__title">Message Filters</h3>
+            <div class="hermes-filter-group">
+              <label class="hermes-checkbox">
+                <input type="checkbox" id="filter-registration" checked>
+                <span class="hermes-checkbox__label">Registration</span>
+              </label>
+              <label class="hermes-checkbox">
+                <input type="checkbox" id="filter-heartbeat" checked>
+                <span class="hermes-checkbox__label">Heartbeat</span>
+              </label>
+              <label class="hermes-checkbox">
+                <input type="checkbox" id="filter-query" checked>
+                <span class="hermes-checkbox__label">Query</span>
+              </label>
+              <label class="hermes-checkbox">
+                <input type="checkbox" id="filter-data" checked>
+                <span class="hermes-checkbox__label">Data</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="hermes-filter-section">
+            <h3 class="hermes-filter-section__title">Component Filters</h3>
+            <div class="hermes-filter-group" id="component-filters">
+              <!-- Component filters will be added dynamically -->
+              <div class="hermes-component-filters__loading">
+                Loading components...
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="hermes-message-display">
+          <div class="hermes-message-container" id="message-container">
+            <!-- Messages will be added dynamically -->
+            <div class="hermes-message-container__placeholder">
+              Messages will appear here. Start a component that uses Hermes to see messages.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Connections Tab -->
+    <div class="hermes-tab-panel" data-panel="connections">
+      <div class="hermes-panel-header">
+        <div class="hermes-panel-header__title">Connection Management</div>
+        <div class="hermes-panel-controls">
+          <button class="hermes-button hermes-button--primary" id="add-connection">
+            <span class="hermes-button__icon">➕</span>
+            <span class="hermes-button__text">Add Connection</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="hermes-connections">
+        <div class="hermes-connections__graph" id="connection-graph">
+          <!-- Connection visualization will be rendered here -->
+          <div class="hermes-connections__placeholder">
+            <div class="hermes-connections__loading">Loading connection graph...</div>
+          </div>
+        </div>
+        
+        <div class="hermes-connections__details" id="connection-details">
+          <div class="hermes-connections__placeholder">
+            <p>Select a connection to view details</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- History Tab -->
+    <div class="hermes-tab-panel" data-panel="history">
+      <div class="hermes-panel-header">
+        <div class="hermes-search">
+          <input type="text" id="history-search" class="hermes-search__input" placeholder="Search messages...">
+          <select id="history-filter" class="hermes-select">
+            <option value="all">All Types</option>
+            <option value="registration">Registration</option>
+            <option value="heartbeat">Heartbeat</option>
+            <option value="query">Query</option>
+            <option value="data">Data</option>
+          </select>
+        </div>
+        <div class="hermes-panel-controls">
+          <button class="hermes-button" id="export-history">Export</button>
+          <button class="hermes-button hermes-button--danger" id="clear-history">Clear History</button>
+        </div>
+      </div>
+      
+      <div class="hermes-history">
+        <div class="hermes-history__filters">
+          <div class="hermes-filter-group">
+            <label class="hermes-filter-label">Date Range</label>
+            <div class="hermes-date-range">
+              <input type="datetime-local" id="history-start-date" class="hermes-date-input">
+              <span class="hermes-date-range__separator">to</span>
+              <input type="datetime-local" id="history-end-date" class="hermes-date-input">
+            </div>
+          </div>
+          
+          <div class="hermes-filter-group">
+            <label class="hermes-filter-label">Components</label>
+            <select id="history-component-filter" class="hermes-select" multiple>
+              <!-- Component options will be added dynamically -->
+            </select>
+          </div>
+        </div>
+        
+        <div class="hermes-history__results">
+          <table class="hermes-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Type</th>
+                <th>Source</th>
+                <th>Target</th>
+                <th>Status</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody id="history-table-body">
+              <!-- History entries will be added dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Detail modal (hidden by default) -->
+  <div class="hermes-modal" id="detail-modal" style="display: none;">
+    <div class="hermes-modal__overlay"></div>
+    <div class="hermes-modal__content">
+      <div class="hermes-modal__header">
+        <h3 class="hermes-modal__title" id="modal-title">Component Details</h3>
+        <button class="hermes-modal__close" id="close-modal">&times;</button>
+      </div>
+      <div class="hermes-modal__body" id="modal-body">
+        <!-- Modal content will be added dynamically -->
+      </div>
+      <div class="hermes-modal__footer">
+        <button class="hermes-button hermes-button--secondary" id="modal-cancel">Close</button>
+        <button class="hermes-button hermes-button--primary" id="modal-action">View More</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Toast notifications container -->
+  <div class="hermes-notifications" id="notifications-container"></div>
+</div>
