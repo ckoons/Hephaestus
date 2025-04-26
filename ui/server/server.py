@@ -35,9 +35,9 @@ logger = logging.getLogger(__name__)
 class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     """Handler for serving the Tekton UI"""
     
-    # Configuration for API proxying
+    # Configuration for API proxying - using environment variables
     ERGON_API_HOST = "localhost"
-    ERGON_API_PORT = 8200  # Ergon API port based on Tekton launch configuration
+    ERGON_API_PORT = int(os.environ.get("ERGON_PORT", 8002))  # Ergon API port from environment
     
     def __init__(self, *args, directory=None, **kwargs):
         if directory is None:
@@ -50,7 +50,11 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.protocol_version = 'HTTP/1.1'
         
         # Check if this is an API request that needs to be proxied
-        if self.path.startswith("/api/"):
+        if self.path.startswith("/api/config/ports"):
+            # Handle port configuration endpoint
+            self.serve_port_configuration()
+            return
+        elif self.path.startswith("/api/"):
             self.proxy_api_request("GET")
             return
             
@@ -271,6 +275,36 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         
         self.wfile.write(json.dumps(response).encode('utf-8'))
     
+    def serve_port_configuration(self):
+        """Serve port configuration from environment variables"""
+        # Get all environment variables for components
+        port_vars = {
+            "HEPHAESTUS_PORT": int(os.environ.get("HEPHAESTUS_PORT", 8080)),
+            "ENGRAM_PORT": int(os.environ.get("ENGRAM_PORT", 8000)),
+            "HERMES_PORT": int(os.environ.get("HERMES_PORT", 8001)),
+            "ERGON_PORT": int(os.environ.get("ERGON_PORT", 8002)),
+            "RHETOR_PORT": int(os.environ.get("RHETOR_PORT", 8003)),
+            "TERMA_PORT": int(os.environ.get("TERMA_PORT", 8004)),
+            "ATHENA_PORT": int(os.environ.get("ATHENA_PORT", 8005)),
+            "PROMETHEUS_PORT": int(os.environ.get("PROMETHEUS_PORT", 8006)),
+            "HARMONIA_PORT": int(os.environ.get("HARMONIA_PORT", 8007)),
+            "TELOS_PORT": int(os.environ.get("TELOS_PORT", 8008)),
+            "SYNTHESIS_PORT": int(os.environ.get("SYNTHESIS_PORT", 8009)),
+            "TEKTON_CORE_PORT": int(os.environ.get("TEKTON_CORE_PORT", 8010))
+        }
+        
+        # Send port configuration
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        self.end_headers()
+        
+        # Convert to JSON and send
+        import json
+        self.wfile.write(json.dumps(port_vars).encode('utf-8'))
+        
     def log_message(self, format, *args):
         """Override to use our logger"""
         logger.info(format % args)
@@ -278,8 +312,9 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
 class WebSocketServer:
     """WebSocket server for Tekton UI backend communication"""
     
-    def __init__(self, port=8081):
-        self.port = port
+    def __init__(self, port=None):
+        # Use the same port as HTTP server for Single Port Architecture
+        self.port = port or int(os.environ.get("HEPHAESTUS_PORT", 8080))
         self.clients = set()
         self.component_servers = {}
     
@@ -520,8 +555,8 @@ def run_http_server(directory, port):
 def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description='Tekton UI Server')
-    parser.add_argument('--http-port', type=int, default=8080, help='HTTP server port')
-    parser.add_argument('--ws-port', type=int, default=8081, help='WebSocket server port')
+    parser.add_argument('--port', type=int, default=int(os.environ.get("HEPHAESTUS_PORT", 8080)), 
+                      help='Server port for both HTTP and WebSocket (Single Port)')
     parser.add_argument('--directory', type=str, default=None, help='Directory to serve')
     args = parser.parse_args()
     
@@ -534,13 +569,13 @@ def main():
     
     logger.info(f"Serving files from: {directory}")
     
-    # Start WebSocket server in a separate thread
-    ws_thread = threading.Thread(target=run_websocket_server, args=(args.ws_port,))
+    # Start WebSocket server in a separate thread using same port with different endpoint
+    ws_thread = threading.Thread(target=run_websocket_server, args=(args.port,))
     ws_thread.daemon = True
     ws_thread.start()
     
     # Start HTTP server in the main thread
-    run_http_server(directory, args.http_port)
+    run_http_server(directory, args.port)
 
 if __name__ == "__main__":
     main()

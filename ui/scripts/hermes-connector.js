@@ -6,8 +6,8 @@
 
 // LLM Adapter configuration
 const LLM_ADAPTER_CONFIG = {
-    // WebSocket endpoint for LLM Adapter
-    wsUrl: 'ws://localhost:8301',
+    // WebSocket endpoint for LLM Adapter 
+    wsUrl: `ws://localhost:${window.RHETOR_PORT || 8003}/ws`,
     
     // Whether to use streaming responses (recommended)
     useStreaming: true,

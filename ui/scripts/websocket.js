@@ -21,7 +21,8 @@ class WebSocketManager {
     getWebSocketUrl() {
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const host = window.location.hostname;
-        const port = 8081; // Default WebSocket port - may need to be configurable
+        // Get port from environment variable with fallback
+        const port = window.HEPHAESTUS_PORT || 8080; // Use Single Port Architecture
         return `${protocol}//${host}:${port}/ws`;
     }
     

@@ -9,6 +9,8 @@
     <link rel="stylesheet" href="styles/ergon.css">
     <link rel="stylesheet" href="styles/settings.css">
     <link rel="stylesheet" href="styles/profile.css">
+    <!-- Environment variables and configuration -->
+    <script src="scripts/env.js"></script>
     <style>
         /* Streamlined header styles */
         .left-panel-header {
@@ -39,6 +41,10 @@
                     </li>
                     <li class="nav-item active" data-component="tekton">
                         <span class="nav-label">Tekton - Projects</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="tekton-dashboard">
+                        <span class="nav-label">Tekton Dashboard - System</span>
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="prometheus">

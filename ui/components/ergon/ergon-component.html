@@ -1,0 +1,276 @@
+<!-- 
+  Ergon Component
+  AI agent management and orchestration with advanced state management
+-->
+<div class="ergon">
+  <div class="ergon__header">
+    <h2 class="ergon__title">Ergon</h2>
+    <div class="ergon__controls">
+      <button class="ergon__refresh-button" id="refresh-agents-button" title="Refresh agents">
+        <span class="ergon__icon">🔄</span>
+      </button>
+      <button class="ergon__settings-button" id="settings-button" title="Settings">
+        <span class="ergon__icon">⚙️</span>
+      </button>
+    </div>
+  </div>
+  
+  <div class="ergon__content">
+    <div class="ergon__tabs">
+      <button class="ergon__tab ergon__tab--active" data-tab="agents">Agents</button>
+      <button class="ergon__tab" data-tab="executions">Executions</button>
+      <button class="ergon__tab" data-tab="workflows">Workflows</button>
+    </div>
+    
+    <div class="ergon__tab-content">
+      <!-- Agents Tab -->
+      <div class="ergon__tab-panel ergon__tab-panel--active" data-panel="agents">
+        <div class="ergon__agents-header">
+          <div class="ergon__search-bar">
+            <input type="text" class="ergon__search-input" id="agent-search" placeholder="Search agents...">
+          </div>
+          <div class="ergon__filters">
+            <select class="ergon__filter-select" id="agent-type-filter">
+              <option value="all">All Types</option>
+              <!-- Agent types will be populated here -->
+            </select>
+            <select class="ergon__filter-select" id="agent-status-filter">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <button class="ergon__create-button" id="create-agent-button">Create Agent</button>
+        </div>
+        
+        <div class="ergon__agents-container" id="agents-container">
+          <!-- Agent cards will be populated here -->
+          <div class="ergon__loading" id="agents-loading">
+            <div class="ergon__spinner"></div>
+            <p>Loading agents...</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Executions Tab -->
+      <div class="ergon__tab-panel" data-panel="executions">
+        <div class="ergon__executions-header">
+          <div class="ergon__filters">
+            <select class="ergon__filter-select" id="execution-agent-filter">
+              <option value="all">All Agents</option>
+              <!-- Agent options will be populated here -->
+            </select>
+            <select class="ergon__filter-select" id="execution-status-filter">
+              <option value="all">All Status</option>
+              <option value="running">Running</option>
+              <option value="completed">Completed</option>
+              <option value="error">Error</option>
+            </select>
+            <select class="ergon__filter-select" id="execution-time-filter">
+              <option value="all">All Time</option>
+              <option value="today">Today</option>
+              <option value="week">This Week</option>
+              <option value="month">This Month</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="ergon__executions-container" id="executions-container">
+          <!-- Execution items will be populated here -->
+          <div class="ergon__loading" id="executions-loading">
+            <div class="ergon__spinner"></div>
+            <p>Loading executions...</p>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Workflows Tab -->
+      <div class="ergon__tab-panel" data-panel="workflows">
+        <div class="ergon__workflows-header">
+          <div class="ergon__search-bar">
+            <input type="text" class="ergon__search-input" id="workflow-search" placeholder="Search workflows...">
+          </div>
+          <button class="ergon__create-button" id="create-workflow-button">Create Workflow</button>
+        </div>
+        
+        <div class="ergon__workflows-container" id="workflows-container">
+          <!-- Workflow items will be populated here -->
+          <div class="ergon__coming-soon">
+            <p>Workflow management coming soon</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Agent Details Modal -->
+  <div class="ergon__modal" id="agent-details-modal">
+    <div class="ergon__modal-content">
+      <div class="ergon__modal-header">
+        <h3 class="ergon__modal-title" id="agent-details-title">Agent Details</h3>
+        <button class="ergon__modal-close" id="agent-details-close">&times;</button>
+      </div>
+      <div class="ergon__modal-body" id="agent-details-body">
+        <!-- Agent details will be populated here -->
+      </div>
+      <div class="ergon__modal-footer">
+        <button class="ergon__button ergon__button--secondary" id="agent-details-close-btn">Close</button>
+        <button class="ergon__button ergon__button--primary" id="agent-details-run-btn">Run Agent</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Create Agent Modal -->
+  <div class="ergon__modal" id="create-agent-modal">
+    <div class="ergon__modal-content">
+      <div class="ergon__modal-header">
+        <h3 class="ergon__modal-title">Create Agent</h3>
+        <button class="ergon__modal-close" id="create-agent-close">&times;</button>
+      </div>
+      <div class="ergon__modal-body">
+        <form id="create-agent-form" class="ergon__form">
+          <div class="ergon__form-group">
+            <label for="agent-name" class="ergon__form-label">Name</label>
+            <input type="text" id="agent-name" class="ergon__form-input" placeholder="Enter agent name">
+            <div class="ergon__form-error" id="agent-name-error"></div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label for="agent-description" class="ergon__form-label">Description</label>
+            <textarea id="agent-description" class="ergon__form-textarea" placeholder="Enter agent description"></textarea>
+            <div class="ergon__form-error" id="agent-description-error"></div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label for="agent-type" class="ergon__form-label">Type</label>
+            <select id="agent-type" class="ergon__form-select">
+              <!-- Agent types will be populated here -->
+            </select>
+            <div class="ergon__form-error" id="agent-type-error"></div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label for="agent-model" class="ergon__form-label">Model</label>
+            <select id="agent-model" class="ergon__form-select">
+              <!-- Models will be populated here -->
+            </select>
+            <div class="ergon__form-error" id="agent-model-error"></div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label for="agent-temperature" class="ergon__form-label">Temperature</label>
+            <input type="range" id="agent-temperature" class="ergon__form-range" min="0" max="1" step="0.1" value="0.7">
+            <div class="ergon__form-range-value" id="agent-temperature-value">0.7</div>
+            <div class="ergon__form-error" id="agent-temperature-error"></div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label class="ergon__form-label">Tools</label>
+            <div class="ergon__tools-container" id="agent-tools-container">
+              <!-- Tool checkboxes will be populated here -->
+            </div>
+            <div class="ergon__form-error" id="agent-tools-error"></div>
+          </div>
+        </form>
+      </div>
+      <div class="ergon__modal-footer">
+        <button class="ergon__button ergon__button--secondary" id="create-agent-cancel">Cancel</button>
+        <button class="ergon__button ergon__button--primary" id="create-agent-submit">Create</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Run Agent Modal -->
+  <div class="ergon__modal" id="run-agent-modal">
+    <div class="ergon__modal-content">
+      <div class="ergon__modal-header">
+        <h3 class="ergon__modal-title" id="run-agent-title">Run Agent</h3>
+        <button class="ergon__modal-close" id="run-agent-close">&times;</button>
+      </div>
+      <div class="ergon__modal-body">
+        <form id="run-agent-form" class="ergon__form">
+          <div class="ergon__form-group">
+            <label for="run-input" class="ergon__form-label">Input</label>
+            <textarea id="run-input" class="ergon__form-textarea" placeholder="Enter input for the agent"></textarea>
+            <div class="ergon__form-error" id="run-input-error"></div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label class="ergon__form-label">Options</label>
+            <div class="ergon__checkbox-group">
+              <input type="checkbox" id="run-streaming" class="ergon__form-checkbox" checked>
+              <label for="run-streaming" class="ergon__checkbox-label">Stream response</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="ergon__modal-footer">
+        <button class="ergon__button ergon__button--secondary" id="run-agent-cancel">Cancel</button>
+        <button class="ergon__button ergon__button--primary" id="run-agent-submit">Run</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Settings Modal -->
+  <div class="ergon__modal" id="settings-modal">
+    <div class="ergon__modal-content">
+      <div class="ergon__modal-header">
+        <h3 class="ergon__modal-title">Settings</h3>
+        <button class="ergon__modal-close" id="settings-close">&times;</button>
+      </div>
+      <div class="ergon__modal-body">
+        <form id="settings-form" class="ergon__form">
+          <div class="ergon__form-group">
+            <label for="default-model" class="ergon__form-label">Default Model</label>
+            <select id="default-model" class="ergon__form-select">
+              <!-- Models will be populated here -->
+            </select>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label for="auto-refresh" class="ergon__form-label">Auto-Refresh Interval (seconds)</label>
+            <input type="number" id="auto-refresh" class="ergon__form-input" min="0" max="300" step="1">
+            <div class="ergon__form-help">Set to 0 to disable auto-refresh</div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label for="default-temperature" class="ergon__form-label">Default Temperature</label>
+            <input type="range" id="default-temperature" class="ergon__form-range" min="0" max="1" step="0.1" value="0.7">
+            <div class="ergon__form-range-value" id="default-temperature-value">0.7</div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label class="ergon__form-label">UI Options</label>
+            <div class="ergon__checkbox-group">
+              <input type="checkbox" id="compact-mode" class="ergon__form-checkbox">
+              <label for="compact-mode" class="ergon__checkbox-label">Compact Mode</label>
+            </div>
+            <div class="ergon__checkbox-group">
+              <input type="checkbox" id="show-execution-details" class="ergon__form-checkbox" checked>
+              <label for="show-execution-details" class="ergon__checkbox-label">Show Execution Details</label>
+            </div>
+            <div class="ergon__checkbox-group">
+              <input type="checkbox" id="show-agent-details" class="ergon__form-checkbox" checked>
+              <label for="show-agent-details" class="ergon__checkbox-label">Show Agent Details</label>
+            </div>
+          </div>
+          
+          <div class="ergon__form-group">
+            <label class="ergon__form-label">Advanced Options</label>
+            <div class="ergon__checkbox-group">
+              <input type="checkbox" id="developer-mode" class="ergon__form-checkbox">
+              <label for="developer-mode" class="ergon__checkbox-label">Developer Mode</label>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="ergon__modal-footer">
+        <button class="ergon__button ergon__button--secondary" id="settings-cancel">Cancel</button>
+        <button class="ergon__button ergon__button--primary" id="settings-save">Save</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Notification Toast -->
+  <div class="ergon__notifications" id="notifications-container"></div>
+</div>

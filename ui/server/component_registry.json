@@ -1,6 +1,26 @@
 {
   "components": [
     {
+      "id": "ergon",
+      "name": "Ergon",
+      "description": "AI agent management and orchestration",
+      "icon": "🤖",
+      "defaultMode": "html",
+      "capabilities": ["agent_management", "llm_orchestration", "workflow_automation", "shadow_dom", "component_isolation", "state_management"],
+      "componentPath": "components/ergon/ergon-component.html",
+      "scripts": [
+        "scripts/ergon-state-manager.js",
+        "scripts/component-utils-ergon-state.js",
+        "scripts/ergon-service.js",
+        "scripts/ergon-state-test-utils.js",
+        "scripts/ergon/ergon-component.js"
+      ],
+      "styles": [
+        "styles/ergon/ergon-component.css"
+      ],
+      "usesShadowDom": true
+    },
+    {
       "id": "engram",
       "name": "Engram",
       "description": "Memory and context management",
@@ -84,6 +104,32 @@
       "usesShadowDom": true
     },
     {
+      "id": "tekton-dashboard",
+      "name": "Tekton Dashboard",
+      "description": "Central control panel for the Tekton ecosystem",
+      "icon": "📊",
+      "defaultMode": "html",
+      "capabilities": ["system_status", "component_management", "resource_monitoring", "github_integration", "project_management", "shadow_dom", "component_isolation", "state_management"],
+      "componentPath": "components/tekton-dashboard/tekton-dashboard.html",
+      "scripts": [
+        "scripts/tekton-dashboard/tekton-service.js",
+        "scripts/tekton-dashboard/github-service.js",
+        "scripts/tekton-dashboard/tekton-dashboard.js",
+        "scripts/tekton-dashboard/tekton-dashboard-ui.js",
+        "scripts/tekton-dashboard/tekton-dashboard-handlers.js",
+        "scripts/tekton-dashboard/tekton-dashboard-charts.js",
+        "scripts/tekton-dashboard/github-panel-init.js",
+        "scripts/tekton-dashboard/github-panel.js",
+        "scripts/tekton-dashboard/github-panel-ui.js",
+        "scripts/tekton-dashboard/github-panel-handlers.js"
+      ],
+      "styles": [
+        "styles/tekton-dashboard/tekton-dashboard.css",
+        "styles/tekton-dashboard/github-panel.css"
+      ],
+      "usesShadowDom": true
+    },
+    {
       "id": "tekton",
       "name": "Tekton",
       "description": "Project and system orchestration",
@@ -94,10 +140,10 @@
     {
       "id": "prometheus",
       "name": "Prometheus",
-      "description": "Planning and roadmap management",
+      "description": "Planning, retrospective analysis, and improvement",
       "icon": "🗓️",
-      "defaultMode": "terminal",
-      "capabilities": ["planning", "timeline_management", "roadmap_visualization"]
+      "defaultMode": "html",
+      "capabilities": ["planning", "retrospective_analysis", "timeline_management", "roadmap_visualization", "improvement_recommendations", "resource_optimization"]
     },
     {
       "id": "telos",
