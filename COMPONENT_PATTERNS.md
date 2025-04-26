@@ -1,6 +1,6 @@
 # Component Patterns Guide
 
-**Last Updated:** April 30, 2025
+**Last Updated:** May 21, 2025
 
 This guide documents the standardized patterns for creating components within the Hephaestus UI framework. Following these patterns ensures consistency, maintainability, and proper isolation between components.
 
@@ -9,10 +9,11 @@ This guide documents the standardized patterns for creating components within th
 1. [Shadow DOM Architecture](#shadow-dom-architecture)
 2. [Component Structure](#component-structure)
 3. [Service Implementation Patterns](#service-implementation-patterns)
-4. [UI Component Patterns](#ui-component-patterns)
-5. [Event Handling Best Practices](#event-handling-best-practices)
-6. [Cleanup and Lifecycle Management](#cleanup-and-lifecycle-management)
-7. [Example Implementation](#example-implementation)
+4. [Network Communication Patterns](#network-communication-patterns)
+5. [UI Component Patterns](#ui-component-patterns)
+6. [Event Handling Best Practices](#event-handling-best-practices)
+7. [Cleanup and Lifecycle Management](#cleanup-and-lifecycle-management)
+8. [Example Implementation](#example-implementation)
 
 ## Shadow DOM Architecture
 
@@ -168,6 +169,155 @@ Services should provide:
 - Event dispatching for state changes
 - Error handling
 - Fallback mechanisms
+
+## Network Communication Patterns
+
+### Single Port Architecture
+
+All Tekton components **must** use a single port for all operations. This includes REST API endpoints, WebSocket connections, and event-based communication. This architecture simplifies deployment and improves consistency across components.
+
+### Service Configuration
+
+When initializing a component service, use a single base URL for all communication types:
+
+```javascript
+class ComponentService extends window.tektonUI.componentUtils.BaseService {
+    constructor() {
+        const componentPort = 8XXX; // Replace with actual component port
+        const componentHost = window.tektonUI.config.get('componentHost', 'localhost');
+        const baseUrl = `http://${componentHost}:${componentPort}`;
+        
+        super('componentService', baseUrl);
+        
+        // Configure different endpoint paths on the same port
+        this.apiUrl = `${baseUrl}/api/v1`;
+        this.wsUrl = `${baseUrl.replace('http', 'ws')}/ws`;
+        this.eventUrl = `${baseUrl}/events`;
+    }
+    
+    // Service methods...
+}
+```
+
+### Multiple Communication Channels
+
+To support different communication protocols through a single port:
+
+#### REST API Communication
+
+```javascript
+async fetchData(endpoint) {
+    try {
+        const response = await fetch(`${this.apiUrl}/${endpoint}`);
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error('API request failed:', error);
+        this.dispatchEvent('error', { message: error.message, type: 'api' });
+        throw error;
+    }
+}
+```
+
+#### WebSocket Communication
+
+```javascript
+connectWebSocket() {
+    if (this.wsConnection) return;
+    
+    this.wsConnection = new WebSocket(this.wsUrl);
+    
+    this.wsConnection.onopen = () => {
+        console.log('WebSocket connected');
+        this.dispatchEvent('websocketConnected', {});
+    };
+    
+    this.wsConnection.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        this.handleWsMessage(data);
+    };
+    
+    this.wsConnection.onerror = (error) => {
+        console.error('WebSocket error:', error);
+        this.dispatchEvent('error', { message: 'WebSocket error', type: 'websocket' });
+    };
+    
+    this.wsConnection.onclose = () => {
+        console.log('WebSocket closed');
+        this.wsConnection = null;
+        this.dispatchEvent('websocketDisconnected', {});
+    };
+}
+```
+
+#### Event-Based Communication
+
+```javascript
+async sendEvent(eventType, eventData) {
+    try {
+        const response = await fetch(this.eventUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                type: eventType,
+                data: eventData,
+                source: this.serviceName,
+                timestamp: new Date().toISOString()
+            })
+        });
+        
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        return await response.json();
+    } catch (error) {
+        console.error('Event sending failed:', error);
+        this.dispatchEvent('error', { message: error.message, type: 'event' });
+        throw error;
+    }
+}
+```
+
+### Connection Management
+
+Ensure that all communication channels are properly established and torn down:
+
+```javascript
+async connect() {
+    if (this.connected) return true;
+    
+    try {
+        // Check REST API availability
+        const response = await fetch(`${this.apiUrl}/health`);
+        if (!response.ok) throw new Error(`HTTP error ${response.status}`);
+        
+        // Connect WebSocket if needed
+        if (this.requiresWebSocket) {
+            this.connectWebSocket();
+        }
+        
+        this.connected = true;
+        this.dispatchEvent('connected', {});
+        return true;
+    } catch (error) {
+        console.error('Connection failed:', error);
+        this.connected = false;
+        this.dispatchEvent('connectionFailed', { error });
+        throw error;
+    }
+}
+
+disconnect() {
+    if (!this.connected) return;
+    
+    // Close WebSocket connection if open
+    if (this.wsConnection) {
+        this.wsConnection.close();
+        this.wsConnection = null;
+    }
+    
+    this.connected = false;
+    this.dispatchEvent('disconnected', {});
+}
+```
 
 ## UI Component Patterns
 

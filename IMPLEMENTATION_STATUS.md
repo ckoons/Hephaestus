@@ -1,6 +1,6 @@
 # Hephaestus UI Implementation Status
 
-**Last Updated:** May 8, 2025
+**Last Updated:** May 21, 2025
 
 ## Current Status
 
@@ -87,36 +87,48 @@ Phase 3 (Component Migration) completed. Five components have been successfully 
 
 ## Next Steps
 
-1. Implement Tekton Dashboard Component:
+1. Architecture Standardization:
+   - Update all components to use the Single Port Architecture pattern
+   - Refactor any components using multiple ports to consolidate on a single port
+   - Implement path-based routing for REST API, WebSocket, and event operations
+   - Update service implementations to use a single base URL with different paths
+   - Document the Single Port Architecture pattern in all component implementations
+   - Create standard implementations for REST, WebSocket, and event handling on a single port
+
+2. Implement Tekton Dashboard Component:
    - Create tekton-dashboard.html with component-specific classes using BEM naming
    - Create tekton-dashboard.css following the BEM naming convention
    - Create tekton-dashboard.js to work within Shadow DOM context
    - Implement TektonService extending BaseService for system communication
+   - Ensure TektonService connects to a single port backend with path-based routing
    - Update ui-manager.js to load Tekton Dashboard using the component loader
    - Update component registry entry for Tekton Dashboard to work with Shadow DOM
 
-2. Implement Prometheus Planning Component:
+3. Implement Prometheus Planning Component:
    - Create prometheus-planning.html with component-specific classes using BEM naming
    - Create prometheus-planning.css following the BEM naming convention
    - Create prometheus-planning.js to work within Shadow DOM context
    - Implement PrometheusService extending BaseService for planning functionality
+   - Ensure PrometheusService connects to a single port backend with path-based routing
    - Update ui-manager.js to load Prometheus using the component loader
    - Update component registry entry for Prometheus to work with Shadow DOM
 
-3. Implement Telos Requirements Component:
+4. Implement Telos Requirements Component:
    - Create telos-requirements.html with component-specific classes using BEM naming
    - Create telos-requirements.css following the BEM naming convention
    - Create telos-requirements.js to work within Shadow DOM context
    - Implement TelosService extending BaseService for requirements management
+   - Ensure TelosService connects to a single port backend with path-based routing
    - Update ui-manager.js to load Telos using the component loader
    - Update component registry entry for Telos to work with Shadow DOM
 
-4. Enhanced Features and Documentation:
+5. Enhanced Features and Documentation:
    - Create additional standardized UI components (dropdown, file browser, code editor)
    - Update documentation with final implementation details
    - Test all components in various scenarios
    - Ensure proper theme propagation and variable usage
    - Validate component isolation and cleanup
+   - Verify all components adhere to the Single Port Architecture pattern
 
 ## Key Implementations
 
