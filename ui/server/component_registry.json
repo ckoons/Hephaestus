@@ -6,9 +6,11 @@
       "description": "AI agent management and orchestration",
       "icon": "🤖",
       "defaultMode": "html",
-      "capabilities": ["agent_management", "llm_orchestration", "workflow_automation", "shadow_dom", "component_isolation", "state_management"],
+      "capabilities": ["agent_management", "llm_orchestration", "workflow_automation", "shadow_dom", "component_isolation", "state_management", "rhetor_llm_integration"],
       "componentPath": "components/ergon/ergon-component.html",
       "scripts": [
+        "scripts/shared/llm_adapter_client.js",
+        "scripts/shared/chat-interface.js",
         "scripts/ergon-state-manager.js",
         "scripts/component-utils-ergon-state.js",
         "scripts/ergon-service.js",
@@ -16,9 +18,11 @@
         "scripts/ergon/ergon-component.js"
       ],
       "styles": [
-        "styles/ergon/ergon-component.css"
+        "styles/ergon/ergon-component.css",
+        "styles/shared/chat-interface.css"
       ],
-      "usesShadowDom": true
+      "usesShadowDom": true,
+      "dependencies": ["rhetor"]
     },
     {
       "id": "engram",
@@ -26,16 +30,20 @@
       "description": "Memory and context management",
       "icon": "💾",
       "defaultMode": "html",
-      "capabilities": ["memory_management", "context_storage", "shadow_dom", "component_isolation"],
+      "capabilities": ["memory_management", "context_storage", "shadow_dom", "component_isolation", "rhetor_llm_integration"],
       "componentPath": "components/engram/engram-component.html",
       "scripts": [
+        "scripts/shared/llm_adapter_client.js",
+        "scripts/shared/chat-interface.js",
         "scripts/engram/engram-service.js",
         "scripts/engram/engram-component.js"
       ],
       "styles": [
-        "styles/engram/engram-component.css"
+        "styles/engram/engram-component.css",
+        "styles/shared/chat-interface.css"
       ],
-      "usesShadowDom": true
+      "usesShadowDom": true,
+      "dependencies": ["rhetor"]
     },
     {
       "id": "profile",
@@ -151,17 +159,21 @@
       "description": "Requirements management, tracing and validation",
       "icon": "🎯",
       "defaultMode": "html",
-      "capabilities": ["requirements_management", "requirement_tracing", "requirement_validation", "hierarchical_visualization", "prometheus_integration", "shadow_dom", "component_isolation", "state_management"],
+      "capabilities": ["requirements_management", "requirement_tracing", "requirement_validation", "hierarchical_visualization", "prometheus_integration", "llm_chat", "shadow_dom", "component_isolation", "state_management"],
       "componentPath": "components/telos/telos-component.html",
       "scripts": [
+        "scripts/shared/llm_adapter_client.js",
+        "scripts/shared/chat-interface.js",
         "scripts/telos/telos-service.js",
         "scripts/telos/telos-component.js",
         "scripts/telos/telos-integration.js"
       ],
       "styles": [
-        "styles/telos/telos.css"
+        "styles/telos/telos.css",
+        "styles/shared/chat-interface.css"
       ],
-      "usesShadowDom": true
+      "usesShadowDom": true,
+      "dependencies": ["rhetor"]
     },
     {
       "id": "athena",
@@ -226,16 +238,20 @@
       "description": "Message bus and service registry visualization",
       "icon": "📨",
       "defaultMode": "html",
-      "capabilities": ["message_routing", "service_discovery", "state_management", "shadow_dom", "component_isolation"],
+      "capabilities": ["message_routing", "service_discovery", "state_management", "shadow_dom", "component_isolation", "rhetor_llm_integration"],
       "componentPath": "components/hermes/hermes-component.html",
       "scripts": [
+        "scripts/shared/llm_adapter_client.js",
+        "scripts/shared/chat-interface.js",
         "scripts/hermes/hermes-service.js",
         "scripts/hermes/hermes-component.js"
       ],
       "styles": [
-        "styles/hermes/hermes-component.css"
+        "styles/hermes/hermes-component.css",
+        "styles/shared/chat-interface.css"
       ],
-      "usesShadowDom": true
+      "usesShadowDom": true,
+      "dependencies": ["rhetor"]
     },
     {
       "id": "codex",

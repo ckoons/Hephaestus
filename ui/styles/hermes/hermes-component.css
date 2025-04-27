@@ -803,3 +803,206 @@
     transform: translateX(0);
   }
 }
+
+/* Chat Panel */
+.hermes-chat {
+  display: flex;
+  height: calc(100% - 60px);
+  overflow: hidden;
+}
+
+.hermes-chat__sidebar {
+  width: 300px;
+  background-color: var(--bg-secondary);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hermes-chat__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.hermes-chat-settings {
+  padding: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.hermes-chat-settings__title {
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hermes-setting-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.hermes-chat-history {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md);
+}
+
+.hermes-chat-history__title {
+  font-size: var(--font-size-sm);
+  margin: 0 0 var(--spacing-md) 0;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.hermes-chat-history__list {
+  flex: 1;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-sm);
+  background-color: var(--bg-primary);
+}
+
+.hermes-chat-history__empty {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.hermes-chat-history__controls {
+  margin-top: var(--spacing-md);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.hermes-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* Chat Messages - Need different styling from the bus messages */
+.hermes-chat .hermes-message {
+  max-width: 85%;
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  position: relative;
+  border-left: none;
+  margin-bottom: 0;
+  background-color: transparent;
+}
+
+.hermes-chat .hermes-message--system {
+  background-color: var(--bg-secondary);
+  color: var(--text-secondary);
+  margin: 0 auto;
+  max-width: 90%;
+  border: 1px solid var(--border-color);
+}
+
+.hermes-chat .hermes-message--user {
+  background-color: var(--color-primary-light, rgba(0, 123, 255, 0.1));
+  color: var(--text-primary);
+  align-self: flex-end;
+  border: 1px solid var(--color-primary-light, rgba(0, 123, 255, 0.1));
+}
+
+.hermes-chat .hermes-message--assistant {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  align-self: flex-start;
+  border: 1px solid var(--border-color);
+}
+
+.hermes-chat .hermes-message__content {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+.hermes-chat .hermes-message__content p {
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.hermes-chat .hermes-message__content p:last-child {
+  margin-bottom: 0;
+}
+
+.hermes-chat .hermes-message__timestamp {
+  position: absolute;
+  bottom: -20px;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.hermes-chat .hermes-message--user .hermes-message__timestamp {
+  right: 0;
+}
+
+.hermes-chat .hermes-message--assistant .hermes-message__timestamp {
+  left: 0;
+}
+
+.hermes-chat-input {
+  padding: var(--spacing-md);
+  background-color: var(--bg-secondary);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  gap: var(--spacing-md);
+}
+
+.hermes-chat-input__textarea {
+  flex: 1;
+  resize: none;
+  background-color: var(--bg-input, var(--bg-tertiary));
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  padding: var(--spacing-md);
+  min-height: 40px;
+}
+
+.hermes-typing-indicator {
+  display: flex;
+  gap: 5px;
+  padding: var(--spacing-sm);
+  align-self: flex-start;
+}
+
+.hermes-typing-indicator__dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--text-secondary);
+  border-radius: 50%;
+  animation: typingAnimation 1.4s infinite ease-in-out;
+}
+
+.hermes-typing-indicator__dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.hermes-typing-indicator__dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.hermes-typing-indicator__dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+  0%, 60%, 100% {
+    transform: translateY(0);
+  }
+  30% {
+    transform: translateY(-5px);
+  }
+}

@@ -35,6 +35,10 @@
       <span class="hermes-tabs__icon">📜</span>
       <span class="hermes-tabs__label">Message History</span>
     </button>
+    <button class="hermes-tabs__button" data-tab="chat">
+      <span class="hermes-tabs__icon">💬</span>
+      <span class="hermes-tabs__label">LLM Chat</span>
+    </button>
   </div>
   
   <!-- Tab Content -->
@@ -230,6 +234,97 @@
               <!-- History entries will be added dynamically -->
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Chat Tab -->
+    <div class="hermes-tab-panel" data-panel="chat">
+      <div class="hermes-panel-header">
+        <div class="hermes-panel-header__title">Hermes LLM Chat</div>
+        <div class="hermes-panel-controls">
+          <select id="llm-model-select" class="hermes-select">
+            <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+            <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+            <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+            <option value="gpt-4">GPT-4</option>
+          </select>
+          <button class="hermes-button" id="clear-chat">Clear Chat</button>
+        </div>
+      </div>
+      
+      <div class="hermes-chat">
+        <div class="hermes-chat__sidebar">
+          <div class="hermes-chat-settings">
+            <h3 class="hermes-chat-settings__title">Chat Settings</h3>
+            
+            <div class="hermes-setting-group">
+              <label class="hermes-setting-label">Topic</label>
+              <select id="chat-topic" class="hermes-select">
+                <option value="general">General Help</option>
+                <option value="registration">Service Registration</option>
+                <option value="messages">Message Routing</option>
+                <option value="debug">Debugging</option>
+                <option value="advanced">Advanced Topics</option>
+              </select>
+            </div>
+            
+            <div class="hermes-setting-group">
+              <label class="hermes-setting-label">Response Style</label>
+              <select id="chat-style" class="hermes-select">
+                <option value="balanced">Balanced</option>
+                <option value="detailed">Detailed</option>
+                <option value="concise">Concise</option>
+                <option value="technical">Technical</option>
+              </select>
+            </div>
+            
+            <div class="hermes-setting-group">
+              <label class="hermes-checkbox">
+                <input type="checkbox" id="chat-streaming" checked>
+                <span class="hermes-checkbox__label">Use Streaming</span>
+              </label>
+            </div>
+          </div>
+          
+          <div class="hermes-chat-history">
+            <h3 class="hermes-chat-history__title">Saved Conversations</h3>
+            <div class="hermes-chat-history__list" id="saved-conversations">
+              <!-- Saved conversations will be added dynamically -->
+              <div class="hermes-chat-history__empty">
+                No saved conversations yet
+              </div>
+            </div>
+            <div class="hermes-chat-history__controls">
+              <button class="hermes-button hermes-button--small" id="save-conversation">Save Current</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="hermes-chat__main">
+          <div class="hermes-chat-messages" id="chat-messages">
+            <!-- Chat messages will be added dynamically -->
+            <div class="hermes-message hermes-message--system">
+              <div class="hermes-message__content">
+                <p>Welcome to the Hermes Chat Interface. I can help you with:</p>
+                <ul>
+                  <li>Understanding service registration and discovery</li>
+                  <li>Debugging connection issues</li>
+                  <li>Message routing and formatting</li>
+                  <li>Integrating components with Hermes</li>
+                </ul>
+                <p>How can I assist you today?</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="hermes-chat-input">
+            <textarea id="chat-input" class="hermes-chat-input__textarea" placeholder="Type your message here..." rows="2"></textarea>
+            <button id="send-message" class="hermes-button hermes-button--primary">
+              <span class="hermes-button__icon">📤</span>
+              <span class="hermes-button__text">Send</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

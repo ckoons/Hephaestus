@@ -14,8 +14,9 @@
     const loading = component.utils.loading;
     const lifecycle = component.utils.lifecycle;
     
-    // Service reference
+    // Service references
     let hermesService = null;
+    let hermesLLMService = null;
     
     // Initialize state
     const initialState = {
@@ -44,6 +45,16 @@
             components: [],
             startDate: null,
             endDate: null
+        },
+        
+        // Chat State
+        chat: {
+            isTyping: false,
+            selectedModel: 'claude-3-haiku-20240307',
+            chatTopic: 'general',
+            chatStyle: 'balanced',
+            useStreaming: true,
+            conversations: []
         },
         
         // Data
@@ -128,6 +139,46 @@
                 }
             }, 5000);
         }
+        
+        // Initialize the LLM service
+        initHermesLLMService();
+    }
+    
+    /**
+     * Initialize or get the Hermes LLM service
+     */
+    function initHermesLLMService() {
+        // Check if the service already exists globally
+        if (window.tektonUI?.services?.hermesLLMService) {
+            hermesLLMService = window.tektonUI.services.hermesLLMService;
+            
+            // Connect to service now if possible
+            connectToHermesLLMService();
+        } else {
+            // Dynamically load and initialize the service
+            const script = document.createElement('script');
+            script.src = '/scripts/hermes/hermes-llm-service.js';
+            document.head.appendChild(script);
+            
+            // Create a polling mechanism to wait for service initialization
+            const checkServiceInterval = setInterval(() => {
+                if (window.tektonUI?.services?.hermesLLMService) {
+                    hermesLLMService = window.tektonUI.services.hermesLLMService;
+                    clearInterval(checkServiceInterval);
+                    
+                    // Connect to service when available
+                    connectToHermesLLMService();
+                }
+            }, 100);
+            
+            // Give up after 5 seconds
+            setTimeout(() => {
+                if (!window.tektonUI?.services?.hermesLLMService) {
+                    clearInterval(checkServiceInterval);
+                    notifications.show(component, 'Error', 'Failed to load Hermes LLM service. Chat features may not work.', 'info');
+                }
+            }, 5000);
+        }
     }
     
     /**
@@ -156,6 +207,37 @@
             if (connected) {
                 // Load initial data
                 loadInitialData();
+            }
+        });
+    }
+    
+    /**
+     * Connect to the Hermes LLM service and set up listeners
+     */
+    function connectToHermesLLMService() {
+        if (!hermesLLMService) return;
+        
+        // Set up service event listeners
+        hermesLLMService.addEventListener('connected', handleLLMServiceConnected);
+        hermesLLMService.addEventListener('connectionFailed', handleLLMConnectionFailed);
+        hermesLLMService.addEventListener('messageReceived', handleLLMMessageReceived);
+        hermesLLMService.addEventListener('messageSent', handleLLMMessageSent);
+        hermesLLMService.addEventListener('streamingChunk', handleLLMStreamingChunk);
+        hermesLLMService.addEventListener('streamingError', handleLLMStreamingError);
+        hermesLLMService.addEventListener('streamingCancelled', handleLLMStreamingCancelled);
+        hermesLLMService.addEventListener('conversationSaved', handleLLMConversationSaved);
+        hermesLLMService.addEventListener('conversationLoaded', handleLLMConversationLoaded);
+        hermesLLMService.addEventListener('chatCleared', handleLLMChatCleared);
+        hermesLLMService.addEventListener('error', handleLLMServiceError);
+        
+        // Connect to service
+        hermesLLMService.connect().then(connected => {
+            if (connected) {
+                // Update available models
+                updateLLMModels();
+                
+                // Initialize chat interface
+                initializeChatInterface();
             }
         });
     }
@@ -447,6 +529,14 @@
             ['historyFilters'], 
             (state) => {
                 renderHistoryTable(state.historyFilters);
+            }
+        );
+        
+        // Handle chat typing indicator
+        lifecycle.registerStateEffect(component, 
+            ['chat.isTyping'], 
+            (state) => {
+                updateTypingIndicator(state.chat.isTyping);
             }
         );
     }
@@ -1578,6 +1668,155 @@
         notifications.show(component, 'Error', event.detail.error, 'error');
     }
     
+    /* LLM Service Event Handlers */
+    
+    /**
+     * Handle LLM service connected event
+     * @param {Object} event - Event object
+     */
+    function handleLLMServiceConnected(event) {
+        notifications.show(component, 'Connected', 'Connected to Hermes LLM API', 'success');
+    }
+    
+    /**
+     * Handle LLM connection failed event
+     * @param {Object} event - Event object
+     */
+    function handleLLMConnectionFailed(event) {
+        notifications.show(component, 'Connection Failed', event.detail.error, 'error');
+    }
+    
+    /**
+     * Handle LLM message received event
+     * @param {Object} event - Event object
+     */
+    function handleLLMMessageReceived(event) {
+        // Update chat UI with assistant message
+        renderChatMessage(event.detail.message);
+        
+        // Update typing indicator
+        component.state.set({
+            chat: {
+                ...component.state.get('chat'),
+                isTyping: false
+            }
+        });
+        
+        // Scroll to bottom of chat
+        scrollChatToBottom();
+    }
+    
+    /**
+     * Handle LLM message sent event
+     * @param {Object} event - Event object
+     */
+    function handleLLMMessageSent(event) {
+        // Update chat UI with user message
+        renderChatMessage(event.detail.message);
+        
+        // Update typing indicator
+        component.state.set({
+            chat: {
+                ...component.state.get('chat'),
+                isTyping: true
+            }
+        });
+        
+        // Scroll to bottom of chat
+        scrollChatToBottom();
+    }
+    
+    /**
+     * Handle LLM streaming chunk event
+     * @param {Object} event - Event object
+     */
+    function handleLLMStreamingChunk(event) {
+        // Update streaming message in the UI
+        updateStreamingMessage(event.detail.fullResponse);
+    }
+    
+    /**
+     * Handle LLM streaming error event
+     * @param {Object} event - Event object
+     */
+    function handleLLMStreamingError(event) {
+        notifications.show(component, 'Error', event.detail.error, 'error');
+        
+        // Update typing indicator
+        component.state.set({
+            chat: {
+                ...component.state.get('chat'),
+                isTyping: false
+            }
+        });
+    }
+    
+    /**
+     * Handle LLM streaming cancelled event
+     * @param {Object} event - Event object
+     */
+    function handleLLMStreamingCancelled(event) {
+        // Update typing indicator
+        component.state.set({
+            chat: {
+                ...component.state.get('chat'),
+                isTyping: false
+            }
+        });
+    }
+    
+    /**
+     * Handle LLM conversation saved event
+     * @param {Object} event - Event object
+     */
+    function handleLLMConversationSaved(event) {
+        // Update saved conversations list
+        updateSavedConversations();
+        
+        notifications.show(component, 'Conversation Saved', `Conversation saved as "${event.detail.conversation.name}"`, 'success');
+    }
+    
+    /**
+     * Handle LLM conversation loaded event
+     * @param {Object} event - Event object
+     */
+    function handleLLMConversationLoaded(event) {
+        // Clear chat UI
+        const chatMessages = component.$('#chat-messages');
+        if (chatMessages) {
+            chatMessages.innerHTML = '';
+        }
+        
+        // Render all messages from the loaded conversation
+        if (hermesLLMService && hermesLLMService.chatHistory) {
+            hermesLLMService.chatHistory.forEach(message => {
+                renderChatMessage(message);
+            });
+        }
+        
+        notifications.show(component, 'Conversation Loaded', `Loaded conversation "${event.detail.conversation.name}"`, 'success');
+    }
+    
+    /**
+     * Handle LLM chat cleared event
+     * @param {Object} event - Event object
+     */
+    function handleLLMChatCleared(event) {
+        // Clear chat UI
+        const chatMessages = component.$('#chat-messages');
+        if (chatMessages) {
+            chatMessages.innerHTML = '<div class="hermes-message hermes-message--system"><div class="hermes-message__content"><p>Chat history cleared. How can I help you?</p></div></div>';
+        }
+    }
+    
+    /**
+     * Handle LLM service error event
+     * @param {Object} event - Event object
+     */
+    function handleLLMServiceError(event) {
+        notifications.show(component, 'LLM Error', event.detail.error, 'error');
+    }
+    
     /* Utility functions */
     
     /**
@@ -1708,6 +1947,504 @@
     }
     
     /**
+     * Update LLM models dropdown
+     */
+    function updateLLMModels() {
+        if (!hermesLLMService) return;
+        
+        const modelSelect = component.$('#llm-model-select');
+        if (!modelSelect) return;
+        
+        // Clear current options
+        modelSelect.innerHTML = '';
+        
+        // Get available models from LLM service
+        const providers = hermesLLMService.availableModels;
+        
+        // Add options for each provider and model
+        for (const providerId in providers) {
+            const provider = providers[providerId];
+            
+            if (provider.models && provider.models.length > 0) {
+                // Add provider group
+                const optgroup = document.createElement('optgroup');
+                optgroup.label = providerId.charAt(0).toUpperCase() + providerId.slice(1);
+                
+                // Add models
+                provider.models.forEach(model => {
+                    const option = document.createElement('option');
+                    option.value = model.id;
+                    option.textContent = model.name || model.id;
+                    
+                    // Set as selected if it's the current model
+                    if (model.id === hermesLLMService.currentModel) {
+                        option.selected = true;
+                        
+                        // Update state
+                        component.state.set({
+                            chat: {
+                                ...component.state.get('chat'),
+                                selectedModel: model.id
+                            }
+                        });
+                    }
+                    
+                    optgroup.appendChild(option);
+                });
+                
+                modelSelect.appendChild(optgroup);
+            }
+        }
+        
+        // If no models were found, add a default option
+        if (modelSelect.options.length === 0) {
+            const option = document.createElement('option');
+            option.value = hermesLLMService.currentModel;
+            option.textContent = hermesLLMService.currentModel;
+            option.selected = true;
+            modelSelect.appendChild(option);
+        }
+    }
+    
+    /**
+     * Initialize the chat interface
+     */
+    function initializeChatInterface() {
+        // Set up event handlers for chat UI
+        setupChatEventHandlers();
+        
+        // Update saved conversations list
+        updateSavedConversations();
+        
+        // Restore chat history if available
+        if (hermesLLMService && hermesLLMService.chatHistory && hermesLLMService.chatHistory.length > 0) {
+            // Clear default welcome message
+            const chatMessages = component.$('#chat-messages');
+            if (chatMessages) {
+                chatMessages.innerHTML = '';
+            }
+            
+            // Render all messages from chat history
+            hermesLLMService.chatHistory.forEach(message => {
+                renderChatMessage(message);
+            });
+        }
+    }
+    
+    /**
+     * Set up chat event handlers
+     */
+    function setupChatEventHandlers() {
+        // Model selection
+        const modelSelect = component.$('#llm-model-select');
+        if (modelSelect) {
+            modelSelect.addEventListener('change', (event) => {
+                const selectedModel = event.target.value;
+                
+                // Update state
+                component.state.set({
+                    chat: {
+                        ...component.state.get('chat'),
+                        selectedModel
+                    }
+                });
+                
+                // Update LLM service
+                if (hermesLLMService) {
+                    hermesLLMService.setProviderAndModel('anthropic', selectedModel);
+                }
+            });
+        }
+        
+        // Chat input
+        const chatInput = component.$('#chat-input');
+        const sendButton = component.$('#send-message');
+        
+        if (chatInput && sendButton) {
+            // Send on Enter (without Shift)
+            chatInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendChatMessage();
+                }
+                
+                // Auto resize textarea
+                setTimeout(() => {
+                    chatInput.style.height = 'auto';
+                    chatInput.style.height = Math.min(chatInput.scrollHeight, 150) + 'px';
+                }, 0);
+            });
+            
+            // Send on button click
+            sendButton.addEventListener('click', () => {
+                sendChatMessage();
+            });
+        }
+        
+        // Chat topic
+        const chatTopic = component.$('#chat-topic');
+        if (chatTopic) {
+            chatTopic.addEventListener('change', (event) => {
+                component.state.set({
+                    chat: {
+                        ...component.state.get('chat'),
+                        chatTopic: event.target.value
+                    }
+                });
+            });
+        }
+        
+        // Response style
+        const chatStyle = component.$('#chat-style');
+        if (chatStyle) {
+            chatStyle.addEventListener('change', (event) => {
+                component.state.set({
+                    chat: {
+                        ...component.state.get('chat'),
+                        chatStyle: event.target.value
+                    }
+                });
+            });
+        }
+        
+        // Streaming option
+        const chatStreaming = component.$('#chat-streaming');
+        if (chatStreaming) {
+            chatStreaming.addEventListener('change', (event) => {
+                component.state.set({
+                    chat: {
+                        ...component.state.get('chat'),
+                        useStreaming: event.target.checked
+                    }
+                });
+            });
+        }
+        
+        // Clear chat button
+        const clearChatButton = component.$('#clear-chat');
+        if (clearChatButton) {
+            clearChatButton.addEventListener('click', () => {
+                clearChat();
+            });
+        }
+        
+        // Save conversation button
+        const saveConversationButton = component.$('#save-conversation');
+        if (saveConversationButton) {
+            saveConversationButton.addEventListener('click', () => {
+                saveCurrentConversation();
+            });
+        }
+    }
+    
+    /**
+     * Send a chat message
+     */
+    function sendChatMessage() {
+        if (!hermesLLMService) return;
+        
+        const chatInput = component.$('#chat-input');
+        if (!chatInput) return;
+        
+        const message = chatInput.value.trim();
+        if (!message) return;
+        
+        // Clear input
+        chatInput.value = '';
+        chatInput.style.height = 'auto';
+        
+        // Get chat settings
+        const chatSettings = component.state.get('chat');
+        
+        // Send message via LLM service
+        hermesLLMService.sendChatMessage(
+            message,
+            chatSettings.useStreaming,
+            {
+                model: chatSettings.selectedModel,
+                topic: chatSettings.chatTopic,
+                style: chatSettings.chatStyle
+            }
+        ).catch(error => {
+            console.error('Error sending message:', error);
+            notifications.show(component, 'Error', `Failed to send message: ${error.message}`, 'error');
+        });
+    }
+    
+    /**
+     * Render a chat message in the UI
+     * @param {Object} message - Message object
+     */
+    function renderChatMessage(message) {
+        const chatMessages = component.$('#chat-messages');
+        if (!chatMessages) return;
+        
+        // Check if message with same timestamp already exists
+        if (message.timestamp) {
+            const existingMessage = chatMessages.querySelector(`.hermes-message[data-timestamp="${message.timestamp}"]`);
+            if (existingMessage) {
+                return; // Skip duplicate messages
+            }
+        }
+        
+        // Create message element
+        const messageElement = document.createElement('div');
+        messageElement.className = `hermes-message hermes-message--${message.role}`;
+        messageElement.setAttribute('data-timestamp', message.timestamp || Date.now());
+        
+        // Format timestamp
+        const timestampText = message.timestamp ? formatTimestamp(message.timestamp, true) : formatTimestamp(Date.now(), true);
+        
+        // Create message HTML
+        messageElement.innerHTML = `
+            <div class="hermes-message__content">
+                ${message.content}
+            </div>
+            <div class="hermes-message__timestamp">${timestampText}</div>
+        `;
+        
+        // Add to chat
+        chatMessages.appendChild(messageElement);
+        
+        // Scroll to bottom
+        scrollChatToBottom();
+    }
+    
+    /**
+     * Update streaming message in the UI
+     * @param {string} content - Updated message content
+     */
+    function updateStreamingMessage(content) {
+        const chatMessages = component.$('#chat-messages');
+        if (!chatMessages) return;
+        
+        // Find or create assistant message element
+        let assistantMessage = chatMessages.querySelector('.hermes-message--assistant:last-child');
+        
+        if (!assistantMessage) {
+            // Create new message element
+            assistantMessage = document.createElement('div');
+            assistantMessage.className = 'hermes-message hermes-message--assistant';
+            assistantMessage.innerHTML = `
+                <div class="hermes-message__content"></div>
+                <div class="hermes-message__timestamp">${formatTimestamp(Date.now(), true)}</div>
+            `;
+            chatMessages.appendChild(assistantMessage);
+        }
+        
+        // Update content
+        const contentElement = assistantMessage.querySelector('.hermes-message__content');
+        if (contentElement) {
+            contentElement.innerHTML = content;
+        }
+        
+        // Scroll to bottom if near the bottom
+        if (isScrolledNearBottom(chatMessages)) {
+            scrollChatToBottom();
+        }
+    }
+    
+    /**
+     * Scroll chat to bottom
+     */
+    function scrollChatToBottom() {
+        const chatMessages = component.$('#chat-messages');
+        if (chatMessages) {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    }
+    
+    /**
+     * Check if element is scrolled near the bottom
+     * @param {HTMLElement} element - Element to check
+     * @param {number} threshold - Threshold in pixels
+     * @returns {boolean} - Whether element is scrolled near the bottom
+     */
+    function isScrolledNearBottom(element, threshold = 100) {
+        return element.scrollHeight - element.scrollTop - element.clientHeight < threshold;
+    }
+    
+    /**
+     * Update typing indicator in the chat UI
+     * @param {boolean} isTyping - Whether the assistant is typing
+     */
+    function updateTypingIndicator(isTyping) {
+        const chatMessages = component.$('#chat-messages');
+        if (!chatMessages) return;
+        
+        // Find existing typing indicator or create a new one
+        let typingIndicator = chatMessages.querySelector('.hermes-typing-indicator');
+        
+        if (isTyping) {
+            if (!typingIndicator) {
+                // Create typing indicator
+                typingIndicator = document.createElement('div');
+                typingIndicator.className = 'hermes-typing-indicator';
+                typingIndicator.innerHTML = `
+                    <div class="hermes-typing-indicator__dot"></div>
+                    <div class="hermes-typing-indicator__dot"></div>
+                    <div class="hermes-typing-indicator__dot"></div>
+                `;
+                chatMessages.appendChild(typingIndicator);
+                
+                // Scroll to show typing indicator
+                scrollChatToBottom();
+            }
+        } else {
+            // Remove typing indicator if it exists
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+    }
+    
+    /**
+     * Clear the chat history
+     */
+    function clearChat() {
+        if (!hermesLLMService) return;
+        
+        // Show confirmation dialog
+        showConfirmationDialog(
+            'Clear Chat',
+            'Are you sure you want to clear the chat history? This cannot be undone.',
+            () => {
+                hermesLLMService.clearChat();
+            }
+        );
+    }
+    
+    /**
+     * Save the current conversation
+     */
+    function saveCurrentConversation() {
+        if (!hermesLLMService || !hermesLLMService.chatHistory || hermesLLMService.chatHistory.length === 0) {
+            notifications.show(component, 'Error', 'No messages to save', 'error');
+            return;
+        }
+        
+        // Show prompt for conversation name
+        showModal({
+            title: 'Save Conversation',
+            body: `
+                <div class="hermes-modal__form">
+                    <div class="hermes-modal__form-group">
+                        <label class="hermes-modal__label">Conversation Name:</label>
+                        <input type="text" id="conversation-name" class="hermes-input" value="Conversation ${new Date().toLocaleString()}">
+                    </div>
+                </div>
+            `,
+            actionButton: {
+                label: 'Save',
+                callback: () => {
+                    const nameInput = component.$('#conversation-name');
+                    const name = nameInput ? nameInput.value.trim() : '';
+                    
+                    if (!name) {
+                        notifications.show(component, 'Error', 'Conversation name is required', 'error');
+                        return;
+                    }
+                    
+                    // Save conversation
+                    hermesLLMService.saveConversation(name);
+                    closeModal();
+                }
+            }
+        });
+    }
+    
+    /**
+     * Update saved conversations list
+     */
+    function updateSavedConversations() {
+        if (!hermesLLMService) return;
+        
+        const savedConversationsList = component.$('#saved-conversations');
+        if (!savedConversationsList) return;
+        
+        // Get saved conversations
+        const conversations = hermesLLMService.savedConversations || [];
+        
+        if (conversations.length === 0) {
+            savedConversationsList.innerHTML = `
+                <div class="hermes-chat-history__empty">
+                    No saved conversations yet
+                </div>
+            `;
+            return;
+        }
+        
+        // Sort conversations by timestamp (newest first)
+        conversations.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
+        // Create list items
+        let html = '';
+        conversations.forEach(conversation => {
+            const date = conversation.timestamp ? new Date(conversation.timestamp).toLocaleDateString() : 'Unknown';
+            html += `
+                <div class="hermes-chat-history__item" data-id="${conversation.id}">
+                    <div class="hermes-chat-history__item-name">${conversation.name}</div>
+                    <div class="hermes-chat-history__item-date">${date}</div>
+                    <div class="hermes-chat-history__item-actions">
+                        <button class="hermes-button hermes-button--small load-conversation" data-id="${conversation.id}">Load</button>
+                        <button class="hermes-button hermes-button--small hermes-button--danger delete-conversation" data-id="${conversation.id}">Delete</button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        savedConversationsList.innerHTML = html;
+        
+        // Add event listeners
+        component.$$('.load-conversation').forEach(button => {
+            button.addEventListener('click', () => {
+                const conversationId = button.getAttribute('data-id');
+                loadConversation(conversationId);
+            });
+        });
+        
+        component.$$('.delete-conversation').forEach(button => {
+            button.addEventListener('click', () => {
+                const conversationId = button.getAttribute('data-id');
+                deleteConversation(conversationId);
+            });
+        });
+    }
+    
+    /**
+     * Load a conversation
+     * @param {string} conversationId - Conversation ID
+     */
+    function loadConversation(conversationId) {
+        if (!hermesLLMService) return;
+        
+        // Load conversation
+        hermesLLMService.loadConversation(conversationId);
+    }
+    
+    /**
+     * Delete a conversation
+     * @param {string} conversationId - Conversation ID
+     */
+    function deleteConversation(conversationId) {
+        if (!hermesLLMService) return;
+        
+        // Get conversation name for confirmation
+        const conversation = hermesLLMService.savedConversations.find(c => c.id === conversationId);
+        const name = conversation ? conversation.name : 'this conversation';
+        
+        // Show confirmation dialog
+        showConfirmationDialog(
+            'Delete Conversation',
+            `Are you sure you want to delete "${name}"? This cannot be undone.`,
+            () => {
+                hermesLLMService.deleteConversation(conversationId);
+                updateSavedConversations();
+            }
+        );
+    }
+    
+    /**
      * Clean up component resources
      */
     function cleanupComponent() {
@@ -1729,6 +2466,21 @@
             hermesService.removeEventListener('monitoringStopped', handleMonitoringStopped);
             hermesService.removeEventListener('pauseStateChanged', handlePauseStateChanged);
             hermesService.removeEventListener('error', handleServiceError);
+        }
+        
+        // Remove LLM service event listeners
+        if (hermesLLMService) {
+            hermesLLMService.removeEventListener('connected', handleLLMServiceConnected);
+            hermesLLMService.removeEventListener('connectionFailed', handleLLMConnectionFailed);
+            hermesLLMService.removeEventListener('messageReceived', handleLLMMessageReceived);
+            hermesLLMService.removeEventListener('messageSent', handleLLMMessageSent);
+            hermesLLMService.removeEventListener('streamingChunk', handleLLMStreamingChunk);
+            hermesLLMService.removeEventListener('streamingError', handleLLMStreamingError);
+            hermesLLMService.removeEventListener('streamingCancelled', handleLLMStreamingCancelled);
+            hermesLLMService.removeEventListener('conversationSaved', handleLLMConversationSaved);
+            hermesLLMService.removeEventListener('conversationLoaded', handleLLMConversationLoaded);
+            hermesLLMService.removeEventListener('chatCleared', handleLLMChatCleared);
+            hermesLLMService.removeEventListener('error', handleLLMServiceError);
         }
     }
     
