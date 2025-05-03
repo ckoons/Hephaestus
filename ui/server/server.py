@@ -523,7 +523,11 @@ class WebSocketServer:
     async def start_server(self):
         """Start the WebSocket server"""
         logger.info(f"Starting WebSocket server on port {self.port}")
-        async with websockets.serve(self.register_client, "localhost", self.port):
+        
+        # Create the WebSocket server on a different port (one higher than HTTP)
+        ws_port = self.port + 1
+        logger.info(f"Starting WebSocket server on dedicated port {ws_port}")
+        async with websockets.serve(self.register_client, "localhost", ws_port):
             await asyncio.Future()  # Run forever
 
 def run_websocket_server(port):
@@ -556,7 +560,7 @@ def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description='Tekton UI Server')
     parser.add_argument('--port', type=int, default=int(os.environ.get("HEPHAESTUS_PORT", 8080)), 
-                      help='Server port for both HTTP and WebSocket (Single Port)')
+                      help='HTTP Server port (WebSocket port will be HTTP port + 1)')
     parser.add_argument('--directory', type=str, default=None, help='Directory to serve')
     args = parser.parse_args()
     
@@ -569,7 +573,8 @@ def main():
     
     logger.info(f"Serving files from: {directory}")
     
-    # Start WebSocket server in a separate thread using same port with different endpoint
+    # Start WebSocket server in a separate thread on HTTP port + 1
+    # For example, if HTTP is on 8080, WebSocket will be on 8081
     ws_thread = threading.Thread(target=run_websocket_server, args=(args.port,))
     ws_thread.daemon = True
     ws_thread.start()
