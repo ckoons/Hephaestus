@@ -183,6 +183,13 @@ class UIManager {
             return;
         }
         
+        // SPECIAL CASE: Direct component loading for Athena
+        if (componentId === 'athena') {
+            console.log('DIRECT LOADING ATHENA COMPONENT');
+            this.loadAthenaComponent();
+            return;
+        }
+        
         // Update active component in UI
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -381,6 +388,13 @@ class UIManager {
         // Special case for Engram component - now using Shadow DOM
         if (componentId === 'engram') {
             this.loadEngramComponent();
+            return;
+        }
+        
+        // Special case for Athena - load from static HTML
+        if (componentId === 'athena') {
+            console.log('ATHENA: Loading Athena from static HTML');
+            this.loadAthenaComponent();
             return;
         }
         
@@ -1392,6 +1406,208 @@ class UIManager {
                 usesTerminal: true,
             };
         }
+    }
+    
+    /**
+     * Load the Athena component directly from static HTML
+     */
+    loadAthenaComponent() {
+        console.log('Loading Athena component with Shadow DOM isolation...');
+        
+        // First, set the activeComponent to 'athena'
+        this.activeComponent = 'athena';
+        tektonUI.activeComponent = 'athena';
+        
+        // Use the main panel for Athena
+        // Get the terminal panel first (which is the main content area)
+        const mainPanel = document.getElementById('terminal-panel');
+        
+        if (!mainPanel) {
+            console.error('Main panel not found!');
+            return;
+        }
+        
+        // Clear the main panel
+        mainPanel.innerHTML = '';
+        
+        // Create a container for the component
+        const container = document.createElement('div');
+        container.id = 'athena-container';
+        container.className = 'shadow-component-container';
+        container.style.height = '100%';
+        container.style.width = '100%';
+        container.style.position = 'relative';
+        mainPanel.appendChild(container);
+        
+        // Activate the terminal panel to ensure it's visible
+        this.activatePanel('terminal');
+        
+        // Load the component using the component loader
+        if (window.componentLoader) {
+            window.componentLoader.loadComponent('athena', container)
+                .then(component => {
+                    if (component) {
+                        // Register the component
+                        this.components['athena'] = {
+                            id: 'athena',
+                            loaded: true,
+                            usesTerminal: true, // Use terminal panel instead of HTML panel
+                            shadowComponent: true,
+                            container
+                        };
+                        
+                        console.log('Athena component loaded successfully with Shadow DOM isolation');
+                    } else {
+                        console.error('Failed to load Athena component with Shadow DOM');
+                        
+                        // Fall back to static HTML loading method
+                        this.loadAthenaComponentStatic(container);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading Athena component:', error);
+                    
+                    // Fall back to static HTML loading method
+                    this.loadAthenaComponentStatic(container);
+                });
+        } else {
+            console.error('Component loader not available, falling back to static HTML method');
+            
+            // Fall back to static HTML loading method
+            this.loadAthenaComponentStatic(container);
+        }
+    }
+    
+    /**
+     * Load the Athena component using static HTML approach (fallback method)
+     */
+    loadAthenaComponentStatic(container) {
+        console.log('Loading Athena component using static HTML method (fallback)...');
+        
+        // Try multiple paths for Athena HTML
+        const componentPaths = [
+            'components/athena/athena-component.html',
+            'components/athena/athena.html',
+            'html/athena.html'
+        ];
+        
+        // Cache busting parameter
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        
+        // Function to attempt loading from a path
+        const tryLoadPath = (pathIndex) => {
+            if (pathIndex >= componentPaths.length) {
+                console.error('All component paths failed, showing error view');
+                
+                // Show error in container
+                container.innerHTML = `
+                    <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
+                        <h3>Error: Failed to Load Athena Component</h3>
+                        <p>The Athena component could not be loaded after trying multiple paths.</p>
+                        <h4>Attempted Paths:</h4>
+                        <ul style="margin-left: 20px; font-family: monospace;">
+                            ${componentPaths.map(path => `<li>${path}</li>`).join('')}
+                        </ul>
+                        <p style="margin-top: 20px;">Click the Athena tab again to retry loading.</p>
+                    </div>
+                `;
+                
+                // Register the component anyway to prevent further loading attempts
+                this.components['athena'] = {
+                    id: 'athena',
+                    loaded: true,
+                    usesTerminal: true, // Use terminal panel instead of HTML panel
+                };
+                
+                return;
+            }
+            
+            const path = componentPaths[pathIndex] + cacheBuster;
+            console.log(`Trying to load Athena from: ${path}`);
+            
+            fetch(path)
+                .then(response => {
+                    console.log(`Received response from ${path}: status ${response.status}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    if (!html || html.trim().length === 0) {
+                        throw new Error('Received empty HTML content');
+                    }
+                    
+                    console.log(`Loaded Athena HTML content successfully (${html.length} bytes)`);
+                    
+                    // Add the HTML content to the container
+                    container.innerHTML = html;
+                    console.log('Added Athena HTML content to container');
+                    
+                    // Try to load Athena scripts
+                    this.loadAthenaScripts();
+                    
+                    // Register the component
+                    this.components['athena'] = {
+                        id: 'athena',
+                        loaded: true,
+                        usesTerminal: true, // Uses terminal panel to display in main area
+                    };
+                    
+                    console.log('Athena component loaded successfully');
+                })
+                .catch(error => {
+                    console.error(`Failed to load Athena from ${path}: ${error.message}`);
+                    
+                    // Try the next path
+                    tryLoadPath(pathIndex + 1);
+                });
+        };
+        
+        // Start the loading process with the first path
+        tryLoadPath(0);
+    }
+    
+    /**
+     * Load Athena scripts manually
+     */
+    loadAthenaScripts() {
+        console.log('Loading Athena scripts manually...');
+        
+        // List of scripts to load
+        const scripts = [
+            'scripts/athena/athena-service.js',
+            'scripts/athena/athena-component.js'
+        ];
+        
+        // Cache busting parameter
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        
+        // Load scripts sequentially
+        const loadScript = (index) => {
+            if (index >= scripts.length) {
+                console.log('All Athena scripts loaded successfully');
+                return;
+            }
+            
+            const scriptPath = scripts[index];
+            const scriptElement = document.createElement('script');
+            scriptElement.src = `/${scriptPath}${cacheBuster}`;
+            scriptElement.onerror = () => {
+                console.error(`Failed to load script: ${scriptPath}`);
+                // Continue loading other scripts
+                loadScript(index + 1);
+            };
+            scriptElement.onload = () => {
+                console.log(`Successfully loaded script: ${scriptPath}`);
+                // Load next script
+                loadScript(index + 1);
+            };
+            document.head.appendChild(scriptElement);
+        };
+        
+        // Start loading scripts
+        loadScript(0);
     }
     
     /**

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Athena Knowledge Graph</title>
+</head>
+<body>
+    <div class="athena-component">
+        <header class="athena-header">
+            <div class="athena-header-title">
+                <img src="/images/icon.jpg" alt="Athena" class="athena-logo">
+                <h1>Athena Knowledge Graph</h1>
+            </div>
+            <div class="athena-header-controls">
+                <div class="athena-stats">
+                    <span>Entities: <strong class="entity-count">0</strong></span> |
+                    <span>Relationships: <strong class="relationship-count">0</strong></span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="athena-tabs">
+            <div class="athena-tab active" data-panel="graph">Knowledge Graph</div>
+            <div class="athena-tab" data-panel="chat">Knowledge Chat</div>
+            <div class="athena-tab" data-panel="entities">Entities</div>
+            <div class="athena-tab" data-panel="query">Query Builder</div>
+        </div>
+        
+        <div class="athena-content">
+            <div class="athena-panel active" id="graph-panel">
+                <div class="graph-container">
+                    <div class="placeholder">
+                        <h2>Knowledge Graph Visualization</h2>
+                        <p>Interactive graph visualization will be displayed here.</p>
+                        <p>The visualization allows you to explore relationships between entities in the knowledge graph.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="athena-panel" id="chat-panel">
+                <div class="chat-container">
+                    <div class="message-list">
+                        <div class="placeholder">
+                            <h2>Knowledge Chat</h2>
+                            <p>Ask questions about the knowledge graph.</p>
+                            <p>The chat interface leverages the knowledge graph to provide context-aware responses.</p>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <textarea class="chat-input" placeholder="Ask a question..." rows="1"></textarea>
+                        <button class="send-button">Send</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="athena-panel" id="entities-panel">
+                <div class="entity-browser">
+                    <div class="entity-list">
+                        <div class="placeholder">
+                            <h2>Entity List</h2>
+                            <p>Browse and search entities in the knowledge graph.</p>
+                        </div>
+                    </div>
+                    <div class="entity-details">
+                        <div class="placeholder">
+                            <h2>Entity Details</h2>
+                            <p>Select an entity to view its properties and relationships.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="athena-panel" id="query-panel">
+                <div class="query-builder">
+                    <div class="query-input">
+                        <div class="placeholder">
+                            <h2>Query Builder</h2>
+                            <p>Build and run custom queries against the knowledge graph.</p>
+                        </div>
+                    </div>
+                    <div class="query-results">
+                        <div class="placeholder">
+                            <h2>Query Results</h2>
+                            <p>Results will be displayed here after running a query.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

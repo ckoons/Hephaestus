@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Athena Knowledge Graph</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+        .header {
+            background-color: #252525;
+            padding: 1rem;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .logo {
+            height: 2rem;
+            width: auto;
+            border-radius: 4px;
+        }
+        .tabs {
+            display: flex;
+            background-color: #252525;
+            border-bottom: 1px solid #444;
+        }
+        .tab {
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+        }
+        .tab.active {
+            border-bottom-color: #007bff;
+            font-weight: bold;
+        }
+        .tab:hover {
+            background-color: #333;
+        }
+        .content {
+            flex: 1;
+            padding: 1rem;
+            overflow: auto;
+        }
+        .panel {
+            display: none;
+            height: 100%;
+        }
+        .panel.active {
+            display: block;
+        }
+        .graph-container {
+            height: 100%;
+            background-color: #1a1a1a;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .message-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background-color: #1a1a1a;
+            border-radius: 4px 4px 0 0;
+            margin-bottom: 1rem;
+        }
+        .input-area {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .chat-input {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #444;
+            border-radius: 4px;
+            background-color: #2d2d2d;
+            color: #f0f0f0;
+            font-family: inherit;
+            resize: none;
+        }
+        .send-button {
+            padding: 0.75rem 1.5rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+        }
+        .placeholder h2 {
+            margin-top: 0;
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-title">
+                <img src="/images/icon.jpg" alt="Athena" class="logo">
+                <h1>Athena Knowledge Graph</h1>
+            </div>
+            <div class="header-controls">
+                <div class="stats">
+                    <span>Entities: <strong>0</strong></span> |
+                    <span>Relationships: <strong>0</strong></span>
+                </div>
+            </div>
+        </header>
+        
+        <div class="tabs">
+            <div class="tab active" data-panel="graph">Knowledge Graph</div>
+            <div class="tab" data-panel="chat">Knowledge Chat</div>
+            <div class="tab" data-panel="entities">Entities</div>
+            <div class="tab" data-panel="query">Query Builder</div>
+        </div>
+        
+        <div class="content">
+            <div class="panel active" id="graph-panel">
+                <div class="graph-container">
+                    <div class="placeholder">
+                        <h2>Knowledge Graph Visualization</h2>
+                        <p>Interactive graph visualization will be displayed here.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel" id="chat-panel">
+                <div class="chat-container">
+                    <div class="message-list">
+                        <div class="placeholder">
+                            <h2>Knowledge Chat</h2>
+                            <p>Ask questions about the knowledge graph.</p>
+                        </div>
+                    </div>
+                    <div class="input-area">
+                        <textarea class="chat-input" placeholder="Ask a question..." rows="1"></textarea>
+                        <button class="send-button">Send</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="panel" id="entities-panel">
+                <div class="placeholder">
+                    <h2>Entity Management</h2>
+                    <p>Entity search, creation, and editing interface will be displayed here.</p>
+                </div>
+            </div>
+            
+            <div class="panel" id="query-panel">
+                <div class="placeholder">
+                    <h2>Query Builder</h2>
+                    <p>Interactive query building interface will be displayed here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Update active tab
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                // Show active panel
+                const panelId = tab.dataset.panel + '-panel';
+                document.querySelectorAll('.panel').forEach(panel => {
+                    panel.classList.toggle('active', panel.id === panelId);
+                });
+            });
+        });
+        
+        // Auto-resize textarea
+        const textarea = document.querySelector('.chat-input');
+        textarea.addEventListener('input', () => {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        });
+        
+        // Send button
+        const sendButton = document.querySelector('.send-button');
+        sendButton.addEventListener('click', () => {
+            const message = textarea.value.trim();
+            if (message) {
+                // In a real implementation, this would send the message to a backend
+                console.log('Sending message:', message);
+                
+                // Clear the input
+                textarea.value = '';
+                textarea.style.height = 'auto';
+                
+                // Add a placeholder response for demo purposes
+                const messageList = document.querySelector('.message-list');
+                messageList.innerHTML = `
+                    <div class="user-message">${message}</div>
+                    <div class="system-message">This is a placeholder response. In the actual implementation, this would be a knowledge-enhanced response from the Athena system.</div>
+                `;
+                messageList.scrollTop = messageList.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>

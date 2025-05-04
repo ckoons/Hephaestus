@@ -6,7 +6,15 @@
       "description": "AI agent management and orchestration",
       "icon": "🤖",
       "defaultMode": "html",
-      "capabilities": ["agent_management", "llm_orchestration", "workflow_automation", "shadow_dom", "component_isolation", "state_management", "rhetor_llm_integration"],
+      "capabilities": [
+        "agent_management",
+        "llm_orchestration",
+        "workflow_automation",
+        "shadow_dom",
+        "component_isolation",
+        "state_management",
+        "rhetor_llm_integration"
+      ],
       "componentPath": "components/ergon/ergon-component.html",
       "scripts": [
         "scripts/shared/llm_adapter_client.js",
@@ -22,7 +30,9 @@
         "styles/shared/chat-interface.css"
       ],
       "usesShadowDom": true,
-      "dependencies": ["rhetor"]
+      "dependencies": [
+        "rhetor"
+      ]
     },
     {
       "id": "engram",
@@ -30,7 +40,13 @@
       "description": "Memory and context management",
       "icon": "💾",
       "defaultMode": "html",
-      "capabilities": ["memory_management", "context_storage", "shadow_dom", "component_isolation", "rhetor_llm_integration"],
+      "capabilities": [
+        "memory_management",
+        "context_storage",
+        "shadow_dom",
+        "component_isolation",
+        "rhetor_llm_integration"
+      ],
       "componentPath": "components/engram/engram-component.html",
       "scripts": [
         "scripts/shared/llm_adapter_client.js",
@@ -43,7 +59,9 @@
         "styles/shared/chat-interface.css"
       ],
       "usesShadowDom": true,
-      "dependencies": ["rhetor"]
+      "dependencies": [
+        "rhetor"
+      ]
     },
     {
       "id": "profile",
@@ -51,7 +69,12 @@
       "description": "User profile management",
       "icon": "👤",
       "defaultMode": "html",
-      "capabilities": ["profile_management", "user_info", "shadow_dom", "component_isolation"],
+      "capabilities": [
+        "profile_management",
+        "user_info",
+        "shadow_dom",
+        "component_isolation"
+      ],
       "componentPath": "components/profile/profile-component.html",
       "scripts": [
         "scripts/profile/profile-service.js",
@@ -68,7 +91,12 @@
       "description": "Application settings and preferences",
       "icon": "⚙️",
       "defaultMode": "html",
-      "capabilities": ["settings_management", "theme_management", "shadow_dom", "component_isolation"],
+      "capabilities": [
+        "settings_management",
+        "theme_management",
+        "shadow_dom",
+        "component_isolation"
+      ],
       "componentPath": "components/settings/settings-component.html",
       "scripts": [
         "scripts/settings/settings-service.js",
@@ -85,7 +113,11 @@
       "description": "Shadow DOM isolation test component",
       "icon": "🧪",
       "defaultMode": "html",
-      "capabilities": ["testing", "shadow_dom", "component_isolation"],
+      "capabilities": [
+        "testing",
+        "shadow_dom",
+        "component_isolation"
+      ],
       "componentPath": "components/test/test-component.html",
       "scripts": [
         "scripts/test/test-component.js"
@@ -100,7 +132,13 @@
       "description": "Advanced terminal environment",
       "icon": "🖥️",
       "defaultMode": "html",
-      "capabilities": ["terminal", "command_execution", "shell_access", "shadow_dom", "component_isolation"],
+      "capabilities": [
+        "terminal",
+        "command_execution",
+        "shell_access",
+        "shadow_dom",
+        "component_isolation"
+      ],
       "componentPath": "components/terma/terma-component.html",
       "scripts": [
         "scripts/terma/terma-service.js",
@@ -117,7 +155,16 @@
       "description": "Central control panel for the Tekton ecosystem",
       "icon": "📊",
       "defaultMode": "html",
-      "capabilities": ["system_status", "component_management", "resource_monitoring", "github_integration", "project_management", "shadow_dom", "component_isolation", "state_management"],
+      "capabilities": [
+        "system_status",
+        "component_management",
+        "resource_monitoring",
+        "github_integration",
+        "project_management",
+        "shadow_dom",
+        "component_isolation",
+        "state_management"
+      ],
       "componentPath": "components/tekton-dashboard/tekton-dashboard.html",
       "scripts": [
         "scripts/tekton-dashboard/tekton-service.js",
@@ -143,7 +190,10 @@
       "description": "Project and system orchestration",
       "icon": "📋",
       "defaultMode": "terminal",
-      "capabilities": ["project_management", "system_orchestration"]
+      "capabilities": [
+        "project_management",
+        "system_orchestration"
+      ]
     },
     {
       "id": "prometheus",
@@ -151,7 +201,14 @@
       "description": "Planning, retrospective analysis, and improvement",
       "icon": "🗓️",
       "defaultMode": "html",
-      "capabilities": ["planning", "retrospective_analysis", "timeline_management", "roadmap_visualization", "improvement_recommendations", "resource_optimization"]
+      "capabilities": [
+        "planning",
+        "retrospective_analysis",
+        "timeline_management",
+        "roadmap_visualization",
+        "improvement_recommendations",
+        "resource_optimization"
+      ]
     },
     {
       "id": "telos",
@@ -159,7 +216,17 @@
       "description": "Requirements management, tracing and validation",
       "icon": "🎯",
       "defaultMode": "html",
-      "capabilities": ["requirements_management", "requirement_tracing", "requirement_validation", "hierarchical_visualization", "prometheus_integration", "llm_chat", "shadow_dom", "component_isolation", "state_management"],
+      "capabilities": [
+        "requirements_management",
+        "requirement_tracing",
+        "requirement_validation",
+        "hierarchical_visualization",
+        "prometheus_integration",
+        "llm_chat",
+        "shadow_dom",
+        "component_isolation",
+        "state_management"
+      ],
       "componentPath": "components/telos/telos-component.html",
       "scripts": [
         "scripts/shared/llm_adapter_client.js",
@@ -173,15 +240,32 @@
         "styles/shared/chat-interface.css"
       ],
       "usesShadowDom": true,
-      "dependencies": ["rhetor"]
+      "dependencies": [
+        "rhetor"
+      ]
     },
     {
       "id": "athena",
       "name": "Athena",
       "description": "Knowledge graph and information retrieval",
       "icon": "🧠",
-      "defaultMode": "terminal",
-      "capabilities": ["knowledge_graph", "information_retrieval", "fact_lookup"]
+      "defaultMode": "html",
+      "capabilities": [
+        "knowledge_graph",
+        "information_retrieval",
+        "fact_lookup",
+        "shadow_dom",
+        "component_isolation"
+      ],
+      "componentPath": "components/athena/athena-component.html",
+      "scripts": [
+        "scripts/athena/athena-service.js",
+        "scripts/athena/athena-component.js"
+      ],
+      "styles": [
+        "styles/athena/athena-component.css"
+      ],
+      "usesShadowDom": true
     },
     {
       "id": "sophia",
@@ -189,7 +273,11 @@
       "description": "Machine learning and model training",
       "icon": "📊",
       "defaultMode": "html",
-      "capabilities": ["ml_operations", "model_training", "data_analysis"]
+      "capabilities": [
+        "ml_operations",
+        "model_training",
+        "data_analysis"
+      ]
     },
     {
       "id": "engram",
@@ -197,7 +285,11 @@
       "description": "Memory and context management",
       "icon": "💾",
       "defaultMode": "terminal",
-      "capabilities": ["memory_management", "context_storage", "conversation_history"]
+      "capabilities": [
+        "memory_management",
+        "context_storage",
+        "conversation_history"
+      ]
     },
     {
       "id": "rhetor",
@@ -205,7 +297,15 @@
       "description": "LLM management and prompt engineering",
       "icon": "💬",
       "defaultMode": "html",
-      "capabilities": ["llm_management", "prompt_engineering", "communication_management", "budget_management", "shadow_dom", "component_isolation", "state_management"],
+      "capabilities": [
+        "llm_management",
+        "prompt_engineering",
+        "communication_management",
+        "budget_management",
+        "shadow_dom",
+        "component_isolation",
+        "state_management"
+      ],
       "componentPath": "components/rhetor/rhetor-component.html",
       "scripts": [
         "scripts/rhetor/rhetor-service.js",
@@ -222,7 +322,13 @@
       "description": "LLM cost tracking and budget management",
       "icon": "📊",
       "defaultMode": "html",
-      "capabilities": ["cost_tracking", "budget_management", "usage_reporting", "shadow_dom", "component_isolation"],
+      "capabilities": [
+        "cost_tracking",
+        "budget_management",
+        "usage_reporting",
+        "shadow_dom",
+        "component_isolation"
+      ],
       "componentPath": "components/budget/budget-dashboard.html",
       "scripts": [
         "scripts/budget/budget-dashboard.js"
@@ -238,7 +344,14 @@
       "description": "Message bus and service registry visualization",
       "icon": "📨",
       "defaultMode": "html",
-      "capabilities": ["message_routing", "service_discovery", "state_management", "shadow_dom", "component_isolation", "rhetor_llm_integration"],
+      "capabilities": [
+        "message_routing",
+        "service_discovery",
+        "state_management",
+        "shadow_dom",
+        "component_isolation",
+        "rhetor_llm_integration"
+      ],
       "componentPath": "components/hermes/hermes-component.html",
       "scripts": [
         "scripts/shared/llm_adapter_client.js",
@@ -251,7 +364,9 @@
         "styles/shared/chat-interface.css"
       ],
       "usesShadowDom": true,
-      "dependencies": ["rhetor"]
+      "dependencies": [
+        "rhetor"
+      ]
     },
     {
       "id": "codex",
@@ -259,7 +374,11 @@
       "description": "Code development and analysis",
       "icon": "💻",
       "defaultMode": "html",
-      "capabilities": ["code_generation", "code_review", "documentation"]
+      "capabilities": [
+        "code_generation",
+        "code_review",
+        "documentation"
+      ]
     },
     {
       "id": "harmonia",
@@ -267,7 +386,10 @@
       "description": "Workflow orchestration",
       "icon": "🔄",
       "defaultMode": "terminal",
-      "capabilities": ["workflow_management", "process_coordination"]
+      "capabilities": [
+        "workflow_management",
+        "process_coordination"
+      ]
     },
     {
       "id": "synthesis",
@@ -275,7 +397,11 @@
       "description": "Integration and automation",
       "icon": "🔗",
       "defaultMode": "terminal",
-      "capabilities": ["system_integration", "automation", "external_tools"]
+      "capabilities": [
+        "system_integration",
+        "automation",
+        "external_tools"
+      ]
     }
   ]
 }
