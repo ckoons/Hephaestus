@@ -255,7 +255,8 @@
         "information_retrieval",
         "fact_lookup",
         "shadow_dom",
-        "component_isolation"
+        "component_isolation",
+        "chat_interface"
       ],
       "componentPath": "components/athena/athena-component.html",
       "scripts": [
@@ -263,9 +264,11 @@
         "scripts/athena/athena-component.js"
       ],
       "styles": [
-        "styles/athena/athena-component.css"
+        "styles/athena/athena-component.css",
+        "styles/shared/chat-interface.css"
       ],
-      "usesShadowDom": true
+      "usesShadowDom": true,
+      "usesTerminal": false
     },
     {
       "id": "sophia",

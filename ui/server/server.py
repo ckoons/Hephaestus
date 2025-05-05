@@ -39,6 +39,9 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     ERGON_API_HOST = "localhost"
     ERGON_API_PORT = int(os.environ.get("ERGON_PORT", 8002))  # Ergon API port from environment
     
+    # Add class variable to store the WebSocket server instance
+    websocket_server = None
+    
     def __init__(self, *args, directory=None, **kwargs):
         if directory is None:
             directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -48,6 +51,11 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         """Handle GET requests"""
         # Add no-cache headers to force browser to reload content
         self.protocol_version = 'HTTP/1.1'
+        
+        # Check if this is a WebSocket connection upgrade request
+        if self.path.startswith("/ws") and self.headers.get('Upgrade', '').lower() == 'websocket':
+            self.handle_websocket_request()
+            return
         
         # Check if this is an API request that needs to be proxied
         if self.path.startswith("/api/config/ports"):
@@ -140,6 +148,301 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers = new_end_headers
             
         return SimpleHTTPRequestHandler.do_GET(self)
+        
+    def handle_websocket_request(self):
+        """Handle WebSocket upgrade request
+        
+        This implements the WebSocket protocol handshake as per RFC 6455:
+        https://tools.ietf.org/html/rfc6455
+        
+        For the Single Port Architecture, we handle both HTTP and WebSocket 
+        connections on the same port but with different URL paths.
+        """
+        try:
+            # Import needed for WebSocket handling
+            import asyncio
+            import websockets
+            import struct
+            import time
+            import threading
+            from http import HTTPStatus
+            
+            # Log full headers for debugging
+            logger.info(f"WebSocket request headers: {dict(self.headers)}")
+            
+            # Check for proper WebSocket protocol headers
+            connection_header = self.headers.get("Connection", "")
+            if not connection_header or "upgrade" not in connection_header.lower():
+                logger.error(f"Invalid Connection header: {connection_header}")
+                self.send_error(HTTPStatus.BAD_REQUEST, "Invalid Connection header")
+                return
+                
+            upgrade_header = self.headers.get("Upgrade", "")
+            if not upgrade_header or upgrade_header.lower() != "websocket":
+                logger.error(f"Invalid Upgrade header: {upgrade_header}")
+                self.send_error(HTTPStatus.BAD_REQUEST, "Invalid Upgrade header")
+                return
+                
+            # Check for WebSocket specific headers
+            if "Sec-WebSocket-Key" not in self.headers:
+                logger.error("Missing Sec-WebSocket-Key header")
+                self.send_error(HTTPStatus.BAD_REQUEST, "Missing Sec-WebSocket-Key header")
+                return
+                
+            if "Sec-WebSocket-Version" not in self.headers:
+                logger.error("Missing Sec-WebSocket-Version header")
+                self.send_error(HTTPStatus.BAD_REQUEST, "Missing Sec-WebSocket-Version header")
+                return
+                
+            # Calculate accept key
+            websocket_key = self.headers.get("Sec-WebSocket-Key")
+            accept_key = self._calculate_accept_key(websocket_key)
+            
+            # Log handshake details
+            logger.info(f"WebSocket handshake - Key: {websocket_key}, Accept: {accept_key}")
+            
+            # Send WebSocket upgrade response
+            handshake_response = (
+                f"HTTP/1.1 101 Switching Protocols\r\n"
+                f"Upgrade: websocket\r\n"
+                f"Connection: Upgrade\r\n"
+                f"Sec-WebSocket-Accept: {accept_key}\r\n"
+                f"\r\n"
+            )
+            
+            logger.info("Sending WebSocket handshake response")
+            self.wfile.write(handshake_response.encode())
+            
+            # At this point, the socket is upgraded to WebSocket protocol
+            logger.info("WebSocket connection established")
+            
+            # Get the client socket
+            client_socket = self.request
+            
+            # Start a separate thread to handle this WebSocket connection
+            ws_thread = threading.Thread(
+                target=self._handle_websocket_connection,
+                args=(client_socket,),
+                daemon=True
+            )
+            ws_thread.start()
+            
+            # Keep the request handler running until the connection is closed
+            # This prevents the HTTP server from closing the connection
+            while ws_thread.is_alive():
+                time.sleep(0.1)
+                
+            logger.info("WebSocket connection handler finished")
+            
+        except Exception as e:
+            logger.error(f"Error handling WebSocket request: {str(e)}")
+            self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR, f"WebSocket error: {str(e)}")
+    
+    def _handle_websocket_connection(self, client_socket):
+        """Handle the WebSocket connection after upgrade
+        
+        Args:
+            client_socket: The socket connection to the client
+        """
+        import select
+        import json
+        import struct
+        import time
+        
+        try:
+            # Helper function to decode WebSocket frames
+            def decode_websocket_frame(data):
+                """Decode a WebSocket frame"""
+                if len(data) < 2:
+                    return None, None, 0
+                
+                # Parse the first two bytes
+                fin = (data[0] & 0x80) != 0
+                opcode = data[0] & 0x0F
+                masked = (data[1] & 0x80) != 0
+                payload_length = data[1] & 0x7F
+                
+                # Get the index where the header ends
+                header_length = 2
+                
+                # Handle extended payload length
+                if payload_length == 126:
+                    if len(data) < 4:
+                        return None, None, 0
+                    payload_length = struct.unpack("!H", data[2:4])[0]
+                    header_length = 4
+                elif payload_length == 127:
+                    if len(data) < 10:
+                        return None, None, 0
+                    payload_length = struct.unpack("!Q", data[2:10])[0]
+                    header_length = 10
+                
+                # Get the masking key if present
+                mask_key = None
+                if masked:
+                    if len(data) < header_length + 4:
+                        return None, None, 0
+                    mask_key = data[header_length:header_length+4]
+                    header_length += 4
+                
+                # Check if we have enough data
+                if len(data) < header_length + payload_length:
+                    return None, None, 0
+                
+                # Get the payload
+                payload = data[header_length:header_length+payload_length]
+                
+                # Unmask the payload if needed
+                if masked and mask_key:
+                    payload = bytearray(payload)
+                    for i in range(len(payload)):
+                        payload[i] ^= mask_key[i % 4]
+                
+                return opcode, payload, header_length + payload_length
+            
+            # Helper function to encode WebSocket frames
+            def encode_websocket_frame(opcode, payload):
+                """Encode a WebSocket frame"""
+                # First byte: FIN bit set, opcode
+                first_byte = 0x80 | opcode
+                
+                # Determine payload length bytes
+                payload_length = len(payload)
+                if payload_length <= 125:
+                    length_bytes = struct.pack("!B", payload_length)
+                elif payload_length <= 65535:
+                    length_bytes = struct.pack("!BH", 126, payload_length)
+                else:
+                    length_bytes = struct.pack("!BQ", 127, payload_length)
+                
+                # Build frame
+                frame = bytes([first_byte]) + length_bytes + payload
+                return frame
+            
+            # Main connection loop
+            logger.info("Starting WebSocket connection handler")
+            buffer = bytearray()
+            client_socket.setblocking(0)  # Non-blocking mode
+            
+            # Send a welcome message
+            welcome_message = {
+                "type": "SYSTEM",
+                "source": "SERVER",
+                "target": "CLIENT",
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                "payload": {
+                    "message": "Welcome to Tekton UI WebSocket server"
+                }
+            }
+            welcome_frame = encode_websocket_frame(1, json.dumps(welcome_message).encode())
+            client_socket.sendall(welcome_frame)
+            
+            # Main loop
+            while True:
+                # Check if there's data to read
+                readable, _, _ = select.select([client_socket], [], [], 0.1)
+                
+                if not readable:
+                    continue
+                
+                # Read data
+                try:
+                    data = client_socket.recv(4096)
+                except BlockingIOError:
+                    continue
+                
+                # Check for disconnection
+                if not data:
+                    logger.info("Client disconnected")
+                    break
+                
+                # Add to buffer
+                buffer.extend(data)
+                
+                # Process frames in buffer
+                while buffer:
+                    opcode, payload, consumed = decode_websocket_frame(buffer)
+                    
+                    # If we don't have a complete frame yet
+                    if opcode is None:
+                        break
+                    
+                    # Remove consumed bytes from buffer
+                    buffer = buffer[consumed:]
+                    
+                    # Handle different opcodes
+                    if opcode == 0x1:  # Text frame
+                        try:
+                            message = payload.decode('utf-8')
+                            logger.info(f"Received message: {message[:100]}")
+                            
+                            # Parse as JSON
+                            data = json.loads(message)
+                            
+                            # Forward to WebSocket server if available
+                            if self.websocket_server:
+                                # Simple echo response
+                                response = {
+                                    "type": "RESPONSE",
+                                    "source": "SERVER",
+                                    "target": data.get("source", "CLIENT"),
+                                    "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                                    "payload": {
+                                        "message": f"Received: {message[:50]}...",
+                                        "status": "ok"
+                                    }
+                                }
+                                
+                                # Encode and send response
+                                response_frame = encode_websocket_frame(1, json.dumps(response).encode())
+                                client_socket.sendall(response_frame)
+                            
+                        except Exception as e:
+                            logger.error(f"Error processing message: {str(e)}")
+                    
+                    elif opcode == 0x8:  # Close frame
+                        logger.info("Received close frame")
+                        # Send close frame response
+                        close_frame = encode_websocket_frame(0x8, b'')
+                        client_socket.sendall(close_frame)
+                        return
+                    
+                    elif opcode == 0x9:  # Ping frame
+                        logger.info("Received ping frame")
+                        # Send pong frame
+                        pong_frame = encode_websocket_frame(0xA, payload)
+                        client_socket.sendall(pong_frame)
+                    
+                    elif opcode == 0xA:  # Pong frame
+                        logger.info("Received pong frame")
+                    
+                    else:
+                        logger.warning(f"Unsupported opcode: {opcode}")
+            
+        except Exception as e:
+            logger.error(f"WebSocket connection handler error: {str(e)}")
+        finally:
+            logger.info("WebSocket connection handler ending")
+            try:
+                client_socket.close()
+            except:
+                pass
+    
+    def _calculate_accept_key(self, key):
+        """Calculate the Sec-WebSocket-Accept header value based on the client's key
+        
+        This follows the WebSocket protocol (RFC 6455): 
+        1. Append the magic string '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+        2. Take the SHA-1 hash of the result
+        3. Return the base64 encoding of the hash
+        """
+        import hashlib
+        import base64
+        
+        WEBSOCKET_MAGIC_STRING = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+        accept_key = key + WEBSOCKET_MAGIC_STRING
+        accept_key_hash = hashlib.sha1(accept_key.encode()).digest()
+        return base64.b64encode(accept_key_hash).decode()
     
     def do_POST(self):
         """Handle POST requests"""
@@ -524,25 +827,24 @@ class WebSocketServer:
         """Start the WebSocket server"""
         logger.info(f"Starting WebSocket server on port {self.port}")
         
-        # Create the WebSocket server on a different port (one higher than HTTP)
-        ws_port = self.port + 1
-        logger.info(f"Starting WebSocket server on dedicated port {ws_port}")
-        async with websockets.serve(self.register_client, "localhost", ws_port):
-            await asyncio.Future()  # Run forever
+        # In the new Single Port Architecture, WebSocket uses the same port as HTTP
+        # The HTTP server will handle the upgrade to WebSocket protocol
+        # This will be handled by the request handler
+        await asyncio.Future()  # Placeholder - actual server is started in the HTTP handler
 
 def run_websocket_server(port):
-    """Run the WebSocket server in a separate thread"""
+    """Initialize the WebSocket server instance
+    
+    In the Single Port Architecture, we don't run a separate WebSocket server.
+    Instead, we initialize the WebSocket server instance and make it available
+    to the HTTP server for handling WebSocket upgrades.
+    """
     ws_server = WebSocketServer(port)
     
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+    # Store the WebSocket server instance in the request handler class
+    TektonUIRequestHandler.websocket_server = ws_server
     
-    try:
-        loop.run_until_complete(ws_server.start_server())
-    except KeyboardInterrupt:
-        logger.info("WebSocket server stopped")
-    finally:
-        loop.close()
+    logger.info("WebSocket server initialized for Single Port Architecture")
 
 def run_http_server(directory, port):
     """Run the HTTP server"""
@@ -560,7 +862,7 @@ def main():
     """Main entry point"""
     parser = argparse.ArgumentParser(description='Tekton UI Server')
     parser.add_argument('--port', type=int, default=int(os.environ.get("HEPHAESTUS_PORT", 8080)), 
-                      help='HTTP Server port (WebSocket port will be HTTP port + 1)')
+                      help='HTTP/WebSocket Server port')
     parser.add_argument('--directory', type=str, default=None, help='Directory to serve')
     args = parser.parse_args()
     
@@ -573,13 +875,11 @@ def main():
     
     logger.info(f"Serving files from: {directory}")
     
-    # Start WebSocket server in a separate thread on HTTP port + 1
-    # For example, if HTTP is on 8080, WebSocket will be on 8081
-    ws_thread = threading.Thread(target=run_websocket_server, args=(args.port,))
-    ws_thread.daemon = True
-    ws_thread.start()
+    # Initialize the WebSocket server (but don't run it separately)
+    # In Single Port Architecture, the same port handles both HTTP and WebSocket
+    run_websocket_server(args.port)
     
-    # Start HTTP server in the main thread
+    # Start HTTP server in the main thread (will also handle WebSocket upgrades)
     run_http_server(directory, args.port)
 
 if __name__ == "__main__":

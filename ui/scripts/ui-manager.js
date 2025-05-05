@@ -1,7 +1,7 @@
 /**
  * UI Manager
- * Handles UI state, component switching, and panel management
- * Updated to use Shadow DOM component isolation
+ * Handles UI state, component switching, and panel management with a simplified architecture
+ * Implements standardized component loading for the Fix GUI Sprint
  */
 
 class UIManager {
@@ -1409,73 +1409,750 @@ class UIManager {
     }
     
     /**
-     * Load the Athena component directly from static HTML
+     * Load the Athena component using direct HTML injection pattern
+     * This is our new pattern for all components in the Fix GUI Sprint
      */
     loadAthenaComponent() {
-        console.log('Loading Athena component with Shadow DOM isolation...');
+        console.log('Loading Athena component with direct HTML injection pattern...');
         
         // First, set the activeComponent to 'athena'
         this.activeComponent = 'athena';
         tektonUI.activeComponent = 'athena';
         
-        // Use the main panel for Athena
-        // Get the terminal panel first (which is the main content area)
-        const mainPanel = document.getElementById('terminal-panel');
+        // Get the HTML panel for component rendering
+        const htmlPanel = document.getElementById('html-panel');
         
-        if (!mainPanel) {
-            console.error('Main panel not found!');
+        if (!htmlPanel) {
+            console.error('HTML panel not found!');
             return;
         }
         
-        // Clear the main panel
-        mainPanel.innerHTML = '';
+        // Clear any existing content in the HTML panel
+        htmlPanel.innerHTML = '';
         
-        // Create a container for the component
-        const container = document.createElement('div');
-        container.id = 'athena-container';
-        container.className = 'shadow-component-container';
-        container.style.height = '100%';
-        container.style.width = '100%';
-        container.style.position = 'relative';
-        mainPanel.appendChild(container);
+        // Activate the HTML panel to ensure it's visible
+        this.activatePanel('html');
         
-        // Activate the terminal panel to ensure it's visible
-        this.activatePanel('terminal');
-        
-        // Load the component using the component loader
-        if (window.componentLoader) {
-            window.componentLoader.loadComponent('athena', container)
-                .then(component => {
-                    if (component) {
-                        // Register the component
-                        this.components['athena'] = {
-                            id: 'athena',
-                            loaded: true,
-                            usesTerminal: true, // Use terminal panel instead of HTML panel
-                            shadowComponent: true,
-                            container
-                        };
-                        
-                        console.log('Athena component loaded successfully with Shadow DOM isolation');
-                    } else {
-                        console.error('Failed to load Athena component with Shadow DOM');
-                        
-                        // Fall back to static HTML loading method
-                        this.loadAthenaComponentStatic(container);
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading Athena component:', error);
+        // Define the component HTML directly
+        // This direct injection approach solves the issues with loading full HTML documents
+        const athenaHtml = `
+            <div id="athena-container" class="athena-component" style="height: 100%; width: 100%; display: flex; flex-direction: column; background-color: #1a1a1a; color: #f0f0f0;">
+                <!-- Header -->
+                <header style="background-color: #252525; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <img src="/images/icon.jpg" alt="Athena" style="height: 2rem; width: auto; border-radius: 4px;">
+                        <h1 style="margin: 0; font-size: 1.5rem;">Athena Knowledge Graph</h1>
+                    </div>
+                    <div>
+                        <div style="display: flex; gap: 1rem; font-size: 0.9rem; color: #aaa;">
+                            <span id="entity-count">Entities: <strong style="color: #4a86e8;">247</strong></span> |
+                            <span id="relationship-count">Relationships: <strong style="color: #4a86e8;">615</strong></span>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Tabs -->
+                <div class="athena-tabs" style="display: flex; background-color: #252525; border-bottom: 1px solid #444;">
+                    <div class="athena-tab active" data-panel="graph" 
+                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid #007bff; font-weight: bold;">
+                        Knowledge Graph
+                    </div>
+                    <div class="athena-tab" data-panel="chat" 
+                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;">
+                        Knowledge Chat
+                    </div>
+                    <div class="athena-tab" data-panel="entities" 
+                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;">
+                        Entities
+                    </div>
+                    <div class="athena-tab" data-panel="query" 
+                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;">
+                        Query Builder
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="athena-content" style="flex: 1; padding: 1rem; overflow: auto;">
+                    <!-- Graph Panel -->
+                    <div class="athena-panel active" id="graph-panel" style="height: 100%; display: block;">
+                        <div class="graph-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
+                            <div class="graph-controls" style="display: flex; gap: 0.5rem;">
+                                <button id="zoom-in-btn" class="graph-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                    <span style="font-size: 1.2rem;">+</span>
+                                </button>
+                                <button id="zoom-out-btn" class="graph-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                    <span style="font-size: 1.2rem;">-</span>
+                                </button>
+                                <button id="reset-view-btn" class="graph-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                    <span>Reset</span>
+                                </button>
+                            </div>
+                            <div class="graph-filters" style="display: flex; gap: 0.5rem;">
+                                <select id="entity-type-filter" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                                    <option value="all">All Types</option>
+                                    <option value="person">Person</option>
+                                    <option value="organization">Organization</option>
+                                    <option value="location">Location</option>
+                                    <option value="concept">Concept</option>
+                                </select>
+                                <select id="relationship-filter" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                                    <option value="all">All Relationships</option>
+                                    <option value="works_for">Works For</option>
+                                    <option value="knows">Knows</option>
+                                    <option value="located_in">Located In</option>
+                                    <option value="part_of">Part Of</option>
+                                </select>
+                                <button id="search-graph-btn" class="graph-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <span>Search</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div id="graph-container" style="height: calc(100% - 50px); background-color: #1a1a1a; border-radius: 0 0 4px 4px; position: relative;">
+                            <!-- Graph visualization will be rendered here -->
+                            <div id="graph-placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 2rem;">
+                                <div style="width: 80px; height: 80px; border: 4px solid #333; border-top-color: #4a86e8; border-radius: 50%; margin-bottom: 1rem; animation: spin 1s linear infinite;"></div>
+                                <h2 style="color: #999; margin-bottom: 1rem;">Loading Knowledge Graph</h2>
+                                <p style="color: #777; max-width: 600px;">The visualization allows you to explore relationships between entities in the knowledge graph. You can zoom, pan, and click on nodes to see details.</p>
+                                <style>
+                                    @keyframes spin {
+                                        0% { transform: rotate(0deg); }
+                                        100% { transform: rotate(360deg); }
+                                    }
+                                </style>
+                            </div>
+                            
+                            <!-- Entity Details Sidebar (hidden by default) -->
+                            <div id="entity-sidebar" style="position: absolute; top: 0; right: 0; width: 300px; height: 100%; background-color: #252525; border-left: 1px solid #444; transform: translateX(100%); transition: transform 0.3s ease; overflow-y: auto;">
+                                <div style="padding: 1rem; border-bottom: 1px solid #444;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 id="entity-sidebar-title" style="margin: 0; color: #f0f0f0;">Entity Details</h3>
+                                        <button id="close-sidebar-btn" style="background: none; border: none; color: #f0f0f0; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                                    </div>
+                                    <div id="entity-sidebar-type" style="font-size: 0.9rem; color: #aaa; margin-top: 0.25rem;"></div>
+                                </div>
+                                <div id="entity-sidebar-content" style="padding: 1rem;"></div>
+                            </div>
+                        </div>
+                    </div>
                     
-                    // Fall back to static HTML loading method
-                    this.loadAthenaComponentStatic(container);
-                });
-        } else {
-            console.error('Component loader not available, falling back to static HTML method');
+                    <!-- Chat Panel -->
+                    <div class="athena-panel" id="chat-panel" style="height: 100%; display: none;">
+                        <div style="height: 100%; display: flex; flex-direction: column;">
+                            <div class="chat-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <span style="color: #aaa;">Knowledge Assistant</span>
+                                    <span class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: #4CAF50; display: inline-block;"></span>
+                                </div>
+                                <div>
+                                    <button id="clear-chat-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                        Clear Chat
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; background-color: #1a1a1a; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
+                                <!-- Welcome message -->
+                                <div class="chat-message system-message" style="background-color: #252525; padding: 1rem; border-radius: 4px; border-left: 3px solid #4a86e8;">
+                                    <p style="margin: 0; color: #f0f0f0;">Welcome to Knowledge Chat! I can answer questions about your knowledge graph and provide insights about the entities and relationships.</p>
+                                    <p style="margin: 0.5rem 0 0; color: #aaa;">Try asking questions like:</p>
+                                    <ul style="margin: 0.5rem 0 0; color: #aaa;">
+                                        <li>What do you know about [entity name]?</li>
+                                        <li>How are [entity A] and [entity B] connected?</li>
+                                        <li>What organizations are located in [location]?</li>
+                                        <li>List all people who work for [organization].</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="chat-input-container" style="display: flex; gap: 0.5rem; padding: 0.5rem; background-color: #252525; border-top: 1px solid #444;">
+                                <textarea id="chat-input" style="flex: 1; padding: 0.75rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0; font-family: inherit; resize: none; min-height: 2.5rem; max-height: 150px; overflow-y: auto;" placeholder="Ask a question about your knowledge graph..." rows="1"></textarea>
+                                <button id="send-button" style="padding: 0.75rem 1.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; align-self: flex-end;">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Entities Panel -->
+                    <div class="athena-panel" id="entities-panel" style="height: 100%; display: none;">
+                        <div style="display: flex; height: 100%; gap: 1rem;">
+                            <div style="width: 30%; background-color: #1a1a1a; border-radius: 4px; overflow-y: auto; display: flex; flex-direction: column;">
+                                <div class="entity-search" style="padding: 1rem; border-bottom: 1px solid #333;">
+                                    <div style="position: relative;">
+                                        <input type="text" id="entity-search" placeholder="Search entities..." style="width: 100%; padding: 0.5rem 2rem 0.5rem 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;">
+                                        <button id="entity-search-btn" style="position: absolute; right: 0.5rem; top: 50%; transform: translateY(-50%); background: none; border: none; color: #aaa; cursor: pointer;">
+                                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div style="display: flex; margin-top: 0.5rem; gap: 0.5rem; flex-wrap: wrap;">
+                                        <select id="entity-type-select" style="padding: 0.25rem; background-color: #2d2d2d; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; flex: 1;">
+                                            <option value="all">All Types</option>
+                                            <option value="person">Person</option>
+                                            <option value="organization">Organization</option>
+                                            <option value="location">Location</option>
+                                            <option value="concept">Concept</option>
+                                        </select>
+                                        <select id="entity-sort-select" style="padding: 0.25rem; background-color: #2d2d2d; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; flex: 1;">
+                                            <option value="name">Sort by Name</option>
+                                            <option value="type">Sort by Type</option>
+                                            <option value="recent">Recently Added</option>
+                                            <option value="connections">Most Connected</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div id="entity-list" style="flex: 1; overflow-y: auto; padding: 0.5rem;">
+                                    <!-- Loading indicator -->
+                                    <div id="entity-list-loading" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+                                        <div style="width: 40px; height: 40px; border: 3px solid #333; border-top-color: #4a86e8; border-radius: 50%; margin-bottom: 1rem; animation: spin 1s linear infinite;"></div>
+                                        <p style="color: #aaa; margin: 0;">Loading entities...</p>
+                                    </div>
+                                    
+                                    <!-- Entity list items will be populated here -->
+                                    <div id="entity-list-items" style="display: none;">
+                                        <!-- Sample entity items for layout purposes -->
+                                        <div class="entity-item" style="padding: 0.75rem; border-bottom: 1px solid #333; cursor: pointer;" data-entity-id="e1">
+                                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                                <h4 style="margin: 0 0 0.25rem; color: #f0f0f0;">John Smith</h4>
+                                                <span style="font-size: 0.75rem; background-color: #4285F4; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Person</span>
+                                            </div>
+                                            <p style="margin: 0; font-size: 0.9rem; color: #aaa;">CEO at Acme Corporation</p>
+                                        </div>
+                                        <div class="entity-item" style="padding: 0.75rem; border-bottom: 1px solid #333; cursor: pointer;" data-entity-id="e2">
+                                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                                <h4 style="margin: 0 0 0.25rem; color: #f0f0f0;">Acme Corporation</h4>
+                                                <span style="font-size: 0.75rem; background-color: #34A853; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Organization</span>
+                                            </div>
+                                            <p style="margin: 0; font-size: 0.9rem; color: #aaa;">Technology company based in San Francisco</p>
+                                        </div>
+                                        <div class="entity-item" style="padding: 0.75rem; border-bottom: 1px solid #333; cursor: pointer;" data-entity-id="e3">
+                                            <div style="display: flex; justify-content: space-between; align-items: start;">
+                                                <h4 style="margin: 0 0 0.25rem; color: #f0f0f0;">San Francisco</h4>
+                                                <span style="font-size: 0.75rem; background-color: #FBBC05; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Location</span>
+                                            </div>
+                                            <p style="margin: 0; font-size: 0.9rem; color: #aaa;">City in California, USA</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style="padding: 1rem; border-top: 1px solid #333; background-color: #1a1a1a;">
+                                    <button id="add-entity-btn" style="width: 100%; padding: 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                        Add New Entity
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="entity-details" style="flex: 1; background-color: #1a1a1a; border-radius: 4px; padding: 0; display: flex; flex-direction: column; overflow: hidden;">
+                                <!-- Loading placeholder -->
+                                <div id="entity-details-placeholder" style="flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; padding: 2rem;">
+                                    <h2 style="color: #999; margin-bottom: 1rem;">Entity Details</h2>
+                                    <p style="color: #777; max-width: 600px;">Select an entity from the list to view its properties and relationships.</p>
+                                </div>
+                                
+                                <!-- Entity details content (initially hidden) -->
+                                <div id="entity-details-content" style="display: none; height: 100%; flex-direction: column;">
+                                    <div class="entity-details-header" style="padding: 1rem; border-bottom: 1px solid #444; background-color: #252525; display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <h3 id="entity-detail-name" style="margin: 0 0 0.25rem; color: #f0f0f0;">Entity Name</h3>
+                                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                                <span id="entity-detail-type" style="font-size: 0.75rem; background-color: #4285F4; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Entity Type</span>
+                                                <span id="entity-detail-id" style="font-size: 0.75rem; color: #aaa;">ID: entity-123</span>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <button id="edit-entity-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">
+                                                Edit
+                                            </button>
+                                            <button id="view-in-graph-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                                View in Graph
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column;">
+                                        <!-- Properties section -->
+                                        <div style="padding: 1rem; border-bottom: 1px solid #333;">
+                                            <h4 style="margin: 0 0 0.5rem; color: #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                                                Properties
+                                                <button id="add-property-btn" style="font-size: 0.875rem; padding: 0.125rem 0.375rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                                    + Add
+                                                </button>
+                                            </h4>
+                                            <table id="entity-properties-table" style="width: 100%; border-collapse: collapse;">
+                                                <tr style="border-bottom: 1px solid #333;">
+                                                    <td style="padding: 0.5rem; width: 30%; color: #f0f0f0; font-weight: bold;">name</td>
+                                                    <td style="padding: 0.5rem; color: #f0f0f0;">John Smith</td>
+                                                </tr>
+                                                <tr style="border-bottom: 1px solid #333;">
+                                                    <td style="padding: 0.5rem; width: 30%; color: #f0f0f0; font-weight: bold;">title</td>
+                                                    <td style="padding: 0.5rem; color: #f0f0f0;">CEO</td>
+                                                </tr>
+                                                <tr style="border-bottom: 1px solid #333;">
+                                                    <td style="padding: 0.5rem; width: 30%; color: #f0f0f0; font-weight: bold;">age</td>
+                                                    <td style="padding: 0.5rem; color: #f0f0f0;">42</td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                        
+                                        <!-- Relationships section -->
+                                        <div style="padding: 1rem;">
+                                            <h4 style="margin: 0 0 0.5rem; color: #f0f0f0; display: flex; justify-content: space-between; align-items: center;">
+                                                Relationships
+                                                <button id="add-relationship-btn" style="font-size: 0.875rem; padding: 0.125rem 0.375rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                                    + Add
+                                                </button>
+                                            </h4>
+                                            <div id="entity-relationships">
+                                                <!-- Outgoing relationships -->
+                                                <div style="margin-bottom: 1rem;">
+                                                    <h5 style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.875rem;">Outgoing</h5>
+                                                    <div class="relationship-item" style="padding: 0.5rem; border: 1px solid #333; border-radius: 4px; margin-bottom: 0.5rem;">
+                                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                            <span style="color: #f0f0f0; font-weight: bold;">works_for</span>
+                                                            <span style="font-size: 0.75rem; padding: 0.125rem 0.375rem; border-radius: 3px; background-color: #4285F4; color: white;">Outgoing</span>
+                                                        </div>
+                                                        <div style="margin-top: 0.25rem; padding: 0.25rem; background-color: #252525; border-radius: 4px;">
+                                                            <a href="#" class="entity-link" style="color: #4a86e8; text-decoration: none; display: flex; justify-content: space-between; align-items: center;" data-entity-id="e2">
+                                                                <span>Acme Corporation</span>
+                                                                <span style="font-size: 0.75rem; padding: 0.125rem 0.375rem; border-radius: 3px; background-color: #34A853; color: white;">Organization</span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                    <div class="relationship-item" style="padding: 0.5rem; border: 1px solid #333; border-radius: 4px; margin-bottom: 0.5rem;">
+                                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                            <span style="color: #f0f0f0; font-weight: bold;">lives_in</span>
+                                                            <span style="font-size: 0.75rem; padding: 0.125rem 0.375rem; border-radius: 3px; background-color: #4285F4; color: white;">Outgoing</span>
+                                                        </div>
+                                                        <div style="margin-top: 0.25rem; padding: 0.25rem; background-color: #252525; border-radius: 4px;">
+                                                            <a href="#" class="entity-link" style="color: #4a86e8; text-decoration: none; display: flex; justify-content: space-between; align-items: center;" data-entity-id="e3">
+                                                                <span>San Francisco</span>
+                                                                <span style="font-size: 0.75rem; padding: 0.125rem 0.375rem; border-radius: 3px; background-color: #FBBC05; color: white;">Location</span>
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Incoming relationships -->
+                                                <div>
+                                                    <h5 style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.875rem;">Incoming</h5>
+                                                    <div style="padding: 1rem; text-align: center; color: #777; border: 1px dashed #333; border-radius: 4px;">
+                                                        No incoming relationships
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Query Panel -->
+                    <div class="athena-panel" id="query-panel" style="height: 100%; display: none;">
+                        <div class="query-builder" style="display: flex; flex-direction: column; height: 100%; gap: 1rem;">
+                            <div class="query-section" style="background-color: #1a1a1a; border-radius: 4px; padding: 1rem;">
+                                <h3 style="margin-top: 0; color: #ddd; display: flex; justify-content: space-between; align-items: center;">
+                                    Build Query
+                                    <button id="save-query-btn" style="font-size: 0.875rem; padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                        Save Query
+                                    </button>
+                                </h3>
+                                <div style="margin-bottom: 1rem;">
+                                    <label for="query-type" style="display: block; margin-bottom: 0.5rem; color: #f0f0f0;">Query Type:</label>
+                                    <select id="query-type" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;">
+                                        <option value="entity">Entity Query</option>
+                                        <option value="relationship">Relationship Query</option>
+                                        <option value="path">Path Query</option>
+                                    </select>
+                                </div>
+                                <div id="query-builder-form" style="margin-top: 1rem;">
+                                    <!-- Entity query form (default) -->
+                                    <div class="query-form" id="entity-query-form">
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; color: #f0f0f0;">Entity Type:</label>
+                                            <select id="entity-query-type" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;">
+                                                <option value="person">Person</option>
+                                                <option value="organization">Organization</option>
+                                                <option value="location">Location</option>
+                                                <option value="event">Event</option>
+                                                <option value="concept">Concept</option>
+                                            </select>
+                                        </div>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; color: #f0f0f0;">Properties (Optional):</label>
+                                            <textarea id="entity-query-props" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0; min-height: 5rem; font-family: monospace;" placeholder="name: John Doe
+title: CEO"></textarea>
+                                            <div style="margin-top: 0.25rem; font-size: 0.75rem; color: #aaa;">Enter properties in YAML format, one per line</div>
+                                        </div>
+                                        <div style="margin-bottom: 1rem;">
+                                            <label style="display: block; margin-bottom: 0.5rem; color: #f0f0f0;">Limit Results:</label>
+                                            <input type="number" id="entity-query-limit" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;" value="10" min="1" max="100">
+                                        </div>
+                                        <button id="run-entity-query" style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Run Query</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="query-results" style="flex: 1; background-color: #1a1a1a; border-radius: 4px; padding: 1rem; display: flex; flex-direction: column;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <h3 style="margin: 0; color: #ddd;">Results</h3>
+                                    <div>
+                                        <button id="export-results-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; margin-right: 0.5rem;">
+                                            Export
+                                        </button>
+                                        <button id="view-results-in-graph-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                            View in Graph
+                                        </button>
+                                    </div>
+                                </div>
+                                <div id="query-results-container" style="flex: 1; overflow-y: auto;">
+                                    <div id="query-results-placeholder" style="height: 100%; display: flex; align-items: center; justify-content: center; text-align: center; padding: 2rem;">
+                                        <p style="color: #aaa; max-width: 600px;">Results will be displayed here after running a query</p>
+                                    </div>
+                                    
+                                    <!-- Results table (initially hidden) -->
+                                    <div id="query-results-table-container" style="display: none;">
+                                        <div style="margin-bottom: 0.5rem; color: #aaa;">
+                                            <span id="query-result-count">10 results found</span> in <span id="query-execution-time">0.24</span> seconds
+                                        </div>
+                                        <div style="max-height: 100%; overflow-y: auto;">
+                                            <table id="query-results-table" style="width: 100%; border-collapse: collapse;">
+                                                <thead>
+                                                    <tr style="background-color: #252525; color: #f0f0f0;">
+                                                        <th style="padding: 0.5rem; text-align: left; position: sticky; top: 0; background-color: #252525; z-index: 1;">ID</th>
+                                                        <th style="padding: 0.5rem; text-align: left; position: sticky; top: 0; background-color: #252525; z-index: 1;">Type</th>
+                                                        <th style="padding: 0.5rem; text-align: left; position: sticky; top: 0; background-color: #252525; z-index: 1;">Name</th>
+                                                        <th style="padding: 0.5rem; text-align: left; position: sticky; top: 0; background-color: #252525; z-index: 1;">Properties</th>
+                                                        <th style="padding: 0.5rem; text-align: center; position: sticky; top: 0; background-color: #252525; z-index: 1;">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Sample results for layout -->
+                                                    <tr style="border-bottom: 1px solid #333;">
+                                                        <td style="padding: 0.5rem; color: #aaa;">E-001</td>
+                                                        <td style="padding: 0.5rem;">
+                                                            <span style="font-size: 0.75rem; background-color: #4285F4; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Person</span>
+                                                        </td>
+                                                        <td style="padding: 0.5rem; color: #f0f0f0;">John Smith</td>
+                                                        <td style="padding: 0.5rem; color: #aaa;">title: CEO, age: 42</td>
+                                                        <td style="padding: 0.5rem; text-align: center;">
+                                                            <button class="view-result-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;" data-entity-id="E-001">View</button>
+                                                        </td>
+                                                    </tr>
+                                                    <tr style="border-bottom: 1px solid #333;">
+                                                        <td style="padding: 0.5rem; color: #aaa;">E-002</td>
+                                                        <td style="padding: 0.5rem;">
+                                                            <span style="font-size: 0.75rem; background-color: #34A853; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Organization</span>
+                                                        </td>
+                                                        <td style="padding: 0.5rem; color: #f0f0f0;">Acme Corporation</td>
+                                                        <td style="padding: 0.5rem; color: #aaa;">industry: Technology, founded: 2010</td>
+                                                        <td style="padding: 0.5rem; text-align: center;">
+                                                            <button class="view-result-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.75rem;" data-entity-id="E-002">View</button>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Loading indicator (initially hidden) -->
+                                    <div id="query-results-loading" style="display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+                                        <div style="width: 40px; height: 40px; border: 3px solid #333; border-top-color: #4a86e8; border-radius: 50%; margin-bottom: 1rem; animation: spin 1s linear infinite;"></div>
+                                        <p style="color: #aaa; margin: 0;">Running query...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Add the HTML directly to the panel
+        htmlPanel.innerHTML = athenaHtml;
+        
+        // Add tab switching functionality
+        const setupTabs = () => {
+            const tabs = document.querySelectorAll('.athena-tab');
+            const panels = document.querySelectorAll('.athena-panel');
             
-            // Fall back to static HTML loading method
-            this.loadAthenaComponentStatic(container);
-        }
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Update active tab
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.style.borderBottomColor = 'transparent';
+                    });
+                    tab.classList.add('active');
+                    tab.style.borderBottomColor = '#007bff';
+                    
+                    // Show active panel
+                    const panelId = tab.getAttribute('data-panel') + '-panel';
+                    panels.forEach(panel => {
+                        panel.style.display = 'none';
+                        panel.classList.remove('active');
+                    });
+                    const activePanel = document.getElementById(panelId);
+                    if (activePanel) {
+                        activePanel.style.display = 'block';
+                        activePanel.classList.add('active');
+                    }
+                    
+                    // Update the active tab in the Athena component if it exists
+                    if (window.athenaComponent) {
+                        window.athenaComponent.activeTab = tab.getAttribute('data-panel');
+                    }
+                });
+            });
+            
+            // Set up chat input functionality
+            const chatInput = document.getElementById('chat-input');
+            const sendButton = document.getElementById('send-button');
+            
+            if (chatInput && sendButton) {
+                // Auto-resize text area as user types
+                chatInput.addEventListener('input', () => {
+                    chatInput.style.height = 'auto';
+                    chatInput.style.height = (chatInput.scrollHeight) + 'px';
+                });
+                
+                // Send message on button click
+                sendButton.addEventListener('click', () => {
+                    const message = chatInput.value.trim();
+                    if (message) {
+                        // Call Athena service if available
+                        if (window.athenaService) {
+                            window.athenaService.sendMessage(message);
+                        } else {
+                            console.log('Athena service not available, message not sent:', message);
+                        }
+                        chatInput.value = '';
+                        chatInput.style.height = 'auto';
+                    }
+                });
+                
+                // Send message on Enter key (but allow Shift+Enter for new lines)
+                chatInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        sendButton.click();
+                    }
+                });
+            }
+            
+            // Init query builder
+            const queryTypeSelect = document.getElementById('query-type');
+            if (queryTypeSelect) {
+                queryTypeSelect.addEventListener('change', () => {
+                    const queryType = queryTypeSelect.value;
+                    const formContainer = document.getElementById('query-builder-form');
+                    
+                    // Generate form based on query type
+                    if (formContainer) {
+                        switch (queryType) {
+                            case 'entity':
+                                formContainer.innerHTML = `
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Entity Type:</label>
+                                        <select style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;">
+                                            <option value="person">Person</option>
+                                            <option value="organization">Organization</option>
+                                            <option value="location">Location</option>
+                                            <option value="event">Event</option>
+                                            <option value="concept">Concept</option>
+                                        </select>
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Properties (Optional):</label>
+                                        <textarea style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0; min-height: 5rem;" placeholder="name: John Doe"></textarea>
+                                    </div>
+                                    <button style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Run Query</button>
+                                `;
+                                break;
+                            case 'relationship':
+                                formContainer.innerHTML = `
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Source Entity:</label>
+                                        <input type="text" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;" placeholder="Entity ID or name">
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Relationship Type:</label>
+                                        <select style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;">
+                                            <option value="any">Any</option>
+                                            <option value="works_for">Works For</option>
+                                            <option value="knows">Knows</option>
+                                            <option value="located_in">Located In</option>
+                                            <option value="part_of">Part Of</option>
+                                        </select>
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Target Entity (Optional):</label>
+                                        <input type="text" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;" placeholder="Entity ID or name">
+                                    </div>
+                                    <button style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Run Query</button>
+                                `;
+                                break;
+                            case 'path':
+                                formContainer.innerHTML = `
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Source Entity:</label>
+                                        <input type="text" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;" placeholder="Entity ID or name">
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Target Entity:</label>
+                                        <input type="text" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;" placeholder="Entity ID or name">
+                                    </div>
+                                    <div style="margin-bottom: 1rem;">
+                                        <label style="display: block; margin-bottom: 0.5rem;">Max Path Length:</label>
+                                        <input type="number" style="width: 100%; padding: 0.5rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0;" value="3" min="1" max="5">
+                                    </div>
+                                    <button style="padding: 0.5rem 1rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Find Paths</button>
+                                `;
+                                break;
+                        }
+                        
+                        // Add event listener to query buttons
+                        const queryButton = formContainer.querySelector('button');
+                        if (queryButton) {
+                            queryButton.addEventListener('click', () => {
+                                const resultsContainer = document.getElementById('query-results-container');
+                                if (resultsContainer) {
+                                    resultsContainer.innerHTML = `
+                                        <div style="padding: 1rem; background-color: #252525; border-radius: 4px;">
+                                            <p style="margin-bottom: 0.5rem; color: #aaa;">Running query...</p>
+                                            <div style="width: 100%; height: 4px; background-color: #333; border-radius: 2px; overflow: hidden;">
+                                                <div style="width: 30%; height: 100%; background-color: #007bff; animation: progress 2s infinite linear;"></div>
+                                            </div>
+                                            <style>
+                                                @keyframes progress {
+                                                    0% { transform: translateX(-100%); }
+                                                    100% { transform: translateX(100%); }
+                                                }
+                                            </style>
+                                        </div>
+                                    `;
+                                    
+                                    // Simulate query results after delay
+                                    setTimeout(() => {
+                                        if (resultsContainer) {
+                                            resultsContainer.innerHTML = `
+                                                <div style="padding: 1rem; background-color: #252525; border-radius: 4px;">
+                                                    <h4 style="margin-top: 0; color: #ddd;">Query Results</h4>
+                                                    <p style="color: #aaa;">10 results found</p>
+                                                    <div style="max-height: 300px; overflow-y: auto; margin-top: 1rem; border: 1px solid #333; border-radius: 4px;">
+                                                        <table style="width: 100%; border-collapse: collapse;">
+                                                            <thead>
+                                                                <tr style="background-color: #333; color: #ddd;">
+                                                                    <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid #444;">ID</th>
+                                                                    <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid #444;">Type</th>
+                                                                    <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid #444;">Name</th>
+                                                                    <th style="padding: 0.5rem; text-align: left; border-bottom: 1px solid #444;">Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                <tr style="border-bottom: 1px solid #333;">
+                                                                    <td style="padding: 0.5rem; color: #aaa;">E-001</td>
+                                                                    <td style="padding: 0.5rem; color: #aaa;">Person</td>
+                                                                    <td style="padding: 0.5rem; color: #aaa;">John Smith</td>
+                                                                    <td style="padding: 0.5rem;"><button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">View</button></td>
+                                                                </tr>
+                                                                <tr style="border-bottom: 1px solid #333;">
+                                                                    <td style="padding: 0.5rem; color: #aaa;">E-002</td>
+                                                                    <td style="padding: 0.5rem; color: #aaa;">Organization</td>
+                                                                    <td style="padding: 0.5rem; color: #aaa;">Acme Corporation</td>
+                                                                    <td style="padding: 0.5rem;"><button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">View</button></td>
+                                                                </tr>
+                                                                <tr style="border-bottom: 1px solid #333;">
+                                                                    <td style="padding: 0.5rem; color: #aaa;">E-003</td>
+                                                                    <td style="padding: 0.5rem; color: #aaa;">Location</td>
+                                                                    <td style="padding: 0.5rem; color: #aaa;">San Francisco</td>
+                                                                    <td style="padding: 0.5rem;"><button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">View</button></td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            `;
+                                            
+                                            // Add event listeners to view buttons
+                                            const viewButtons = resultsContainer.querySelectorAll('button');
+                                            viewButtons.forEach(button => {
+                                                button.addEventListener('click', () => {
+                                                    // Switch to entities tab and show details
+                                                    const entitiesTab = document.querySelector('.athena-tab[data-panel="entities"]');
+                                                    if (entitiesTab) {
+                                                        entitiesTab.click();
+                                                        
+                                                        // Simulate loading entity details
+                                                        const entityDetails = document.getElementById('entity-details');
+                                                        if (entityDetails) {
+                                                            entityDetails.innerHTML = `
+                                                                <div style="padding: 1rem;">
+                                                                    <h3 style="margin-top: 0; color: #ddd;">Entity Details</h3>
+                                                                    <div style="margin-bottom: 1rem;">
+                                                                        <span style="color: #aaa; display: inline-block; width: 100px;">ID:</span>
+                                                                        <span style="color: #ddd;">E-001</span>
+                                                                    </div>
+                                                                    <div style="margin-bottom: 1rem;">
+                                                                        <span style="color: #aaa; display: inline-block; width: 100px;">Type:</span>
+                                                                        <span style="color: #ddd;">Person</span>
+                                                                    </div>
+                                                                    <div style="margin-bottom: 1rem;">
+                                                                        <span style="color: #aaa; display: inline-block; width: 100px;">Name:</span>
+                                                                        <span style="color: #ddd;">John Smith</span>
+                                                                    </div>
+                                                                    <div style="margin-bottom: 1rem;">
+                                                                        <span style="color: #aaa; display: inline-block; width: 100px;">Age:</span>
+                                                                        <span style="color: #ddd;">42</span>
+                                                                    </div>
+                                                                    <div style="margin-bottom: 1rem;">
+                                                                        <span style="color: #aaa; display: inline-block; width: 100px;">Role:</span>
+                                                                        <span style="color: #ddd;">Software Engineer</span>
+                                                                    </div>
+                                                                    <h4 style="margin-top: 2rem; color: #ddd;">Relationships</h4>
+                                                                    <div style="margin-bottom: 0.5rem;">
+                                                                        <span style="color: #4a86e8; font-weight: bold;">Works For</span>
+                                                                        <span style="color: #aaa;"> → </span>
+                                                                        <span style="color: #ddd;">Acme Corporation (E-002)</span>
+                                                                    </div>
+                                                                    <div style="margin-bottom: 0.5rem;">
+                                                                        <span style="color: #4a86e8; font-weight: bold;">Lives In</span>
+                                                                        <span style="color: #aaa;"> → </span>
+                                                                        <span style="color: #ddd;">San Francisco (E-003)</span>
+                                                                    </div>
+                                                                </div>
+                                                            `;
+                                                        }
+                                                    }
+                                                });
+                                            });
+                                        }
+                                    }, 1500);
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        };
+        
+        // Set up tab functionality after a short delay to ensure DOM is ready
+        setTimeout(setupTabs, 100);
+        
+        // Initialize graph visualization (if script exists)
+        setTimeout(() => {
+            if (window.athenaService) {
+                console.log('Initializing Athena service');
+                window.athenaService.initialize();
+            } else {
+                console.log('Athena service not found, loading required scripts');
+                this.loadAthenaScripts();
+            }
+        }, 200);
+        
+        // Register the component with a container reference
+        const container = document.getElementById('athena-container');
+        this.components['athena'] = {
+            id: 'athena',
+            loaded: true,
+            usesTerminal: false, // Use HTML panel
+            container: container
+        };
+        
+        console.log('Athena component loaded successfully');
     }
     
     /**
@@ -1484,30 +2161,78 @@ class UIManager {
     loadAthenaComponentStatic(container) {
         console.log('Loading Athena component using static HTML method (fallback)...');
         
-        // Try multiple paths for Athena HTML
-        const componentPaths = [
-            'components/athena/athena-component.html',
-            'components/athena/athena.html',
-            'html/athena.html'
-        ];
+        // IMPORTANT: Only use the component-specific HTML, not the full HTML page
+        // This ensures we only get the component markup, not a complete HTML document
+        const componentPath = 'components/athena/athena-component.html';
         
         // Cache busting parameter
         const cacheBuster = `?t=${new Date().getTime()}`;
         
-        // Function to attempt loading from a path
-        const tryLoadPath = (pathIndex) => {
-            if (pathIndex >= componentPaths.length) {
-                console.error('All component paths failed, showing error view');
+        const path = componentPath + cacheBuster;
+        console.log(`Loading Athena from: ${path}`);
+        
+        fetch(path)
+            .then(response => {
+                console.log(`Received response from ${path}: status ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                if (!html || html.trim().length === 0) {
+                    throw new Error('Received empty HTML content');
+                }
+                
+                console.log(`Loaded Athena HTML content successfully (${html.length} bytes)`);
+                
+                // Extract just the component HTML, not the full HTML document
+                // This ensures we don't load a complete HTML document with its own body
+                let componentHtml = html;
+                
+                // If the HTML contains a full document structure, extract just the component
+                if (componentHtml.includes('<!DOCTYPE html>') || componentHtml.includes('<html')) {
+                    console.log('Detected full HTML document, extracting just the component');
+                    // Extract the component div (class="athena-component")
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(componentHtml, 'text/html');
+                    const componentDiv = doc.querySelector('.athena-component');
+                    
+                    if (componentDiv) {
+                        componentHtml = componentDiv.outerHTML;
+                    } else {
+                        console.warn('Could not find athena-component div, using body content');
+                        componentHtml = doc.body.innerHTML;
+                    }
+                }
+                
+                // Add the component HTML content to the container
+                container.innerHTML = componentHtml;
+                console.log('Added Athena component HTML content to container');
+                
+                // Try to load Athena scripts
+                this.loadAthenaScripts();
+                
+                // Load the CSS for Athena
+                this.loadAthenaCss();
+                
+                // Register the component
+                this.components['athena'] = {
+                    id: 'athena',
+                    loaded: true,
+                    usesTerminal: false, // Use HTML panel
+                };
+                
+                console.log('Athena component loaded successfully');
+            })
+            .catch(error => {
+                console.error(`Failed to load Athena from ${path}: ${error.message}`);
                 
                 // Show error in container
                 container.innerHTML = `
                     <div style="padding: 20px; color: #ff6b6b; background: #333; height: 100%; overflow: auto;">
                         <h3>Error: Failed to Load Athena Component</h3>
-                        <p>The Athena component could not be loaded after trying multiple paths.</p>
-                        <h4>Attempted Paths:</h4>
-                        <ul style="margin-left: 20px; font-family: monospace;">
-                            ${componentPaths.map(path => `<li>${path}</li>`).join('')}
-                        </ul>
+                        <p>The Athena component could not be loaded: ${error.message}</p>
                         <p style="margin-top: 20px;">Click the Athena tab again to retry loading.</p>
                     </div>
                 `;
@@ -1516,56 +2241,9 @@ class UIManager {
                 this.components['athena'] = {
                     id: 'athena',
                     loaded: true,
-                    usesTerminal: true, // Use terminal panel instead of HTML panel
+                    usesTerminal: false, // Use HTML panel
                 };
-                
-                return;
-            }
-            
-            const path = componentPaths[pathIndex] + cacheBuster;
-            console.log(`Trying to load Athena from: ${path}`);
-            
-            fetch(path)
-                .then(response => {
-                    console.log(`Received response from ${path}: status ${response.status}`);
-                    if (!response.ok) {
-                        throw new Error(`HTTP error ${response.status}: ${response.statusText}`);
-                    }
-                    return response.text();
-                })
-                .then(html => {
-                    if (!html || html.trim().length === 0) {
-                        throw new Error('Received empty HTML content');
-                    }
-                    
-                    console.log(`Loaded Athena HTML content successfully (${html.length} bytes)`);
-                    
-                    // Add the HTML content to the container
-                    container.innerHTML = html;
-                    console.log('Added Athena HTML content to container');
-                    
-                    // Try to load Athena scripts
-                    this.loadAthenaScripts();
-                    
-                    // Register the component
-                    this.components['athena'] = {
-                        id: 'athena',
-                        loaded: true,
-                        usesTerminal: true, // Uses terminal panel to display in main area
-                    };
-                    
-                    console.log('Athena component loaded successfully');
-                })
-                .catch(error => {
-                    console.error(`Failed to load Athena from ${path}: ${error.message}`);
-                    
-                    // Try the next path
-                    tryLoadPath(pathIndex + 1);
-                });
-        };
-        
-        // Start the loading process with the first path
-        tryLoadPath(0);
+            });
     }
     
     /**
@@ -1608,6 +2286,40 @@ class UIManager {
         
         // Start loading scripts
         loadScript(0);
+    }
+    
+    /**
+     * Load Athena CSS manually
+     */
+    loadAthenaCss() {
+        console.log('Loading Athena CSS manually...');
+        
+        // CSS to load
+        const cssPath = 'styles/athena/athena-component.css';
+        
+        // Check if stylesheet already exists
+        const existingLink = document.querySelector(`link[href*="${cssPath}"]`);
+        if (existingLink) {
+            console.log('Athena CSS already loaded, skipping');
+            return;
+        }
+        
+        // Cache busting parameter
+        const cacheBuster = `?t=${new Date().getTime()}`;
+        
+        // Create link element
+        const linkElement = document.createElement('link');
+        linkElement.rel = 'stylesheet';
+        linkElement.href = `/${cssPath}${cacheBuster}`;
+        linkElement.onload = () => {
+            console.log('Athena CSS loaded successfully');
+        };
+        linkElement.onerror = () => {
+            console.error('Failed to load Athena CSS');
+        };
+        
+        // Add to document head
+        document.head.appendChild(linkElement);
     }
     
     /**

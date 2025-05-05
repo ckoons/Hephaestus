@@ -4,7 +4,8 @@
  */
 class AthenaComponent {
     constructor(container) {
-        this.container = container;
+        // If no container is provided, try to find it in the DOM
+        this.container = container || document.getElementById('athena-container');
         this.service = window.athenaService;
         this.activeTab = 'graph';
         this.initialized = false;
