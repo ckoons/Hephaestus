@@ -208,7 +208,7 @@ class SettingsService extends window.tektonUI.componentUtils.BaseService {
         if (this.settings.showGreekNames) {
             // Return Greek + function format
             switch(component) {
-                case 'ergon': return 'Ergon - Tools/Agents/Workflows';
+                case 'ergon': return 'Ergon - Agents/Tools/MCP';
                 case 'prometheus': return 'Prometheus - Planning';
                 case 'telos': return 'Telos - Requirements';
                 case 'harmonia': return 'Harmonia - Orchestration';
@@ -226,7 +226,7 @@ class SettingsService extends window.tektonUI.componentUtils.BaseService {
         } else {
             // Return function only
             switch(component) {
-                case 'ergon': return 'Tools/Agents/Workflows';
+                case 'ergon': return 'Agents/Tools/MCP';
                 case 'prometheus': return 'Planning';
                 case 'telos': return 'Requirements';
                 case 'harmonia': return 'Orchestration';

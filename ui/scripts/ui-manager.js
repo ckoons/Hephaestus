@@ -11,6 +11,9 @@ class UIManager {
         this.activePanel = 'terminal'; // Default panel (terminal, html, or settings)
         this.useShadowDOM = true; // Flag to control Shadow DOM usage for backward compatibility
         
+        // Track component availability
+        this.availableComponents = {};
+        
         // Shared services and utilities
         this.services = {};
         this.componentUtils = null;
@@ -26,6 +29,12 @@ class UIManager {
         // Load the component registry
         this.loadComponentRegistry();
         
+        // Make sure Ergon text is correct regardless of cached versions
+        const ergonNavItem = document.querySelector('.nav-item[data-component="ergon"] .nav-label');
+        if (ergonNavItem) {
+            ergonNavItem.textContent = 'Ergon - Agents/Tools/MCP';
+        }
+        
         // Set up component navigation
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -36,6 +45,9 @@ class UIManager {
                 });
             }
         });
+        
+        // Initialize component availability checks
+        this.initComponentAvailabilityChecks();
         
         // Set up settings button
         const settingsButton = document.getElementById('settings-button');
@@ -195,8 +207,18 @@ class UIManager {
         navItems.forEach(item => {
             if (item.getAttribute('data-component') === componentId) {
                 item.classList.add('active');
+                // Make status indicator visible for active component
+                const statusIndicator = item.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.classList.add('active');
+                }
             } else {
                 item.classList.remove('active');
+                // Remove active class from status indicator
+                const statusIndicator = item.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    statusIndicator.classList.remove('active');
+                }
             }
         });
         
@@ -246,6 +268,128 @@ class UIManager {
         }
         
         console.log(`Activated component: ${componentId}`);
+    }
+    
+    /**
+     * Initialize component availability checks
+     * This sets up periodic checks to see which component backends are available
+     */
+    initComponentAvailabilityChecks() {
+        console.log('Initializing component availability checks');
+        
+        // Define component health check endpoints
+        const componentEndpoints = {
+            'hermes': '/api/health',
+            'engram': '/api/status',
+            'ergon': '/api/health',
+            'rhetor': '/api/status',
+            'athena': '/api/status',
+            'prometheus': '/api/status',
+            'harmonia': '/api/status',
+            'sophia': '/api/status',
+            'telos': '/api/status',
+            'codex': '/api/status',
+            'terma': '/api/status'
+        };
+        
+        // Get port configuration 
+        fetch('/api/config/ports')
+            .then(response => response.json())
+            .catch(error => {
+                console.error('Failed to fetch port configuration:', error);
+                return {}; // Return empty object if fetch fails
+            })
+            .then(portConfig => {
+                // Setup periodic health checks for each component
+                Object.keys(componentEndpoints).forEach(componentId => {
+                    const port = portConfig[componentId] || this._getDefaultPort(componentId);
+                    if (port) {
+                        this._checkComponentAvailability(componentId, port, componentEndpoints[componentId]);
+                        
+                        // Setup periodic checks every 15 seconds
+                        setInterval(() => {
+                            this._checkComponentAvailability(componentId, port, componentEndpoints[componentId]);
+                        }, 15000);
+                    }
+                });
+            });
+    }
+    
+    /**
+     * Check if a component is available by sending a request to its health endpoint
+     * @param {string} componentId - ID of the component to check
+     * @param {number} port - Port number the component is listening on
+     * @param {string} endpoint - Health check endpoint
+     */
+    _checkComponentAvailability(componentId, port, endpoint) {
+        const url = `http://localhost:${port}${endpoint}`;
+        
+        fetch(url, { 
+            method: 'GET',
+            headers: { 'Accept': 'application/json' },
+            // Short timeout to avoid long waits
+            signal: AbortSignal.timeout(2000)
+        })
+        .then(response => {
+            const available = response.ok;
+            this._updateComponentAvailability(componentId, available);
+        })
+        .catch(error => {
+            console.log(`Component ${componentId} health check failed:`, error.name);
+            this._updateComponentAvailability(componentId, false);
+        });
+    }
+    
+    /**
+     * Update the UI to reflect component availability
+     * @param {string} componentId - ID of the component
+     * @param {boolean} available - Whether the component is available
+     */
+    _updateComponentAvailability(componentId, available) {
+        // Store availability state
+        const previouslyAvailable = this.availableComponents[componentId];
+        this.availableComponents[componentId] = available;
+        
+        // Only update UI if availability changed
+        if (previouslyAvailable !== available) {
+            console.log(`Component ${componentId} availability changed to: ${available}`);
+            
+            // Update status indicator
+            const navItem = document.querySelector(`.nav-item[data-component="${componentId}"]`);
+            if (navItem) {
+                const statusIndicator = navItem.querySelector('.status-indicator');
+                if (statusIndicator) {
+                    if (available) {
+                        statusIndicator.classList.add('connected');
+                    } else {
+                        statusIndicator.classList.remove('connected');
+                    }
+                }
+            }
+        }
+    }
+    
+    /**
+     * Get default port for a component if not found in config
+     * @param {string} componentId - ID of the component
+     * @returns {number} Port number
+     */
+    _getDefaultPort(componentId) {
+        const defaultPorts = {
+            'hermes': 8000,
+            'engram': 8001,
+            'ergon': 8002,
+            'rhetor': 8003,
+            'athena': 8004,
+            'prometheus': 8005,
+            'harmonia': 8006,
+            'sophia': 8007,
+            'telos': 8008,
+            'codex': 8009,
+            'terma': 8010
+        };
+        
+        return defaultPorts[componentId] || null;
     }
     
     /**
@@ -860,10 +1004,15 @@ class UIManager {
      * Show the settings panel
      */
     showSettingsPanel() {
-        console.log('Showing settings panel with Shadow DOM isolation');
+        console.log('Showing settings panel');
         
-        // Load the Settings component using Shadow DOM isolation
-        this.loadSettingsComponent();
+        // Activate the settings panel directly
+        this.activatePanel('settings');
+        
+        // Initialize settings UI if it hasn't been initialized
+        if (window.settingsUI && !window.settingsUI.initialized) {
+            window.settingsUI.init();
+        }
     }
     
     /**
@@ -954,10 +1103,15 @@ class UIManager {
      * Show the profile panel
      */
     showProfilePanel() {
-        console.log('Showing profile panel with Shadow DOM isolation');
+        console.log('Showing profile panel');
         
-        // Load the Profile component using Shadow DOM isolation
-        this.loadProfileComponent();
+        // Activate the profile panel directly
+        this.activatePanel('profile');
+        
+        // Initialize profile UI if it hasn't been initialized
+        if (window.profileUI && !window.profileUI.initialized) {
+            window.profileUI.init();
+        }
     }
     
     /**
@@ -1438,13 +1592,13 @@ class UIManager {
         const athenaHtml = `
             <div id="athena-container" class="athena-component" style="height: 100%; width: 100%; display: flex; flex-direction: column; background-color: #1a1a1a; color: #f0f0f0;">
                 <!-- Header -->
-                <header style="background-color: #252525; padding: 1rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444;">
+                <header style="background-color: #252525; padding: 0.667rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; height: 2.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <img src="/images/icon.jpg" alt="Athena" style="height: 2rem; width: auto; border-radius: 4px;">
-                        <h1 style="margin: 0; font-size: 1.5rem;">Athena Knowledge Graph</h1>
+                        <!-- No icon, just title -->
+                        <h1 id="athena-title" style="margin: 0; font-size: 1.2rem;">Athena - Knowledge</h1>
                     </div>
                     <div>
-                        <div style="display: flex; gap: 1rem; font-size: 0.9rem; color: #aaa;">
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: #aaa;">
                             <span id="entity-count">Entities: <strong style="color: #4a86e8;">247</strong></span> |
                             <span id="relationship-count">Relationships: <strong style="color: #4a86e8;">615</strong></span>
                         </div>
@@ -1452,29 +1606,38 @@ class UIManager {
                 </header>
                 
                 <!-- Tabs -->
-                <div class="athena-tabs" style="display: flex; background-color: #252525; border-bottom: 1px solid #444;">
+                <div class="athena-tabs" style="display: flex; background-color: #252525; border-bottom: 1px solid #444; height: 2.5rem;">
                     <div class="athena-tab active" data-panel="graph" 
-                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid #007bff; font-weight: bold;">
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid #007bff; font-weight: bold; font-size: 0.9rem;">
                         Knowledge Graph
                     </div>
-                    <div class="athena-tab" data-panel="chat" 
-                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;">
-                        Knowledge Chat
-                    </div>
                     <div class="athena-tab" data-panel="entities" 
-                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;">
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
                         Entities
                     </div>
                     <div class="athena-tab" data-panel="query" 
-                         style="padding: 0.75rem 1.5rem; cursor: pointer; border-bottom: 3px solid transparent;">
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
                         Query Builder
+                    </div>
+                    <div class="athena-tab" data-panel="chat" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Knowledge Chat
+                    </div>
+                    <div class="athena-tab" data-panel="teamchat" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Team Chat
+                    </div>
+                    <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; padding-right: 1rem;">
+                        <button id="clear-chat-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; display: none;">
+                            Clear Chat
+                        </button>
                     </div>
                 </div>
                 
                 <!-- Content -->
-                <div class="athena-content" style="flex: 1; padding: 1rem; overflow: auto;">
+                <div class="athena-content" style="flex: 1; overflow: auto;">
                     <!-- Graph Panel -->
-                    <div class="athena-panel active" id="graph-panel" style="height: 100%; display: block;">
+                    <div class="athena-panel active" id="graph-panel" style="height: 100%; display: block; padding: 0;">
                         <div class="graph-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
                             <div class="graph-controls" style="display: flex; gap: 0.5rem;">
                                 <button id="zoom-in-btn" class="graph-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
@@ -1536,42 +1699,52 @@ class UIManager {
                     </div>
                     
                     <!-- Chat Panel -->
-                    <div class="athena-panel" id="chat-panel" style="height: 100%; display: none;">
+                    <div class="athena-panel" id="chat-panel" style="height: 100%; display: none; padding: 0;">
                         <div style="height: 100%; display: flex; flex-direction: column;">
-                            <div class="chat-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
-                                <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <span style="color: #aaa;">Knowledge Assistant</span>
-                                    <span class="status-indicator" style="width: 8px; height: 8px; border-radius: 50%; background-color: #4CAF50; display: inline-block;"></span>
-                                </div>
-                                <div>
-                                    <button id="clear-chat-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
-                                        Clear Chat
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 1rem; background-color: #1a1a1a; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 1rem;">
-                                <!-- Welcome message -->
-                                <div class="chat-message system-message" style="background-color: #252525; padding: 1rem; border-radius: 4px; border-left: 3px solid #4a86e8;">
+                            <div id="chat-messages" style="flex: 1; overflow-y: auto; padding: 0; background-color: #1a1a1a; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <!-- Welcome message in a chat bubble -->
+                                <div class="chat-message ai-message" style="padding: 0.75rem 1rem; margin: 0.5rem 1rem; background-color: #252525; border-radius: 1rem 1rem 1rem 0; max-width: 80%; align-self: flex-start;">
                                     <p style="margin: 0; color: #f0f0f0;">Welcome to Knowledge Chat! I can answer questions about your knowledge graph and provide insights about the entities and relationships.</p>
-                                    <p style="margin: 0.5rem 0 0; color: #aaa;">Try asking questions like:</p>
-                                    <ul style="margin: 0.5rem 0 0; color: #aaa;">
-                                        <li>What do you know about [entity name]?</li>
-                                        <li>How are [entity A] and [entity B] connected?</li>
-                                        <li>What organizations are located in [location]?</li>
-                                        <li>List all people who work for [organization].</li>
-                                    </ul>
+                                    <p style="margin: 0.5rem 0 0; color: #f0f0f0;">Try asking about entities, relationships, or specific knowledge graph queries.</p>
                                 </div>
                             </div>
-                            <div class="chat-input-container" style="display: flex; gap: 0.5rem; padding: 0.5rem; background-color: #252525; border-top: 1px solid #444;">
-                                <textarea id="chat-input" style="flex: 1; padding: 0.75rem; border: 1px solid #444; border-radius: 4px; background-color: #2d2d2d; color: #f0f0f0; font-family: inherit; resize: none; min-height: 2.5rem; max-height: 150px; overflow-y: auto;" placeholder="Ask a question about your knowledge graph..." rows="1"></textarea>
-                                <button id="send-button" style="padding: 0.75rem 1.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; align-self: flex-end;">Send</button>
+                            <div class="chat-input-container" style="display: flex; gap: 0.5rem; padding: 0.5rem; background-color: #252525; border-top: 1px solid #444; height: 2.5rem; min-height: 2.5rem;">
+                                <span style="color: #aaa; font-weight: bold; margin-right: 0.25rem; align-self: center;">&gt;</span>
+                                <input id="chat-input" type="text" style="flex: 1; padding: 0.5rem; border: 1px solid #007bff; border-radius: 4px; background-color: #1a1a1a; color: #fff; font-family: inherit; transition: border 0.2s, box-shadow 0.2s;" placeholder="Ask a question about your knowledge graph..." 
+                                       onfocus="this.style.boxShadow='0 0 0 2px rgba(0, 123, 255, 0.25)';" 
+                                       onblur="this.style.boxShadow='none';">
+                                <button id="send-button" style="padding: 0.25rem 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; height: 2rem; align-self: center; font-weight: bold; transition: background-color 0.2s;" 
+                                        onmouseover="this.style.backgroundColor='#0069d9';" 
+                                        onmouseout="this.style.backgroundColor='#007bff';">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Chat Panel -->
+                    <div class="athena-panel" id="teamchat-panel" style="height: 100%; display: none; padding: 0;">
+                        <div style="height: 100%; display: flex; flex-direction: column;">
+                            <div id="teamchat-messages" style="flex: 1; overflow-y: auto; padding: 0; background-color: #1a1a1a; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <!-- Welcome message in a chat bubble -->
+                                <div class="chat-message ai-message" style="padding: 0.75rem 1rem; margin: 0.5rem 1rem; background-color: #252525; border-radius: 1rem 1rem 1rem 0; max-width: 80%; align-self: flex-start;">
+                                    <p style="margin: 0; color: #f0f0f0;">Welcome to Team Chat! This is a shared chat that all Tekton component LLMs can access for group discussion.</p>
+                                    <p style="margin: 0.5rem 0 0; color: #f0f0f0;">Ask questions or discuss topics that might benefit from multiple components working together.</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-container" style="display: flex; gap: 0.5rem; padding: 0.5rem; background-color: #252525; border-top: 1px solid #444; height: 2.5rem; min-height: 2.5rem;">
+                                <span style="color: #aaa; font-weight: bold; margin-right: 0.25rem; align-self: center;">&gt;</span>
+                                <input id="teamchat-input" type="text" style="flex: 1; padding: 0.5rem; border: 1px solid #007bff; border-radius: 4px; background-color: #1a1a1a; color: #fff; font-family: inherit; transition: border 0.2s, box-shadow 0.2s;" placeholder="Discuss with all Tekton components..."
+                                       onfocus="this.style.boxShadow='0 0 0 2px rgba(0, 123, 255, 0.25)';" 
+                                       onblur="this.style.boxShadow='none';">
+                                <button id="teamchat-send-button" style="padding: 0.25rem 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; height: 2rem; align-self: center; font-weight: bold; transition: background-color 0.2s;"
+                                        onmouseover="this.style.backgroundColor='#0069d9';" 
+                                        onmouseout="this.style.backgroundColor='#007bff';">Send</button>
                             </div>
                         </div>
                     </div>
                     
                     <!-- Entities Panel -->
-                    <div class="athena-panel" id="entities-panel" style="height: 100%; display: none;">
-                        <div style="display: flex; height: 100%; gap: 1rem;">
+                    <div class="athena-panel" id="entities-panel" style="height: 100%; display: none; padding: 0;">
+                        <div style="display: flex; height: 100%; gap: 0;">
                             <div style="width: 30%; background-color: #1a1a1a; border-radius: 4px; overflow-y: auto; display: flex; flex-direction: column;">
                                 <div class="entity-search" style="padding: 1rem; border-bottom: 1px solid #333;">
                                     <div style="position: relative;">
@@ -1742,8 +1915,8 @@ class UIManager {
                     </div>
                     
                     <!-- Query Panel -->
-                    <div class="athena-panel" id="query-panel" style="height: 100%; display: none;">
-                        <div class="query-builder" style="display: flex; flex-direction: column; height: 100%; gap: 1rem;">
+                    <div class="athena-panel" id="query-panel" style="height: 100%; display: none; padding: 0;">
+                        <div class="query-builder" style="display: flex; flex-direction: column; height: 100%; gap: 0;">
                             <div class="query-section" style="background-color: #1a1a1a; border-radius: 4px; padding: 1rem;">
                                 <h3 style="margin-top: 0; color: #ddd; display: flex; justify-content: space-between; align-items: center;">
                                     Build Query
@@ -1864,6 +2037,26 @@ title: CEO"></textarea>
         // Add the HTML directly to the panel
         htmlPanel.innerHTML = athenaHtml;
         
+        // Update the title based on environment setting
+        const updateTitle = () => {
+            const title = document.getElementById('athena-title');
+            if (title) {
+                if (window.SHOW_GREEK_NAMES === true) {
+                    title.textContent = 'Athena - Knowledge';
+                } else {
+                    title.textContent = 'Knowledge';
+                }
+            }
+        };
+        
+        // Check environment variable or set default
+        if (typeof window.SHOW_GREEK_NAMES === 'undefined') {
+            window.SHOW_GREEK_NAMES = true;
+        }
+        
+        // Update title initially
+        updateTitle();
+        
         // Add tab switching functionality
         const setupTabs = () => {
             const tabs = document.querySelectorAll('.athena-tab');
@@ -1891,6 +2084,13 @@ title: CEO"></textarea>
                         activePanel.classList.add('active');
                     }
                     
+                    // Show/hide the clear chat button in the menu bar based on active tab
+                    const clearChatBtn = document.getElementById('clear-chat-btn');
+                    if (clearChatBtn) {
+                        const panelType = tab.getAttribute('data-panel');
+                        clearChatBtn.style.display = (panelType === 'chat' || panelType === 'teamchat') ? 'block' : 'none';
+                    }
+                    
                     // Update the active tab in the Athena component if it exists
                     if (window.athenaComponent) {
                         window.athenaComponent.activeTab = tab.getAttribute('data-panel');
@@ -1902,25 +2102,110 @@ title: CEO"></textarea>
             const chatInput = document.getElementById('chat-input');
             const sendButton = document.getElementById('send-button');
             
+            // Create a reusable function for auto-resizing chat inputs
+            const autoResizeInput = (input, container) => {
+                if (!container) return;
+                
+                // Save the current input value
+                const value = input.value;
+                
+                // Create a hidden div with same styling to measure text
+                const hiddenDiv = document.createElement('div');
+                hiddenDiv.style.position = 'absolute';
+                hiddenDiv.style.top = '-9999px';
+                hiddenDiv.style.width = input.offsetWidth + 'px';
+                hiddenDiv.style.padding = window.getComputedStyle(input).padding;
+                hiddenDiv.style.border = window.getComputedStyle(input).border;
+                hiddenDiv.style.fontSize = window.getComputedStyle(input).fontSize;
+                hiddenDiv.style.fontFamily = window.getComputedStyle(input).fontFamily;
+                hiddenDiv.style.lineHeight = window.getComputedStyle(input).lineHeight;
+                
+                // Set content and add to document
+                hiddenDiv.textContent = value || 'x';
+                document.body.appendChild(hiddenDiv);
+                
+                // Measure the height (with minimum)
+                const contentHeight = hiddenDiv.offsetHeight;
+                const minHeight = 24; // Minimum height for single line
+                const maxHeight = 100; // Maximum height before scrolling
+                
+                // Remove the hidden div
+                document.body.removeChild(hiddenDiv);
+                
+                // Set height of container and input
+                const newHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight);
+                container.style.height = (newHeight + 20) + 'px'; // Add padding
+                
+                // If content is larger than max, enable scrolling
+                if (contentHeight > maxHeight) {
+                    input.style.overflowY = 'auto';
+                } else {
+                    input.style.overflowY = 'hidden';
+                }
+            };
+            
+            // Create a reusable function for resetting input height
+            const resetInputHeight = (input, container) => {
+                if (container) {
+                    container.style.height = '2.5rem';
+                    container.style.minHeight = '2.5rem';
+                }
+                input.style.overflowY = 'hidden';
+            };
+            
+            // Setup Knowledge Chat
             if (chatInput && sendButton) {
-                // Auto-resize text area as user types
-                chatInput.addEventListener('input', () => {
-                    chatInput.style.height = 'auto';
-                    chatInput.style.height = (chatInput.scrollHeight) + 'px';
-                });
+                // Set up auto-resize
+                chatInput.addEventListener('input', () => autoResizeInput(chatInput, chatInput.parentElement));
                 
                 // Send message on button click
                 sendButton.addEventListener('click', () => {
                     const message = chatInput.value.trim();
                     if (message) {
+                        // Add user message to chat in a bubble
+                        const chatMessages = document.getElementById('chat-messages');
+                        if (chatMessages) {
+                            const userBubble = document.createElement('div');
+                            userBubble.className = 'chat-message user-message';
+                            userBubble.style.padding = '0.75rem 1rem';
+                            userBubble.style.margin = '0.5rem 1rem';
+                            userBubble.style.backgroundColor = '#1e3a8a';
+                            userBubble.style.borderRadius = '1rem 1rem 0 1rem';
+                            userBubble.style.maxWidth = '80%';
+                            userBubble.style.alignSelf = 'flex-end';
+                            userBubble.style.color = '#f0f0f0';
+                            userBubble.textContent = message;
+                            chatMessages.appendChild(userBubble);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                        
                         // Call Athena service if available
                         if (window.athenaService) {
                             window.athenaService.sendMessage(message);
                         } else {
-                            console.log('Athena service not available, message not sent:', message);
+                            console.log('Athena service not available, simulating response');
+                            // Simulate response for testing
+                            setTimeout(() => {
+                                const chatMessages = document.getElementById('chat-messages');
+                                if (chatMessages) {
+                                    const responseBubble = document.createElement('div');
+                                    responseBubble.className = 'chat-message ai-message';
+                                    responseBubble.style.padding = '0.75rem 1rem';
+                                    responseBubble.style.margin = '0.5rem 1rem';
+                                    responseBubble.style.backgroundColor = '#252525';
+                                    responseBubble.style.borderRadius = '1rem 1rem 1rem 0';
+                                    responseBubble.style.maxWidth = '80%';
+                                    responseBubble.style.alignSelf = 'flex-start';
+                                    responseBubble.style.color = '#f0f0f0';
+                                    responseBubble.textContent = 'I received your message: "' + message + '". This is a simulated response since the Athena service is not available.';
+                                    chatMessages.appendChild(responseBubble);
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                            }, 1000);
                         }
+                        // Clear input and reset height
                         chatInput.value = '';
-                        chatInput.style.height = 'auto';
+                        resetInputHeight(chatInput, chatInput.parentElement);
                     }
                 });
                 
@@ -1929,6 +2214,108 @@ title: CEO"></textarea>
                     if (event.key === 'Enter' && !event.shiftKey) {
                         event.preventDefault();
                         sendButton.click();
+                    }
+                });
+            }
+            
+            // Setup Team Chat
+            const teamChatInput = document.getElementById('teamchat-input');
+            const teamChatSendButton = document.getElementById('teamchat-send-button');
+            
+            if (teamChatInput && teamChatSendButton) {
+                // Set up auto-resize
+                teamChatInput.addEventListener('input', () => autoResizeInput(teamChatInput, teamChatInput.parentElement));
+                
+                // Send message on button click
+                teamChatSendButton.addEventListener('click', () => {
+                    const message = teamChatInput.value.trim();
+                    if (message) {
+                        // Add user message to team chat in a bubble
+                        const teamChatMessages = document.getElementById('teamchat-messages');
+                        if (teamChatMessages) {
+                            const userBubble = document.createElement('div');
+                            userBubble.className = 'chat-message user-message';
+                            userBubble.style.padding = '0.75rem 1rem';
+                            userBubble.style.margin = '0.5rem 1rem';
+                            userBubble.style.backgroundColor = '#1e3a8a';
+                            userBubble.style.borderRadius = '1rem 1rem 0 1rem';
+                            userBubble.style.maxWidth = '80%';
+                            userBubble.style.alignSelf = 'flex-end';
+                            userBubble.style.color = '#f0f0f0';
+                            userBubble.textContent = message;
+                            teamChatMessages.appendChild(userBubble);
+                            teamChatMessages.scrollTop = teamChatMessages.scrollHeight;
+                        }
+                        
+                        // Call Team Chat service if available (reuse the Tekton LLM client)
+                        if (window.teamChatService) {
+                            window.teamChatService.sendMessage(message);
+                        } else {
+                            console.log('Team Chat service not available, simulating response');
+                            // Simulate response for testing
+                            setTimeout(() => {
+                                const teamChatMessages = document.getElementById('teamchat-messages');
+                                if (teamChatMessages) {
+                                    const responseBubble = document.createElement('div');
+                                    responseBubble.className = 'chat-message ai-message';
+                                    responseBubble.style.padding = '0.75rem 1rem';
+                                    responseBubble.style.margin = '0.5rem 1rem';
+                                    responseBubble.style.backgroundColor = '#252525';
+                                    responseBubble.style.borderRadius = '1rem 1rem 1rem 0';
+                                    responseBubble.style.maxWidth = '80%';
+                                    responseBubble.style.alignSelf = 'flex-start';
+                                    responseBubble.style.color = '#f0f0f0';
+                                    responseBubble.textContent = 'Team Chat: I received your message: "' + message + '". This is a simulated response from the Team Chat service.';
+                                    teamChatMessages.appendChild(responseBubble);
+                                    teamChatMessages.scrollTop = teamChatMessages.scrollHeight;
+                                }
+                            }, 1000);
+                        }
+                        // Clear input and reset height
+                        teamChatInput.value = '';
+                        resetInputHeight(teamChatInput, teamChatInput.parentElement);
+                    }
+                });
+                
+                // Send message on Enter key (but allow Shift+Enter for new lines)
+                teamChatInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        teamChatSendButton.click();
+                    }
+                });
+            }
+            
+            // Setup the Clear Chat button to work with both chats
+            const clearChatBtn = document.getElementById('clear-chat-btn');
+            if (clearChatBtn) {
+                clearChatBtn.addEventListener('click', () => {
+                    // Determine which chat is active
+                    const activePanel = document.querySelector('.athena-panel.active');
+                    if (activePanel) {
+                        if (activePanel.id === 'chat-panel') {
+                            // Clear Knowledge Chat
+                            const chatMessages = document.getElementById('chat-messages');
+                            if (chatMessages) {
+                                // Keep only the welcome message
+                                const welcomeMessage = chatMessages.querySelector('.chat-message:first-child');
+                                chatMessages.innerHTML = '';
+                                if (welcomeMessage) {
+                                    chatMessages.appendChild(welcomeMessage);
+                                }
+                            }
+                        } else if (activePanel.id === 'teamchat-panel') {
+                            // Clear Team Chat
+                            const teamChatMessages = document.getElementById('teamchat-messages');
+                            if (teamChatMessages) {
+                                // Keep only the welcome message
+                                const welcomeMessage = teamChatMessages.querySelector('.chat-message:first-child');
+                                teamChatMessages.innerHTML = '';
+                                if (welcomeMessage) {
+                                    teamChatMessages.appendChild(welcomeMessage);
+                                }
+                            }
+                        }
                     }
                 });
             }

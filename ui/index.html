@@ -9,6 +9,82 @@
     <link rel="stylesheet" href="styles/ergon.css">
     <link rel="stylesheet" href="styles/settings.css">
     <link rel="stylesheet" href="styles/profile.css">
+    
+    <!-- Component-specific styles -->
+    <style>
+        /* Component color indicators */
+        .nav-item[data-component="tekton"] .status-indicator { 
+            background-color: #FBBC05; /* Yellow/Gold */
+        }
+        .nav-item[data-component="prometheus"] .status-indicator { 
+            background-color: #C2185B; /* Pink */
+        }
+        .nav-item[data-component="telos"] .status-indicator { 
+            background-color: #00796B; /* Dark Teal */
+        }
+        .nav-item[data-component="ergon"] .status-indicator { 
+            background-color: #0097A7; /* Teal */
+        }
+        .nav-item[data-component="harmonia"] .status-indicator { 
+            background-color: #F57C00; /* Orange */
+        }
+        .nav-item[data-component="synthesis"] .status-indicator { 
+            background-color: #3949AB; /* Indigo */
+        }
+        .nav-item[data-component="athena"] .status-indicator { 
+            background-color: #7B1FA2; /* Purple */
+        }
+        .nav-item[data-component="sophia"] .status-indicator { 
+            background-color: #7CB342; /* Light Green */
+        }
+        .nav-item[data-component="engram"] .status-indicator { 
+            background-color: #34A853; /* Green */
+        }
+        .nav-item[data-component="rhetor"] .status-indicator { 
+            background-color: #D32F2F; /* Red */
+        }
+        .nav-item[data-component="hermes"] .status-indicator { 
+            background-color: #4285F4; /* Blue */
+        }
+        .nav-item[data-component="codex"] .status-indicator { 
+            background-color: #00ACC1; /* Light Blue */
+        }
+        .nav-item[data-component="terma"] .status-indicator { 
+            background-color: #5D4037; /* Brown */
+        }
+        
+        /* Make status indicators always visible */
+        .nav-item .status-indicator {
+            opacity: 0.5;
+            width: 10px;
+            height: 10px;
+            display: block !important;
+            transition: all 0.3s ease;
+        }
+        
+        /* Active indicators (selected in UI) are fully opaque */
+        .nav-item .status-indicator.active {
+            opacity: 1;
+        }
+        
+        /* Connected indicators (backend available) have a glow effect */
+        .nav-item .status-indicator.connected {
+            opacity: 1;
+            box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.3);
+            animation: pulse-subtle 2s infinite;
+        }
+        
+        /* Connected and active indicators have stronger glow */
+        .nav-item .status-indicator.connected.active {
+            box-shadow: 0 0 8px 3px rgba(255, 255, 255, 0.5);
+        }
+        
+        @keyframes pulse-subtle {
+            0% { box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.3); }
+            50% { box-shadow: 0 0 7px 3px rgba(255, 255, 255, 0.4); }
+            100% { box-shadow: 0 0 5px 2px rgba(255, 255, 255, 0.3); }
+        }
+    </style>
     <!-- Environment variables and configuration -->
     <script src="scripts/env.js"></script>
     <style>
@@ -29,22 +105,14 @@
                         <h1 style="color: #007bff !important; font-size: 2.5rem !important;">Tekton</h1>
                         <div class="subtitle" style="font-size: 0.9rem !important; color: #aaa !important;">Multi-AI Engineering</div>
                     </div>
-                    <img src="images/Tekton.png" alt="Tekton Pillar" class="pillar-icon" style="height: 85px !important; margin-left: 10px !important; position: absolute !important; right: 0 !important; top: 0 !important;" onerror="this.src='images/icon.png'; this.onerror=null;">
+                    <img src="images/Tekton.png" alt="Tekton Pillar" class="pillar-icon" style="height: 85px !important; margin-left: 10px !important; position: absolute !important; right: 0 !important; top: 0 !important; display: block !important; z-index: 5 !important;" onerror="this.src='images/icon.png'; this.onerror=null;">
                 </div>
             </div>
             
             <div class="left-panel-nav">
                 <ul class="component-nav">
-                    <li class="nav-item" data-component="test">
-                        <span class="nav-label">Test - Shadow DOM</span>
-                        <span class="status-indicator"></span>
-                    </li>
                     <li class="nav-item active" data-component="tekton">
                         <span class="nav-label">Tekton - Projects</span>
-                        <span class="status-indicator"></span>
-                    </li>
-                    <li class="nav-item" data-component="tekton-dashboard">
-                        <span class="nav-label">Tekton Dashboard - System</span>
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="prometheus">
@@ -56,7 +124,7 @@
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="ergon">
-                        <span class="nav-label">Ergon - Tools/Agents/Workflows</span>
+                        <span class="nav-label">Ergon - Agents/Tools/MCP</span>
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="harmonia">
@@ -69,7 +137,7 @@
                     </li>
                     <li class="nav-item" data-component="athena">
                         <span class="nav-label">Athena - Knowledge</span>
-                        <span class="status-indicator"></span>
+                        <span class="status-indicator" style="background-color: #7B1FA2;"></span>
                     </li>
                     <li class="nav-item" data-component="sophia">
                         <span class="nav-label">Sophia - Learning</span>
@@ -146,11 +214,12 @@
                 <div class="panel settings-panel" id="settings-panel">
                     <!-- Settings controls -->
                     <div id="settings-tab-content">
-                        <!-- Settings UI will be loaded here -->
+                        <iframe src="/components/settings.html" style="width: 100%; height: 100%; border: none;"></iframe>
                     </div>
                 </div>
                 <div class="panel profile-panel" id="profile-panel">
                     <!-- Profile UI will be loaded here -->
+                    <iframe src="/components/profile.html" style="width: 100%; height: 100%; border: none;"></iframe>
                 </div>
             </div>
         </div>

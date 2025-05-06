@@ -17,6 +17,9 @@ window.TELOS_PORT = 8008;       // Default Telos port
 window.SYNTHESIS_PORT = 8009;   // Default Synthesis port
 window.TEKTON_CORE_PORT = 8010; // Default Tekton Core port
 
+// UI Display settings
+window.SHOW_GREEK_NAMES = true; // Whether to show Greek names for components
+
 // Function to update port values from server 
 function updatePortsFromServer() {
     // Try to fetch port configuration from server
