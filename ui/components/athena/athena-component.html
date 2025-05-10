@@ -1,28 +1,37 @@
 <!-- Athena Component - Knowledge Graph and Entity Management -->
 <div class="athena-container">
-    <!-- Athena Header with Tab Navigation -->
+    <!-- Component Header with Title -->
+    <div class="component-header">
+        <div class="component-title-container">
+            <img src="/images/hexagon.jpg" alt="Tekton" class="component-icon">
+            <h2 class="component-title">
+                <span class="greek-name">Athena - </span>
+                <span>Knowledge</span>
+            </h2>
+        </div>
+    </div>
+    
+    <!-- Athena Menu Bar with Tab Navigation -->
     <div class="athena-header">
         <div class="tabs-container">
-            <div class="tab-button athena-tab active" data-tab="chat">
-                <span class="tab-icon">💬</span>
-                <span class="tab-label">Knowledge Chat</span>
-            </div>
-            <div class="tab-button athena-tab" data-tab="graph">
-                <span class="tab-icon">🔗</span>
+            <div class="tab-button athena-tab active" data-tab="graph">
                 <span class="tab-label">Knowledge Graph</span>
             </div>
             <div class="tab-button athena-tab" data-tab="entities">
-                <span class="tab-icon">📋</span>
                 <span class="tab-label">Entities</span>
             </div>
             <div class="tab-button athena-tab" data-tab="query">
-                <span class="tab-icon">🔍</span>
                 <span class="tab-label">Query Builder</span>
+            </div>
+            <div class="tab-button athena-tab" data-tab="chat">
+                <span class="tab-label">Knowledge Chat</span>
+            </div>
+            <div class="tab-button athena-tab" data-tab="teamchat">
+                <span class="tab-label">Team Chat</span>
             </div>
         </div>
         <div class="header-actions">
-            <button id="clear-chat-btn" class="action-button">
-                <span class="button-icon">🧹</span>
+            <button id="clear-chat-btn" class="action-button" style="display: none;">
                 <span class="button-label">Clear</span>
             </button>
         </div>
@@ -30,8 +39,37 @@
     
     <!-- Athena Content Area -->
     <div class="athena-content">
+        <!-- Graph Tab (Default Active Tab) -->
+        <div id="graph-panel" class="athena-panel active">
+            <div class="control-bar">
+                <div class="search-container">
+                    <input type="text" id="graph-search" placeholder="Search entities...">
+                    <button id="graph-search-btn">Search</button>
+                </div>
+                <div class="filter-container">
+                    <select id="entity-type-filter">
+                        <option value="all">All Types</option>
+                        <option value="person">Person</option>
+                        <option value="project">Project</option>
+                        <option value="document">Document</option>
+                        <option value="concept">Concept</option>
+                        <option value="organization">Organization</option>
+                    </select>
+                    <button id="apply-filter-btn">Apply</button>
+                </div>
+            </div>
+            <div id="graph-container" class="graph-container">
+                <div id="graph-placeholder" class="graph-placeholder">
+                    <div class="placeholder-content">
+                        <h3>Knowledge Graph Visualization</h3>
+                        <p>The graph will be displayed here once loaded.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Chat Tab -->
-        <div id="chat-panel" class="athena-panel active">
+        <div id="chat-panel" class="athena-panel">
             <div id="chat-messages" class="chat-messages">
                 <!-- Welcome message -->
                 <div class="chat-message system">
@@ -48,12 +86,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="chat-input-container">
-                <textarea id="chat-input" class="chat-input" placeholder="Ask about knowledge entities..."></textarea>
-                <button id="send-button" class="send-button">
-                    <span class="send-icon">➤</span>
-                </button>
             </div>
         </div>
         
@@ -240,6 +272,31 @@
                 </div>
             </div>
         </div>
+        
+        <!-- Team Chat Tab -->
+        <div id="teamchat-panel" class="athena-panel">
+            <div id="teamchat-messages" class="chat-messages">
+                <!-- Welcome message -->
+                <div class="chat-message system">
+                    <div class="message-content">
+                        <div class="message-text">
+                            <h3>Tekton Team Chat</h3>
+                            <p>This chat is shared across all Tekton components. Use this for team communication and coordination.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Global Footer with Chat Input -->
+    <div class="athena-footer">
+        <div class="chat-input-container">
+            <div class="chat-prompt">></div>
+            <input type="text" id="chat-input" class="chat-input" 
+                   placeholder="Enter chat message for Athena knowledge graph queries, entities or information">
+            <button id="send-button" class="send-button">Send</button>
+        </div>
     </div>
 </div>
 
@@ -259,13 +316,50 @@
         right: 0;
     }
     
+    /* Component Header Styles */
+    .component-header {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        background-color: var(--bg-secondary, #252535);
+        border-bottom: 1px solid var(--border-color, #444444);
+        height: 45px;
+    }
+    
+    .component-title-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .component-icon {
+        height: 30px;
+        width: auto;
+        margin-right: 12px;
+    }
+    
+    .component-title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+    
+    .greek-name {
+        display: inline;
+    }
+    
+    /* Hide Greek name when environment variable is false */
+    body:not([data-show-greek-names="true"]) .greek-name {
+        display: none;
+    }
+    
     .athena-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 12px 16px;
+        padding: 6px 16px;
         background-color: var(--bg-secondary, #252535);
         border-bottom: 1px solid var(--border-color, #444444);
+        height: 42px;
     }
     
     .tabs-container {
@@ -334,17 +428,40 @@
     
     .athena-panel {
         display: none;
-        height: 100%;
+        height: calc(100% - 70px); /* Subtract footer height to make scrollbar end exactly at footer */
         width: 100%;
         overflow: auto;
+        padding-bottom: 0; /* Remove padding as we're using height calculation instead */
     }
     
     .athena-panel.active {
         display: block;
     }
     
+    /* Footer Styles */
+    .athena-footer {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--bg-secondary, #252535);
+        border-top: 1px solid var(--border-color, #444444);
+        padding: 12px 16px;
+        z-index: 100;
+        height: 70px; /* Fixed height to match the height calculation in athena-panel */
+        box-sizing: border-box; /* Ensure padding is included in height */
+    }
+    
+    /* Make sure content extends all the way to the footer */
+    .athena-content {
+        padding-bottom: 0;
+        margin-bottom: 0;
+        position: relative; /* Establish positioning context for children */
+        height: 100%; /* Full height */
+    }
+    
     /* Chat Panel Styles */
-    #chat-panel {
+    #chat-panel, #teamchat-panel {
         display: flex;
         flex-direction: column;
         height: 100%;
@@ -357,6 +474,8 @@
         display: flex;
         flex-direction: column;
         gap: 12px;
+        margin-bottom: 0;
+        padding-bottom: 16px; /* Reduced padding to avoid unnecessary space */
     }
     
     .chat-message {
@@ -374,6 +493,13 @@
         width: 600px;
         margin: 8px 0;
         border-radius: 8px;
+        padding: 16px 24px; /* Increased padding to prevent text overflow */
+    }
+    
+    /* Fix bullet point indentation in welcome message */
+    .chat-message.system ul {
+        padding-left: 24px; /* Properly indent the bullet points */
+        margin-top: 8px;
     }
     
     .chat-message.user-message {
@@ -391,28 +517,36 @@
     
     .chat-input-container {
         display: flex;
-        gap: 8px;
-        padding: 16px;
-        background-color: var(--bg-secondary, #252535);
-        border-top: 1px solid var(--border-color, #444444);
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+    }
+    
+    .chat-prompt {
+        font-size: 18px;
+        font-weight: bold;
+        color: #4CAF50; /* Green prompt */
     }
     
     .chat-input {
         flex: 1;
-        min-height: 44px;
-        max-height: 120px;
-        padding: 12px 16px;
+        height: 44px;
+        padding: 8px 16px;
         background-color: var(--bg-tertiary, #333345);
         border: 1px solid var(--border-color, #444444);
         border-radius: 8px;
         color: var(--text-primary, #f0f0f0);
-        resize: none;
-        overflow: auto;
+        font-size: 14px;
+    }
+    
+    .chat-input::placeholder {
+        color: var(--text-secondary, #aaaaaa);
+        opacity: 0.7;
     }
     
     .send-button {
-        width: 44px;
         height: 44px;
+        padding: 0 20px;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -420,6 +554,7 @@
         border: none;
         border-radius: 8px;
         color: white;
+        font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
     }

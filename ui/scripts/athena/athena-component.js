@@ -7,7 +7,7 @@ class AthenaComponent {
     constructor() {
         this.state = {
             initialized: false,
-            activeTab: 'chat', // Default tab
+            activeTab: 'graph', // Default tab is now Knowledge Graph
             graphLoaded: false,
             entitiesLoaded: false
         };
@@ -25,6 +25,9 @@ class AthenaComponent {
             this.activateComponent();
             return this;
         }
+        
+        // Check SHOW_GREEK_NAMES environment variable
+        this.checkGreekNamesVisibility();
         
         // Ensure HTML panel is active using the UI manager
         if (window.uiManager) {
@@ -48,6 +51,23 @@ class AthenaComponent {
         this.state.initialized = true;
         
         return this;
+    }
+    
+    /**
+     * Check if SHOW_GREEK_NAMES environment variable is set
+     */
+    checkGreekNamesVisibility() {
+        // Check if the environment variable is available and set to true
+        const showGreekNames = window.env && window.env.SHOW_GREEK_NAMES === 'true';
+        
+        // Apply to body for CSS selectors to work
+        if (showGreekNames) {
+            document.body.setAttribute('data-show-greek-names', 'true');
+        } else {
+            document.body.removeAttribute('data-show-greek-names');
+        }
+        
+        console.log(`Greek names visibility: ${showGreekNames ? 'visible' : 'hidden'}`);
     }
     
     /**
@@ -151,6 +171,7 @@ class AthenaComponent {
         
         const tabs = document.querySelectorAll('.athena-tab');
         const panels = document.querySelectorAll('.athena-panel');
+        const chatInput = document.getElementById('chat-input');
         
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
@@ -174,11 +195,14 @@ class AthenaComponent {
                 const clearChatBtn = document.getElementById('clear-chat-btn');
                 if (clearChatBtn) {
                     const panelType = tab.getAttribute('data-tab');
-                    clearChatBtn.style.display = (panelType === 'chat') ? 'block' : 'none';
+                    clearChatBtn.style.display = (panelType === 'chat' || panelType === 'teamchat') ? 'block' : 'none';
                 }
                 
                 // Update the active tab in state
                 this.state.activeTab = tab.getAttribute('data-tab');
+                
+                // Update chat input placeholder based on active tab
+                this.updateChatPlaceholder(this.state.activeTab);
                 
                 // Load tab-specific content if needed
                 this.loadTabContent(this.state.activeTab);
@@ -189,6 +213,38 @@ class AthenaComponent {
         const clearChatBtn = document.getElementById('clear-chat-btn');
         if (clearChatBtn) {
             clearChatBtn.addEventListener('click', () => this.clearActiveChat());
+        }
+        
+        // Initial placeholder update
+        this.updateChatPlaceholder(this.state.activeTab);
+    }
+    
+    /**
+     * Update chat input placeholder based on active tab
+     * @param {string} activeTab - The currently active tab
+     */
+    updateChatPlaceholder(activeTab) {
+        const chatInput = document.getElementById('chat-input');
+        if (!chatInput) return;
+        
+        switch(activeTab) {
+            case 'graph':
+                chatInput.placeholder = "Ask about the knowledge graph visualization or search for connections...";
+                break;
+            case 'entities':
+                chatInput.placeholder = "Ask about entities or search for specific information...";
+                break;
+            case 'query':
+                chatInput.placeholder = "Ask about creating queries or interpreting results...";
+                break;
+            case 'chat':
+                chatInput.placeholder = "Enter chat message for Athena knowledge graph queries, entities or information";
+                break;
+            case 'teamchat':
+                chatInput.placeholder = "Enter team chat message for all Tekton components";
+                break;
+            default:
+                chatInput.placeholder = "Enter message...";
         }
     }
     
@@ -217,6 +273,9 @@ class AthenaComponent {
                 break;
             case 'chat':
                 // Chat is loaded by setupChat
+                break;
+            case 'teamchat':
+                // Team chat is loaded by setupChat
                 break;
         }
     }
@@ -266,41 +325,61 @@ class AthenaComponent {
     setupChat() {
         console.log('Setting up Athena chat');
         
-        // Set up knowledge chat
-        this.setupChatInput('chat-input', 'send-button', 'chat-messages');
-    }
-    
-    /**
-     * Set up a chat input and send button
-     * @param {string} inputId - ID of the input element
-     * @param {string} buttonId - ID of the send button
-     * @param {string} messagesId - ID of the messages container
-     */
-    setupChatInput(inputId, buttonId, messagesId) {
-        const input = document.getElementById(inputId);
-        const button = document.getElementById(buttonId);
-        const messages = document.getElementById(messagesId);
+        const input = document.getElementById('chat-input');
+        const button = document.getElementById('send-button');
         
-        if (!input || !button || !messages) {
-            console.error(`Missing elements for chat setup: ${inputId}, ${buttonId}, ${messagesId}`);
+        if (!input || !button) {
+            console.error('Missing chat input elements');
             return;
         }
         
         // Send message on button click
         button.addEventListener('click', () => {
             const message = input.value.trim();
-            if (message) {
-                this.addUserMessageToChatUI(messages, message);
-                
-                // Simulate a response
-                setTimeout(() => {
-                    this.addAIMessageToChatUI(messages, 'I received your message: "' + message + 
-                        '". This is a simulated response from Athena Knowledge Graph.');
-                }, 1000);
-                
-                // Clear input
-                input.value = '';
+            if (!message) return;
+            
+            // Determine which chat container to use based on active tab
+            let messagesContainer;
+            let responsePrefix = '';
+            
+            if (this.state.activeTab === 'teamchat') {
+                messagesContainer = document.getElementById('teamchat-messages');
+                responsePrefix = 'Team Chat: ';
+            } else {
+                // Default to knowledge chat for all other tabs
+                messagesContainer = document.getElementById('chat-messages');
+                responsePrefix = 'Knowledge: ';
             }
+            
+            if (!messagesContainer) {
+                console.error('Chat messages container not found');
+                return;
+            }
+            
+            // Add user message to chat
+            this.addUserMessageToChatUI(messagesContainer, message);
+            
+            // Simulate a response based on the active tab
+            setTimeout(() => {
+                let response;
+                
+                if (this.state.activeTab === 'teamchat') {
+                    response = `${responsePrefix}I received your team message: "${message}". This would be shared with all Tekton components.`;
+                } else if (this.state.activeTab === 'graph') {
+                    response = `${responsePrefix}I received your query about the knowledge graph: "${message}". I can help visualize connections.`;
+                } else if (this.state.activeTab === 'entities') {
+                    response = `${responsePrefix}I received your entity query: "${message}". I can help find entity information.`;
+                } else if (this.state.activeTab === 'query') {
+                    response = `${responsePrefix}I received your query builder request: "${message}". I can help construct complex queries.`;
+                } else {
+                    response = `${responsePrefix}I received your message: "${message}". This is a response from Athena Knowledge system.`;
+                }
+                
+                this.addAIMessageToChatUI(messagesContainer, response);
+            }, 1000);
+            
+            // Clear input
+            input.value = '';
         });
         
         // Send message on Enter key (but allow Shift+Enter for new lines)
@@ -346,7 +425,14 @@ class AthenaComponent {
      * Clear the active chat messages
      */
     clearActiveChat() {
-        const messagesContainer = document.getElementById('chat-messages');
+        let messagesContainer;
+        
+        // Determine which chat is active
+        if (this.state.activeTab === 'chat') {
+            messagesContainer = document.getElementById('chat-messages');
+        } else if (this.state.activeTab === 'teamchat') {
+            messagesContainer = document.getElementById('teamchat-messages');
+        }
         
         if (messagesContainer) {
             // Keep only the welcome message
