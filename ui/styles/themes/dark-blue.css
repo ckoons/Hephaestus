@@ -23,4 +23,88 @@
   --chat-user-bg: #2962FF;
   --chat-agent-bg: #333333;
   --chat-agent-border: #007bff;
+
+  /* HTML panel colors */
+  --html-panel-bg: #121212;
+  --html-panel-text: #f0f0f0;
+  
+  /* Component colors */
+  --athena-primary: #7B1FA2; /* Purple */
+  --ergon-primary: #0097A7;  /* Teal */
+}
+
+/* Panel styling for dark theme */
+body[data-theme="dark-blue"] .panel {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* HTML panel dark theme */
+body[data-theme="dark-blue"] #html-panel {
+  background-color: var(--html-panel-bg);
+  color: var(--html-panel-text);
+}
+
+/* Error container for dark theme */
+body[data-theme="dark-blue"] #error-container {
+  background-color: #c62828;
+  color: white;
+}
+
+/* Ergon component dark theme overrides */
+body[data-theme="dark-blue"] .ergon {
+  background-color: var(--bg-primary);
+}
+
+body[data-theme="dark-blue"] .ergon__header {
+  background-color: var(--bg-secondary);
+}
+
+body[data-theme="dark-blue"] .ergon__tabs {
+  background-color: var(--bg-secondary);
+}
+
+body[data-theme="dark-blue"] .ergon__agents-header {
+  background-color: var(--bg-secondary);
+}
+
+/* Athena component dark theme overrides */
+body[data-theme="dark-blue"] .athena-component {
+  background-color: var(--bg-primary);
+}
+
+body[data-theme="dark-blue"] .athena-header {
+  background-color: var(--bg-secondary);
+}
+
+body[data-theme="dark-blue"] .athena-tabs {
+  background-color: var(--bg-secondary);
+}
+
+/* Chat styling for dark theme */
+body[data-theme="dark-blue"] .chat-messages {
+  background-color: var(--bg-primary);
+}
+
+body[data-theme="dark-blue"] .chat-message.user-message {
+  background-color: #1a4b91;
+}
+
+body[data-theme="dark-blue"] .chat-message.ai-message {
+  background-color: var(--bg-tertiary);
+}
+
+body[data-theme="dark-blue"] .chat-message.system {
+  background-color: #333;
+  color: var(--text-secondary);
+}
+
+body[data-theme="dark-blue"] .chat-input-container {
+  background-color: var(--bg-secondary);
+}
+
+body[data-theme="dark-blue"] .chat-input {
+  background-color: var(--bg-tertiary);
+  border-color: #444;
+  color: var(--text-primary);
 }

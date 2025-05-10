@@ -10,6 +10,34 @@
     <div class="tab-button" data-tab="tools">Tools</div>
     <div class="tab-button" data-tab="settings">Settings</div>
   </div>
+  
+  <style>
+    .ergon-tabs {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border-color, #444);
+      background-color: var(--bg-secondary, #252525);
+    }
+    
+    .tab-button {
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .tab-button:hover {
+      background-color: var(--bg-hover, #333);
+    }
+    
+    .tab-button.active {
+      border-bottom-color: #007bff;
+      font-weight: bold;
+    }
+  </style>
 
   <!-- Ergon Chat Tab Content -->
   <div class="tab-content" id="ergon-content">

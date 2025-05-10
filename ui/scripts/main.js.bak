@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('DEBUGGING: Testing direct fetch of component files');
     
     // Test fetching the component registry
-    fetch('server/component_registry.json')
+    fetch('/server/component_registry.json')
         .then(response => {
             console.log('Registry response status:', response.status);
             return response.json();
@@ -119,7 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     
     // Test fetching the Rhetor component HTML
-    fetch('components/rhetor/rhetor-component.html')
+    fetch('/components/rhetor/rhetor-component.html')
         .then(response => {
             console.log('Rhetor HTML response status:', response.status);
             return response.text();

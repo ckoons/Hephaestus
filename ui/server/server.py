@@ -850,7 +850,11 @@ def run_http_server(directory, port):
     """Run the HTTP server"""
     handler = lambda *args, **kwargs: TektonUIRequestHandler(*args, directory=directory, **kwargs)
     
-    with socketserver.TCPServer(("", port), handler) as httpd:
+    # Create a custom TCPServer that allows address reuse
+    class TektonTCPServer(socketserver.TCPServer):
+        allow_reuse_address = True
+    
+    with TektonTCPServer(("", port), handler) as httpd:
         logger.info(f"Serving at http://localhost:{port}")
         try:
             httpd.serve_forever()

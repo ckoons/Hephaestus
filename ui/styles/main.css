@@ -300,12 +300,122 @@ body {
 /* HTML panel specific styles to fix rendering issues */
 .panel.html-panel {
     overflow: auto; /* Allow scrolling in HTML panel */
+    background-color: #1e1e1e;
+    color: #f0f0f0;
+    padding: 0;
+    margin: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .panel.html-panel > div {
     position: relative;
     min-height: 100%;
     width: 100%;
+}
+
+/* Component Shared Styles */
+
+/* Chat Messages */
+.chat-messages {
+    height: calc(100% - 60px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background-color: #1e1e1e;
+}
+
+.chat-message {
+    margin-bottom: 15px;
+    max-width: 80%;
+}
+
+.chat-message.user-message {
+    align-self: flex-end;
+    background-color: #1e3a8a;
+    border-radius: 1rem 1rem 0 1rem;
+    padding: 0.75rem 1rem;
+    color: #f0f0f0;
+}
+
+.chat-message.ai-message {
+    align-self: flex-start;
+    background-color: #252525;
+    border-radius: 1rem 1rem 1rem 0;
+    padding: 0.75rem 1rem;
+    color: #f0f0f0;
+}
+
+.chat-message.system {
+    align-self: center;
+    background-color: #333;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    color: #aaa;
+    font-style: italic;
+    margin: 10px 0;
+    max-width: 90%;
+}
+
+.chat-input-container {
+    display: flex;
+    gap: 10px;
+    padding: 10px 15px;
+    background-color: #252525;
+    border-top: 1px solid #333;
+    position: sticky;
+    bottom: 0;
+}
+
+.chat-input {
+    flex: 1;
+    resize: none;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #444;
+    background-color: #333;
+    color: #fff;
+    min-height: 24px;
+    max-height: 100px;
+    overflow-y: auto;
+}
+
+.send-button, 
+.clear-chat-button {
+    padding: 5px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #0066cc;
+    color: white;
+    cursor: pointer;
+}
+
+.clear-chat-button {
+    background-color: #555;
+}
+
+.send-button:hover {
+    background-color: #0052a3;
+}
+
+.clear-chat-button:hover {
+    background-color: #444;
+}
+
+/* Error message */
+.error-message {
+    padding: 20px;
+    background-color: #ffebee;
+    color: #c62828;
+    border-radius: 5px;
+    margin: 20px;
+    border-left: 5px solid #c62828;
 }
 
 .content-footer {

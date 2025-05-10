@@ -1,656 +1,658 @@
 /* Ergon Component Styles */
-
-/* Terminal Redirect Message */
-.terminal-redirect-message {
-  margin-bottom: 20px;
-}
-
-/* Terminal Chat Container Styles */
-.terminal-chat-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--chat-terminal-bg, #1e1e1e);
-  border-radius: 0;
-  margin: 0;
-  padding: 0;
-  border: none;
-  overflow: hidden;
-}
-
-.terminal-chat-messages {
-  position: absolute;
-  top: 40px; /* Height of section header */
-  bottom: 62px; /* Height of input area + padding */
-  left: 0;
-  right: 0;
-  overflow-y: auto;
-  padding: 20px;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-  background-color: var(--chat-terminal-bg, #1e1e1e);
-}
-
-.terminal-chat-input-area {
-  border-top: 2px solid var(--chat-input-border, #007bff);
-  padding: 12px 20px;
-  background-color: var(--chat-input-bg, #111);
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 100;
-}
-
-.terminal-chat-prompt {
-  display: flex;
-  align-items: center;
-}
-
-.prompt-symbol {
-  color: #00ff00;
-  font-weight: bold;
-  margin-right: 10px;
-  font-size: 1.2rem;
-  line-height: 1;
-}
-
-.terminal-chat-input {
-  flex: 1;
-  width: 100%;
-  background-color: var(--chat-input-bg, rgba(0, 0, 0, 0.3));
-  border: none;
-  outline: none;
-  color: white;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-  font-size: 1rem;
-  padding: 8px 10px;
-  border-radius: 4px;
-  caret-color: var(--prompt-color, #00ff00);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) inset;
-}
-
-.terminal-chat-notice {
-  color: #888;
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 8px;
-}
-
-.terminal-chat-notice code {
-  background-color: #222;
-  padding: 2px 4px;
-  border-radius: 3px;
-  color: #00ff00;
-  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
-}
-
-/* Chat Message Styles */
-.chat-message {
-  margin-bottom: 20px;
+.ergon {
   display: flex;
   flex-direction: column;
-  max-width: 95%;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.chat-message.user {
-  align-items: flex-end;
-}
-
-.chat-message.agent,
-.chat-message.system {
-  align-items: flex-start;
-}
-
-.message-content {
-  padding: 12px 16px;
-  border-radius: 8px;
-  max-width: 85%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.chat-message.user .message-content {
-  background-color: var(--chat-user-bg, #2962FF);
-  color: white;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.chat-message.agent .message-content {
-  background-color: var(--chat-agent-bg, #333);
-  color: var(--text-primary, white);
-  border-left: 3px solid var(--chat-agent-border, #00ff00);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-.chat-message.system .message-content {
-  background-color: rgba(0,0,0,0.2);
-  color: #aaa;
-  font-style: italic;
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.message-text {
-  line-height: 1.4;
-}
-
-.message-time {
-  font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
-  margin-top: 6px;
-  text-align: right;
-}
-
-/* Styling for typing indicator */
-.chat-message.typing .message-content {
-  background-color: #222;
-  color: #777;
-  font-style: italic;
-  animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-  0% { opacity: 0.6; }
-  50% { opacity: 1; }
-  100% { opacity: 0.6; }
-}
-
-/* Old Chat Container Styles (kept for compatibility) */
-.chat-container {
-  height: calc(100vh - 220px);
-  overflow-y: auto;
-  padding: 16px;
+  height: 100%;
   background-color: #1e1e1e;
-  border-radius: 8px;
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
+  color: #f0f0f0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* Container */
-.ergon-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-/* Placeholder content for unimplemented tabs */
-.placeholder-content {
-  padding: 24px;
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  margin: 16px 0;
-  text-align: center;
-  color: var(--text-secondary);
-  border: 1px dashed var(--border-color);
-}
-
-/* Tabs */
-.ergon-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  position: fixed;
-  top: 0;
-  left: var(--left-panel-width);
-  right: 0;
-  z-index: 300;
-  height: 41px;
-}
-
-.tab-button {
-  padding: 12px 24px;
-  cursor: pointer;
-  border-bottom: 3px solid transparent;
-  transition: all var(--transition-speed) ease;
-  font-weight: 600;
-  font-size: 1.2rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-}
-
-.tab-button:hover {
-  background-color: var(--bg-tertiary);
-}
-
-.tab-button.active {
-  border-bottom-color: var(--accent-primary);
-  color: var(--accent-primary);
-  transform: none; /* Prevent any transformation */
-  font-size: 1.2rem; /* Explicitly set the same font size to override any changes */
-}
-
-.tab-content {
-  padding: 0;
-  flex: 1;
-  height: calc(100% - 41px); /* Account for tabs height */
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  margin-top: 41px; /* Height of the tab buttons */
-  overflow: hidden;
-}
-
-/* Section Header */
-.ergon-section-header {
+/* Header */
+.ergon__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0;
-  padding: 8px 16px;
-  background-color: var(--bg-secondary, #111);
-  border-bottom: 1px solid var(--chat-input-border, #333);
-  height: 40px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 200;
+  padding: 12px 20px;
+  background-color: #252525;
+  border-bottom: 1px solid #333;
 }
 
-.ergon-section-header h2 {
-  font-size: 1.2rem;
-  font-weight: 600;
+.ergon__title {
+  font-size: 24px;
+  font-weight: 500;
   margin: 0;
-  color: var(--accent-primary, #007bff);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: #0097A7; /* Teal color for Ergon */
 }
 
-.ergon-controls {
+.ergon__controls {
   display: flex;
   gap: 10px;
 }
 
-/* Form Elements */
-.ergon-select {
-  padding: 6px 10px;
+.ergon__refresh-button,
+.ergon__settings-button {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
   border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  transition: all 0.2s ease;
 }
 
-/* Agent Cards */
-.agent-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+.ergon__refresh-button:hover,
+.ergon__settings-button:hover {
+  background-color: #333;
+  color: #fff;
 }
 
-.agent-card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 16px;
-  border: 1px solid var(--border-color);
+.ergon__icon {
+  margin-right: 4px;
+}
+
+/* Content */
+.ergon__content {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.agent-header {
+/* Tabs */
+.ergon__tabs {
+  display: flex;
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+  padding: 0 10px;
+}
+
+.ergon__tab {
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.ergon__tab:hover {
+  color: #fff;
+  background-color: #333;
+}
+
+.ergon__tab--active {
+  color: #fff;
+  border-bottom: 2px solid #0097A7; /* Teal color for Ergon */
+}
+
+/* Tab Panels */
+.ergon__tab-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.ergon__tab-panel {
+  height: 100%;
+  display: none;
+  padding: 0;
+  overflow-y: auto;
+}
+
+.ergon__tab-panel--active {
+  display: block;
+}
+
+/* Agents Tab */
+.ergon__agents-header {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  justify-content: space-between;
+  padding: 15px 20px;
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.agent-name {
-  font-weight: 600;
-  flex-grow: 1;
-}
-
-.agent-type-badge {
-  font-size: 0.7rem;
-  padding: 3px 8px;
-  border-radius: 12px;
-  margin-left: 8px;
-  background-color: var(--accent-primary);
-  color: white;
-}
-
-.agent-type-badge.github {
-  background-color: #6f42c1;
-}
-
-.agent-type-badge.mail {
-  background-color: #0366d6;
-}
-
-.agent-type-badge.browser {
-  background-color: #28a745;
-}
-
-.agent-status {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-left: 8px;
-}
-
-.agent-status.active {
-  background-color: #4caf50;
-}
-
-.agent-status.inactive {
-  background-color: var(--border-color);
-}
-
-.agent-description {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 16px;
-  flex-grow: 1;
-}
-
-.agent-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-}
-
-/* Buttons */
-.control-button {
-  padding: 8px 16px;
-  border-radius: var(--border-radius);
-  border: none;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
-}
-
-.primary-button {
-  background-color: var(--accent-primary);
-  color: white;
-}
-
-.primary-button:hover {
-  background-color: var(--accent-primary-dark, #1464d9);
-}
-
-.secondary-button {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
-.secondary-button:hover {
-  background-color: var(--border-color);
-}
-
-.danger {
-  background-color: #f44336;
-  color: white;
-}
-
-.agent-action-button {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: none;
-  font-size: 0.8rem;
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  cursor: pointer;
-}
-
-.agent-action-button:hover {
-  background-color: var(--border-color);
-}
-
-.agent-action-button.danger {
-  background-color: rgba(244, 67, 54, 0.1);
-  color: #f44336;
-}
-
-.agent-action-button.danger:hover {
-  background-color: rgba(244, 67, 54, 0.2);
-}
-
-/* Agent Creation Form */
-.agent-creation-form {
-  background-color: var(--bg-secondary);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: 16px;
-  margin-bottom: 24px;
-}
-
-.agent-creation-form h3 {
-  margin-top: 0;
-  margin-bottom: 16px;
-  font-size: 1.1rem;
-}
-
-.form-row {
-  display: flex;
-  margin-bottom: 16px;
-  align-items: center; /* Align items vertically */
-}
-
-.form-row label {
-  width: 120px;
-  font-size: 0.9rem;
-}
-
-.form-row input[type="text"],
-.form-row input[type="password"],
-.form-row textarea {
-  flex-grow: 1;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  height: 36px;
-}
-
-/* Make select inputs match other input styles */
-.form-row select {
-  flex-grow: 1;
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  height: 36px;
-  font-size: 0.9rem; /* Match text inputs */
+.ergon__search-bar {
+  flex: 1;
   min-width: 200px;
 }
 
-/* Fix checkbox alignment */
-.form-row input[type="checkbox"] {
-  margin-top: 0;
-  width: 16px;
-  height: 16px;
+.ergon__search-input {
+  width: 100%;
+  padding: 8px 12px;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
 }
 
-.form-row textarea {
+.ergon__filters {
+  display: flex;
+  gap: 10px;
+}
+
+.ergon__filter-select {
+  padding: 8px 12px;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.ergon__create-button {
+  padding: 8px 16px;
+  background-color: #0097A7; /* Teal color for Ergon */
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ergon__create-button:hover {
+  background-color: #00b8d4;
+}
+
+/* Agent Cards */
+.ergon__agents-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+.ergon__agent-card {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #333;
+  transition: all 0.2s ease;
+}
+
+.ergon__agent-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  border-color: #0097A7;
+}
+
+.ergon__agent-header {
+  padding: 15px;
+  background-color: #333;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ergon__agent-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #666;
+  margin-right: 10px;
+}
+
+.ergon__agent-status--active {
+  background-color: #4CAF50;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 8px rgba(76, 175, 80, 0.6); }
+  50% { box-shadow: 0 0 12px rgba(76, 175, 80, 0.8); }
+  100% { box-shadow: 0 0 8px rgba(76, 175, 80, 0.6); }
+}
+
+.ergon__agent-name {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.ergon__agent-type {
+  padding: 4px 8px;
+  background-color: #0097A7;
+  border-radius: 4px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.ergon__agent-body {
+  padding: 15px;
+}
+
+.ergon__agent-description {
+  margin: 0 0 10px 0;
+  font-size: 14px;
+  color: #ccc;
+  line-height: 1.4;
+}
+
+.ergon__agent-meta {
+  font-size: 12px;
+  color: #999;
+}
+
+.ergon__agent-actions {
+  padding: 15px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #333;
+  background-color: #2a2a2a;
+}
+
+/* Buttons */
+.ergon__button {
+  padding: 8px 15px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ergon__button--primary {
+  background-color: #0097A7;
+  color: #fff;
+}
+
+.ergon__button--primary:hover {
+  background-color: #00b8d4;
+}
+
+.ergon__button--secondary {
+  background-color: #444;
+  color: #fff;
+}
+
+.ergon__button--secondary:hover {
+  background-color: #555;
+}
+
+/* Executions Tab */
+.ergon__executions-header {
+  padding: 15px 20px;
+  background-color: #252525;
+  border-bottom: 1px solid #333;
+}
+
+.ergon__executions-container {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ergon__execution-item {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #333;
+}
+
+.ergon__execution-header {
+  padding: 15px;
+  background-color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.ergon__execution-status {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.ergon__execution-status--completed {
+  background-color: #4CAF50;
+}
+
+.ergon__execution-status--error {
+  background-color: #F44336;
+}
+
+.ergon__execution-status--running {
+  background-color: #2196F3;
+  animation: pulse 2s infinite;
+}
+
+.ergon__execution-agent {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  flex: 1;
+}
+
+.ergon__execution-id {
+  color: #999;
+  font-size: 12px;
+}
+
+.ergon__execution-body {
+  padding: 15px;
+}
+
+.ergon__execution-time {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  color: #ccc;
+  font-size: 14px;
+}
+
+.ergon__execution-actions {
+  padding: 15px;
+  display: flex;
+  gap: 10px;
+  border-top: 1px solid #333;
+}
+
+/* Modals */
+.ergon__modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+}
+
+.ergon__modal-content {
+  background-color: #2a2a2a;
+  border-radius: 6px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+}
+
+.ergon__modal-header {
+  padding: 15px 20px;
+  background-color: #333;
+  border-bottom: 1px solid #444;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ergon__modal-title {
+  margin: 0;
+  font-size: 18px;
+  color: #fff;
+}
+
+.ergon__modal-close {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 24px;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.ergon__modal-body {
+  padding: 20px;
+}
+
+.ergon__modal-footer {
+  padding: 15px 20px;
+  background-color: #333;
+  border-top: 1px solid #444;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Forms */
+.ergon__form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.ergon__form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.ergon__form-label {
+  font-size: 14px;
+  color: #ccc;
+}
+
+.ergon__form-input,
+.ergon__form-textarea,
+.ergon__form-select {
+  padding: 10px 12px;
+  background-color: #333;
+  border: 1px solid #444;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.ergon__form-textarea {
   min-height: 80px;
   resize: vertical;
 }
 
-.form-actions {
+.ergon__form-range {
+  width: 100%;
+  background-color: #333;
+  height: 5px;
+  border-radius: 3px;
+  outline: none;
+  -webkit-appearance: none;
+}
+
+.ergon__form-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  background: #0097A7;
+  cursor: pointer;
+}
+
+.ergon__form-range-value {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+.ergon__checkbox-group {
   display: flex;
-  justify-content: flex-end;
-  gap: 12px;
-  margin-top: 24px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
 }
 
-/* Memory Section */
-.memory-stats {
-  display: flex;
-  gap: 16px;
-  margin-bottom: 24px;
+.ergon__form-checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 }
 
-.memory-stat-card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 16px;
-  flex: 1;
-  text-align: center;
-  border: 1px solid var(--border-color);
+.ergon__checkbox-label {
+  font-size: 14px;
+  color: #ccc;
+  cursor: pointer;
 }
 
-.stat-label {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-  margin-bottom: 8px;
+.ergon__form-error {
+  color: #f44336;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-.stat-value {
-  font-size: 1.5rem;
-  font-weight: 600;
+.ergon__form-help {
+  color: #999;
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-.memory-items {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.memory-item {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  border: 1px solid var(--border-color);
-}
-
-.memory-timestamp {
-  font-size: 0.7rem;
-  color: var(--text-secondary);
-  margin-bottom: 4px;
-}
-
-.memory-text {
-  margin-bottom: 8px;
-}
-
-.memory-category {
-  align-self: flex-start;
-  font-size: 0.75rem;
-  padding: 2px 8px;
-  border-radius: 10px;
-  background-color: var(--bg-tertiary);
-}
-
-/* Tools Section */
-.tool-search {
-  padding: 6px 12px;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
-  background-color: var(--bg-secondary);
-  color: var(--text-primary);
-  width: 200px;
-}
-
-.tool-category {
-  margin-bottom: 24px;
-}
-
-.category-header {
-  font-weight: 600;
-  margin-bottom: 12px;
-  padding-bottom: 4px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.tool-cards {
+/* Tools Container */
+.ergon__tools-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 5px;
 }
 
-.tool-card {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 12px;
-  border: 1px solid var(--border-color);
-}
-
-.tool-name {
-  font-family: monospace;
-  font-weight: 600;
-  margin-bottom: 8px;
-}
-
-.tool-description {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin-bottom: 12px;
-}
-
-.tool-parameters {
+/* Loading/Status */
+.ergon__loading {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 12px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  text-align: center;
+  color: #ccc;
 }
 
-.parameter-tag {
-  font-size: 0.75rem;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background-color: var(--bg-tertiary);
-  color: var(--text-secondary);
+.ergon__spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid #333;
+  border-top-color: #0097A7;
+  border-radius: 50%;
+  animation: spin 1s infinite linear;
+  margin-bottom: 15px;
 }
 
-.tool-docs-button {
-  font-size: 0.8rem;
-  padding: 4px 8px;
-  border: none;
-  background-color: transparent;
-  color: var(--accent-primary);
-  cursor: pointer;
-  text-decoration: underline;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Settings Section */
-.settings-section {
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius);
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  margin-bottom: 24px;
+.ergon__coming-soon {
+  padding: 40px;
+  text-align: center;
+  color: #999;
+  font-style: italic;
 }
 
-.settings-section h3 {
-  font-size: 1rem;
-  margin-top: 0;
-  margin-bottom: 16px;
+/* Agent Details */
+.ergon__agent-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ergon__detail-row {
+  display: flex;
+  border-bottom: 1px solid #333;
   padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-color);
 }
 
-.oauth-status {
-  padding: 4px 8px;
+.ergon__detail-label {
+  width: 120px;
+  color: #999;
+  font-size: 14px;
+}
+
+.ergon__detail-value {
+  flex: 1;
+  color: #eee;
+  font-size: 14px;
+}
+
+/* Notifications */
+.ergon__notifications {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  max-width: 300px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ergon__notification {
+  padding: 12px 15px;
   border-radius: 4px;
-  font-size: 0.8rem;
-  margin-right: 8px;
+  background-color: #333;
+  color: #fff;
+  font-size: 14px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+  animation: slide-in 0.3s ease;
 }
 
-.oauth-status.connected {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #4caf50;
+.ergon__notification--success {
+  background-color: #43a047;
 }
 
-.small-button {
-  padding: 4px 8px;
-  font-size: 0.8rem;
-  border-radius: 4px;
-  border: none;
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
-  cursor: pointer;
+.ergon__notification--error {
+  background-color: #e53935;
+}
+
+.ergon__notification--warning {
+  background-color: #f57c00;
+}
+
+.ergon__notification--info {
+  background-color: #039be5;
+}
+
+.ergon__notification--fade-out {
+  animation: fade-out 0.5s ease;
+  opacity: 0;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(50px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .ergon__agents-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .ergon__agents-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .ergon__search-bar {
+    width: 100%;
+  }
+  
+  .ergon__filters {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .ergon__filter-select {
+    flex: 1;
+  }
+  
+  .ergon__create-button {
+    width: 100%;
+    margin-top: 10px;
+  }
 }

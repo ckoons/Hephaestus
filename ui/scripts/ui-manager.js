@@ -202,6 +202,13 @@ class UIManager {
             return;
         }
         
+        // SPECIAL CASE: Direct component loading for Ergon
+        if (componentId === 'ergon') {
+            console.log('DIRECT LOADING ERGON COMPONENT');
+            this.loadErgonComponent();
+            return;
+        }
+        
         // Update active component in UI
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
@@ -539,6 +546,13 @@ class UIManager {
         if (componentId === 'athena') {
             console.log('ATHENA: Loading Athena from static HTML');
             this.loadAthenaComponent();
+            return;
+        }
+        
+        // Special case for Ergon component
+        if (componentId === 'ergon') {
+            console.log('ERGON: Loading Ergon from static HTML');
+            this.loadErgonComponent();
             return;
         }
         
@@ -925,7 +939,20 @@ class UIManager {
      * @param {string} panelId - 'terminal', 'html', 'settings', or 'profile'
      */
     activatePanel(panelId) {
-        console.log(`Activating panel: ${panelId}`);
+        // Use the shared utility if available, otherwise fall back to local implementation
+        if (window.uiUtils && typeof window.uiUtils.activatePanel === 'function') {
+            // Call the shared utility function
+            window.uiUtils.activatePanel(panelId);
+            
+            // Update local state
+            this.activePanel = panelId;
+            tektonUI.activePanel = panelId;
+            
+            return;
+        }
+        
+        // Legacy implementation (will be removed once migrated)
+        console.log(`Activating panel (legacy): ${panelId}`);
         
         // Make sure we're dealing with a valid panel ID
         if (!['terminal', 'html', 'settings', 'profile'].includes(panelId)) {
@@ -935,7 +962,6 @@ class UIManager {
         
         // Get all panels
         const panels = document.querySelectorAll('.panel');
-        console.log(`Found ${panels.length} panels`);
         
         // Hide all panels first
         panels.forEach(panel => {
@@ -946,8 +972,6 @@ class UIManager {
         // Now activate the requested panel
         const targetPanel = document.getElementById(`${panelId}-panel`);
         if (targetPanel) {
-            console.log(`Found target panel: ${targetPanel.id}`);
-            
             // Force display and add active class
             targetPanel.style.display = 'block';
             targetPanel.classList.add('active');
@@ -956,36 +980,12 @@ class UIManager {
             targetPanel.style.visibility = 'visible';
             targetPanel.style.opacity = '1';
             
-            console.log(`Set panel ${targetPanel.id} to active, display: ${targetPanel.style.display}`);
-            
-            // Special handling for HTML panel - we need to make sure the content is properly shown
-            if (panelId === 'html') {
-                console.log('HTML panel activated, checking containers');
-                
-                // If we have an active component, make sure its container is visible
-                if (this.activeComponent) {
-                    // For Rhetor and Budget, the container completely replaces the panel contents
-                    // So if we have these components active, we don't need to do anything else
-                    if (['rhetor', 'budget'].includes(this.activeComponent)) {
-                        console.log(`Special component ${this.activeComponent} is active, no additional container management needed`);
-                    } else {
-                        // For other components with containers, show the appropriate container
-                        const activeContainer = document.getElementById(`${this.activeComponent}-container`);
-                        if (activeContainer) {
-                            console.log(`Found active container for ${this.activeComponent}, showing it`);
-                            activeContainer.style.display = 'block';
-                            activeContainer.style.visibility = 'visible';
-                        }
-                    }
-                }
-            }
+            // Update state
+            this.activePanel = panelId;
+            tektonUI.activePanel = panelId;
         } else {
             console.error(`Panel not found: ${panelId}-panel`);
         }
-        
-        // Update state
-        this.activePanel = panelId;
-        tektonUI.activePanel = panelId;
         
         // Auto-focus on input if terminal panel
         if (panelId === 'terminal') {
@@ -1566,30 +1566,26 @@ class UIManager {
      * Load the Athena component using direct HTML injection pattern
      * This is our new pattern for all components in the Fix GUI Sprint
      */
+    // REFACTORED: This function has been moved to athena-component.js
     loadAthenaComponent() {
-        console.log('Loading Athena component with direct HTML injection pattern...');
+        console.log('Loading Athena component with refactored approach...');
         
-        // First, set the activeComponent to 'athena'
+        // Set active component
         this.activeComponent = 'athena';
         tektonUI.activeComponent = 'athena';
         
         // Get the HTML panel for component rendering
         const htmlPanel = document.getElementById('html-panel');
         
-        if (!htmlPanel) {
-            console.error('HTML panel not found!');
-            return;
-        }
-        
-        // Clear any existing content in the HTML panel
+        // Clear any existing content
         htmlPanel.innerHTML = '';
         
-        // Activate the HTML panel to ensure it's visible
+        // Activate the HTML panel
         this.activatePanel('html');
         
-        // Define the component HTML directly
-        // This direct injection approach solves the issues with loading full HTML documents
-        const athenaHtml = `
+        // FAILED REFACTORING - RESTORE ORIGINAL FUNCTIONALITY
+        // Fallback to template HTML directly
+            const athenaHtml = `
             <div id="athena-container" class="athena-component" style="height: 100%; width: 100%; display: flex; flex-direction: column; background-color: #1a1a1a; color: #f0f0f0;">
                 <!-- Header -->
                 <header style="background-color: #252525; padding: 0.667rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; height: 2.5rem;">
@@ -2730,5 +2726,803 @@ title: CEO"></textarea>
                 controlsContainer.appendChild(button);
             });
         }
+    }
+    
+    /**
+     * Load the Ergon component with direct HTML injection pattern
+     * Implements the UI for Agents, Tools, MCP, Memory, Settings and Chat interfaces
+     */
+    // REFACTORED: This function has been moved to ergon-component.js
+    loadErgonComponent() {
+        console.log('Loading Ergon component with refactored approach...');
+        
+        // Initialize the Ergon component if it exists
+        if (window.ergonComponent) {
+            window.ergonComponent.initialize();
+        } else {
+            console.error('Ergon component not found! Make sure ergon-component.js is loaded.');
+        }
+        
+        // Define the component HTML directly
+        // This direct injection approach solves the issues with loading full HTML documents
+        const ergonHtml = `
+            <div id="ergon-container" class="ergon-component" style="height: 100%; width: 100%; display: flex; flex-direction: column; background-color: #1a1a1a; color: #f0f0f0;">
+                <!-- Header -->
+                <header style="background-color: #252525; padding: 0.667rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444; height: 2.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <h1 id="ergon-title" style="margin: 0; font-size: 1.2rem;">Ergon - Agents/Tools/MCP</h1>
+                    </div>
+                    <div>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: #aaa;">
+                            <span id="agent-count">Agents: <strong style="color: #4a86e8;">5</strong></span> |
+                            <span id="tool-count">Tools: <strong style="color: #4a86e8;">12</strong></span>
+                        </div>
+                    </div>
+                </header>
+                
+                <!-- Tabs -->
+                <div class="ergon-tabs" style="display: flex; background-color: #252525; border-bottom: 1px solid #444; height: 2.5rem;">
+                    <div class="ergon-tab active" data-panel="agents" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid #007bff; font-weight: bold; font-size: 0.9rem;">
+                        Agents
+                    </div>
+                    <div class="ergon-tab" data-panel="tools" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Tools
+                    </div>
+                    <div class="ergon-tab" data-panel="mcp" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        MCP
+                    </div>
+                    <div class="ergon-tab" data-panel="memory" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Memory
+                    </div>
+                    <div class="ergon-tab" data-panel="settings" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Settings
+                    </div>
+                    <div class="ergon-tab" data-panel="ergon-chat" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Agents/Tools/MCP Chat
+                    </div>
+                    <div class="ergon-tab" data-panel="team-chat" 
+                         style="padding: 0.6rem 1.2rem; cursor: pointer; border-bottom: 3px solid transparent; font-weight: bold; font-size: 0.9rem;">
+                        Team Chat
+                    </div>
+                    <div style="flex-grow: 1; display: flex; justify-content: flex-end; align-items: center; padding-right: 1rem;">
+                        <button id="clear-chat-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; display: none;">
+                            Clear Chat
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Content -->
+                <div class="ergon-content" style="flex: 1; overflow: auto;">
+                    <!-- Agents Panel -->
+                    <div class="ergon-panel active" id="agents-panel" style="height: 100%; display: block; padding: 0;">
+                        <div class="agents-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
+                            <div class="agent-controls" style="display: flex; gap: 0.5rem;">
+                                <button id="create-agent-btn" class="agent-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <span>Create Agent</span>
+                                </button>
+                                <button id="import-agent-btn" class="agent-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                    <span>Import</span>
+                                </button>
+                            </div>
+                            <div class="agent-filters" style="display: flex; gap: 0.5rem;">
+                                <select id="agent-type-filter" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                                    <option value="all">All Types</option>
+                                    <option value="assistant">Assistant</option>
+                                    <option value="worker">Worker</option>
+                                    <option value="specialist">Specialist</option>
+                                </select>
+                                <input type="text" id="agent-search" placeholder="Search agents..." style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div class="agents-list-container" style="height: calc(100% - 50px); overflow-y: auto; padding: 1rem;">
+                            <div class="agents-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                                <!-- Sample Agent Cards -->
+                                <div class="agent-card" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; overflow: hidden;">
+                                    <div class="agent-header" style="padding: 0.75rem; background-color: #333; display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; color: #f0f0f0; font-size: 1rem;">Code Assistant</h3>
+                                        <span class="agent-status active" style="display: inline-block; width: 10px; height: 10px; background-color: #4CAF50; border-radius: 50%;"></span>
+                                    </div>
+                                    <div class="agent-body" style="padding: 0.75rem;">
+                                        <p style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.9rem;">Specialized agent for coding assistance and programming tasks.</p>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.75rem; background-color: #007bff; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Python</span>
+                                            <span style="font-size: 0.75rem; background-color: #007bff; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">JavaScript</span>
+                                            <span style="font-size: 0.75rem; background-color: #007bff; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Programming</span>
+                                        </div>
+                                    </div>
+                                    <div class="agent-footer" style="padding: 0.75rem; border-top: 1px solid #444; display: flex; justify-content: space-between;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Configure</button>
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Chat</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="agent-card" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; overflow: hidden;">
+                                    <div class="agent-header" style="padding: 0.75rem; background-color: #333; display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; color: #f0f0f0; font-size: 1rem;">Research Assistant</h3>
+                                        <span class="agent-status active" style="display: inline-block; width: 10px; height: 10px; background-color: #4CAF50; border-radius: 50%;"></span>
+                                    </div>
+                                    <div class="agent-body" style="padding: 0.75rem;">
+                                        <p style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.9rem;">Helps with searching, summarizing and analyzing research information.</p>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.75rem; background-color: #007bff; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Research</span>
+                                            <span style="font-size: 0.75rem; background-color: #007bff; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Analysis</span>
+                                        </div>
+                                    </div>
+                                    <div class="agent-footer" style="padding: 0.75rem; border-top: 1px solid #444; display: flex; justify-content: space-between;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Configure</button>
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Chat</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Tools Panel -->
+                    <div class="ergon-panel" id="tools-panel" style="height: 100%; display: none; padding: 0;">
+                        <div class="tools-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
+                            <div class="tool-controls" style="display: flex; gap: 0.5rem;">
+                                <button id="install-tool-btn" class="tool-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <span>Install Tool</span>
+                                </button>
+                                <button id="refresh-tools-btn" class="tool-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                            <div class="tool-filters" style="display: flex; gap: 0.5rem;">
+                                <select id="tool-category-filter" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                                    <option value="all">All Categories</option>
+                                    <option value="communication">Communication</option>
+                                    <option value="data">Data Processing</option>
+                                    <option value="utility">Utility</option>
+                                </select>
+                                <input type="text" id="tool-search" placeholder="Search tools..." style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div class="tools-list-container" style="height: calc(100% - 50px); overflow-y: auto; padding: 1rem;">
+                            <div class="tools-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1rem;">
+                                <!-- Sample Tool Cards -->
+                                <div class="tool-card" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; overflow: hidden;">
+                                    <div class="tool-header" style="padding: 0.75rem; background-color: #333; display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; color: #f0f0f0; font-size: 1rem;">Web Browser</h3>
+                                        <span class="tool-status installed" style="display: inline-block; width: 10px; height: 10px; background-color: #4CAF50; border-radius: 50%;"></span>
+                                    </div>
+                                    <div class="tool-body" style="padding: 0.75rem;">
+                                        <p style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.9rem;">Browse and extract information from websites.</p>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.75rem; background-color: #28a745; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">Communication</span>
+                                        </div>
+                                    </div>
+                                    <div class="tool-footer" style="padding: 0.75rem; border-top: 1px solid #444; display: flex; justify-content: space-between;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Configure</button>
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Use</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="tool-card" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; overflow: hidden;">
+                                    <div class="tool-header" style="padding: 0.75rem; background-color: #333; display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; color: #f0f0f0; font-size: 1rem;">Terminal</h3>
+                                        <span class="tool-status installed" style="display: inline-block; width: 10px; height: 10px; background-color: #4CAF50; border-radius: 50%;"></span>
+                                    </div>
+                                    <div class="tool-body" style="padding: 0.75rem;">
+                                        <p style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.9rem;">Execute shell commands on the system.</p>
+                                        <div style="display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem;">
+                                            <span style="font-size: 0.75rem; background-color: #dc3545; color: white; padding: 0.125rem 0.375rem; border-radius: 3px;">System</span>
+                                        </div>
+                                    </div>
+                                    <div class="tool-footer" style="padding: 0.75rem; border-top: 1px solid #444; display: flex; justify-content: space-between;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Configure</button>
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Use</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- MCP Panel -->
+                    <div class="ergon-panel" id="mcp-panel" style="height: 100%; display: none; padding: 0;">
+                        <div class="mcp-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
+                            <div class="mcp-controls" style="display: flex; gap: 0.5rem;">
+                                <button id="add-mcp-btn" class="mcp-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <span>Add MCP Server</span>
+                                </button>
+                                <button id="refresh-mcp-btn" class="mcp-btn" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer;">
+                                    <span>Refresh</span>
+                                </button>
+                            </div>
+                            <div class="mcp-filters" style="display: flex; gap: 0.5rem;">
+                                <select id="mcp-status-filter" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                                    <option value="all">All Statuses</option>
+                                    <option value="active">Active</option>
+                                    <option value="inactive">Inactive</option>
+                                </select>
+                                <input type="text" id="mcp-search" placeholder="Search MCP servers..." style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div class="mcp-list-container" style="height: calc(100% - 50px); overflow-y: auto; padding: 1rem;">
+                            <div class="mcp-list" style="display: flex; flex-direction: column; gap: 1rem;">
+                                <!-- Sample MCP Server Items -->
+                                <div class="mcp-server-item" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; padding: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <h3 style="margin: 0 0 0.25rem; color: #f0f0f0; font-size: 1rem;">Local MCP Server</h3>
+                                            <p style="margin: 0; color: #aaa; font-size: 0.9rem;">http://localhost:8000</p>
+                                        </div>
+                                        <span class="mcp-status active" style="display: inline-block; padding: 0.25rem 0.5rem; background-color: #28a745; color: white; border-radius: 4px; font-size: 0.8rem;">Active</span>
+                                    </div>
+                                    <div style="margin-bottom: 0.5rem;">
+                                        <p style="margin: 0; color: #aaa; font-size: 0.9rem;">Local development MCP server with basic functionality.</p>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Edit</button>
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Connect</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mcp-server-item" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; padding: 1rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                        <div>
+                                            <h3 style="margin: 0 0 0.25rem; color: #f0f0f0; font-size: 1rem;">Cloud MCP Server</h3>
+                                            <p style="margin: 0; color: #aaa; font-size: 0.9rem;">https://mcp.example.com</p>
+                                        </div>
+                                        <span class="mcp-status inactive" style="display: inline-block; padding: 0.25rem 0.5rem; background-color: #dc3545; color: white; border-radius: 4px; font-size: 0.8rem;">Inactive</span>
+                                    </div>
+                                    <div style="margin-bottom: 0.5rem;">
+                                        <p style="margin: 0; color: #aaa; font-size: 0.9rem;">Production MCP server with extended capabilities.</p>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Edit</button>
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Connect</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Memory Panel -->
+                    <div class="ergon-panel" id="memory-panel" style="height: 100%; display: none; padding: 0;">
+                        <div class="memory-toolbar" style="display: flex; justify-content: space-between; padding: 0.5rem; border-bottom: 1px solid #444; background-color: #252525;">
+                            <div class="memory-controls" style="display: flex; gap: 0.5rem;">
+                                <button id="export-memory-btn" class="memory-btn" style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <span>Export</span>
+                                </button>
+                                <button id="clear-memory-btn" class="memory-btn" style="padding: 0.25rem 0.5rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                    <span>Clear</span>
+                                </button>
+                            </div>
+                            <div class="memory-filters" style="display: flex; gap: 0.5rem;">
+                                <select id="memory-type-filter" style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                                    <option value="all">All Types</option>
+                                    <option value="conversation">Conversations</option>
+                                    <option value="fact">Facts</option>
+                                    <option value="preference">Preferences</option>
+                                </select>
+                                <input type="text" id="memory-search" placeholder="Search memories..." style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px;">
+                            </div>
+                        </div>
+                        <div class="memory-container" style="height: calc(100% - 50px); display: flex; overflow: hidden;">
+                            <div class="memory-sidebar" style="width: 250px; background-color: #252525; border-right: 1px solid #444; overflow-y: auto; padding: 0.5rem;">
+                                <div class="memory-categories" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                    <div class="memory-category active" style="padding: 0.75rem; background-color: #333; border-radius: 4px; cursor: pointer;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <h4 style="margin: 0; color: #f0f0f0; font-size: 0.9rem;">Conversations</h4>
+                                            <span style="font-size: 0.8rem; color: #aaa;">42</span>
+                                        </div>
+                                    </div>
+                                    <div class="memory-category" style="padding: 0.75rem; background-color: #1a1a1a; border-radius: 4px; cursor: pointer;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <h4 style="margin: 0; color: #f0f0f0; font-size: 0.9rem;">Facts</h4>
+                                            <span style="font-size: 0.8rem; color: #aaa;">128</span>
+                                        </div>
+                                    </div>
+                                    <div class="memory-category" style="padding: 0.75rem; background-color: #1a1a1a; border-radius: 4px; cursor: pointer;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <h4 style="margin: 0; color: #f0f0f0; font-size: 0.9rem;">Preferences</h4>
+                                            <span style="font-size: 0.8rem; color: #aaa;">17</span>
+                                        </div>
+                                    </div>
+                                    <div class="memory-category" style="padding: 0.75rem; background-color: #1a1a1a; border-radius: 4px; cursor: pointer;">
+                                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                                            <h4 style="margin: 0; color: #f0f0f0; font-size: 0.9rem;">Configurations</h4>
+                                            <span style="font-size: 0.8rem; color: #aaa;">9</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="memory-content" style="flex: 1; overflow-y: auto; padding: 1rem;">
+                                <h3 style="margin: 0 0 1rem; color: #f0f0f0;">Conversations</h3>
+                                
+                                <div class="memory-items" style="display: flex; flex-direction: column; gap: 1rem;">
+                                    <!-- Sample Memory Items -->
+                                    <div class="memory-item" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; padding: 1rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                            <h4 style="margin: 0; color: #f0f0f0; font-size: 1rem;">Project Discussion</h4>
+                                            <span style="font-size: 0.8rem; color: #aaa;">3 days ago</span>
+                                        </div>
+                                        <p style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.9rem;">Discussion about the Tekton project architecture and component integration.</p>
+                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                            <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">View</button>
+                                            <button style="padding: 0.25rem 0.5rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Delete</button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="memory-item" style="background-color: #252525; border-radius: 4px; border: 1px solid #444; padding: 1rem;">
+                                        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                                            <h4 style="margin: 0; color: #f0f0f0; font-size: 1rem;">Code Review Session</h4>
+                                            <span style="font-size: 0.8rem; color: #aaa;">5 days ago</span>
+                                        </div>
+                                        <p style="margin: 0 0 0.5rem; color: #aaa; font-size: 0.9rem;">Code review of the WebSocket implementation and bug fixes.</p>
+                                        <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                                            <button style="padding: 0.25rem 0.5rem; background-color: #333; color: #f0f0f0; border: 1px solid #444; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">View</button>
+                                            <button style="padding: 0.25rem 0.5rem; background-color: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Delete</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Panel -->
+                    <div class="ergon-panel" id="settings-panel" style="height: 100%; display: none; padding: 0;">
+                        <div class="settings-container" style="height: 100%; overflow-y: auto; padding: 0.75rem;">
+                            <div class="settings-section" style="margin-bottom: 1rem;">
+                                <h4 style="margin: 0 0 0.5rem; color: #f0f0f0; border-bottom: 1px solid #444; padding-bottom: 0.25rem;">API Configuration</h4>
+                                
+                                <div class="settings-group" style="margin-bottom: 0.75rem;">
+                                    <label style="display: block; margin-bottom: 0.25rem; color: #f0f0f0;">LLM API Key</label>
+                                    <input type="password" value="sk-••••••••••••••••••••••••" style="width: 100%; padding: 0.375rem; background-color: #333; border: 1px solid #444; border-radius: 4px; color: #f0f0f0; margin-bottom: 0.25rem;">
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Update</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-group" style="margin-bottom: 0.75rem;">
+                                    <label style="display: block; margin-bottom: 0.25rem; color: #f0f0f0;">API Base URL</label>
+                                    <input type="text" value="https://api.openai.com/v1" style="width: 100%; padding: 0.375rem; background-color: #333; border: 1px solid #444; border-radius: 4px; color: #f0f0f0; margin-bottom: 0.25rem;">
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Update</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section" style="margin-bottom: 1rem;">
+                                <h4 style="margin: 0 0 0.5rem; color: #f0f0f0; border-bottom: 1px solid #444; padding-bottom: 0.25rem;">Agent Configuration</h4>
+                                
+                                <div class="settings-group" style="margin-bottom: 0.75rem;">
+                                    <label style="display: block; margin-bottom: 0.25rem; color: #f0f0f0;">Default LLM Model</label>
+                                    <select style="width: 100%; padding: 0.375rem; background-color: #333; border: 1px solid #444; border-radius: 4px; color: #f0f0f0; margin-bottom: 0.25rem;">
+                                        <option>gpt-3.5-turbo</option>
+                                        <option>gpt-4</option>
+                                        <option>claude-3-opus</option>
+                                        <option>claude-3-sonnet</option>
+                                    </select>
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Apply</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="settings-group" style="margin-bottom: 0.75rem;">
+                                    <label style="display: block; margin-bottom: 0.25rem; color: #f0f0f0;">Agent Timeout (seconds)</label>
+                                    <input type="number" value="60" style="width: 100%; padding: 0.375rem; background-color: #333; border: 1px solid #444; border-radius: 4px; color: #f0f0f0; margin-bottom: 0.25rem;">
+                                    <div style="display: flex; justify-content: flex-end;">
+                                        <button style="padding: 0.25rem 0.5rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">Apply</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="settings-section" style="margin-bottom: 0.5rem;">
+                                <h4 style="margin: 0 0 0.5rem; color: #f0f0f0; border-bottom: 1px solid #444; padding-bottom: 0.25rem;">System Settings</h4>
+                                
+                                <div class="settings-group" style="margin-bottom: 0.5rem;">
+                                    <label style="display: flex; align-items: center; color: #f0f0f0;">
+                                        <input type="checkbox" checked style="margin-right: 0.5rem;">
+                                        Enable debugging logs
+                                    </label>
+                                </div>
+                                
+                                <div class="settings-group" style="margin-bottom: 0.5rem;">
+                                    <label style="display: flex; align-items: center; color: #f0f0f0;">
+                                        <input type="checkbox" checked style="margin-right: 0.5rem;">
+                                        Auto-connect to available agents
+                                    </label>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: flex-end; margin-top: 0.5rem;">
+                                    <button style="padding: 0.375rem 0.75rem; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">Save All Settings</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ergon Chat Panel -->
+                    <div class="ergon-panel" id="ergon-chat-panel" style="height: 100%; display: none; padding: 0;">
+                        <div style="height: 100%; display: flex; flex-direction: column;">
+                            <div style="padding: 0.75rem; background-color: #252525; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444;">
+                                <h2 style="margin: 0; font-size: 1.1rem; color: #f0f0f0;">Agents/Tools/MCP Chat</h2>
+                            </div>
+                            <div id="ergon-chat-messages" style="flex: 1; overflow-y: auto; padding: 0; background-color: #1a1a1a; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <!-- Welcome message in a chat bubble -->
+                                <div class="chat-message ai-message" style="padding: 0.75rem 1rem; margin: 0.5rem 1rem; background-color: #252525; border-radius: 1rem 1rem 1rem 0; max-width: 80%; align-self: flex-start;">
+                                    <p style="margin: 0; color: #f0f0f0;">Welcome to the Agents/Tools/MCP Chat! I can help you manage your agents, tools, and MCP connections.</p>
+                                    <p style="margin: 0.5rem 0 0; color: #f0f0f0;">Ask me about creating agents, configuring tools, or connecting to MCP servers.</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-container" style="display: flex; gap: 0.5rem; padding: 0.5rem; background-color: #252525; border-top: 1px solid #444; height: 2.5rem; min-height: 2.5rem;">
+                                <span style="color: #aaa; font-weight: bold; margin-right: 0.25rem; align-self: center;">&gt;</span>
+                                <input id="ergon-chat-input" type="text" style="flex: 1; padding: 0.5rem; border: 1px solid #007bff; border-radius: 4px; background-color: #1a1a1a; color: #fff; font-family: inherit; transition: border 0.2s, box-shadow 0.2s;" placeholder="Ask about agents, tools, or MCP..." 
+                                       onfocus="this.style.boxShadow='0 0 0 2px rgba(0, 123, 255, 0.25)';" 
+                                       onblur="this.style.boxShadow='none';">
+                                <button id="ergon-send-button" style="padding: 0.25rem 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; height: 2rem; align-self: center; font-weight: bold; transition: background-color 0.2s;" 
+                                        onmouseover="this.style.backgroundColor='#0069d9';" 
+                                        onmouseout="this.style.backgroundColor='#007bff';">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Team Chat Panel -->
+                    <div class="ergon-panel" id="team-chat-panel" style="height: 100%; display: none; padding: 0;">
+                        <div style="height: 100%; display: flex; flex-direction: column;">
+                            <div style="padding: 0.75rem; background-color: #252525; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #444;">
+                                <h2 style="margin: 0; font-size: 1.1rem; color: #f0f0f0;">Team Chat</h2>
+                            </div>
+                            <div id="team-chat-messages" style="flex: 1; overflow-y: auto; padding: 0; background-color: #1a1a1a; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <!-- Welcome message in a chat bubble -->
+                                <div class="chat-message ai-message" style="padding: 0.75rem 1rem; margin: 0.5rem 1rem; background-color: #252525; border-radius: 1rem 1rem 1rem 0; max-width: 80%; align-self: flex-start;">
+                                    <p style="margin: 0; color: #f0f0f0;">Welcome to Team Chat! This is a shared chat that all Tekton component LLMs can access for group discussion.</p>
+                                    <p style="margin: 0.5rem 0 0; color: #f0f0f0;">Ask questions or discuss topics that might benefit from multiple components working together.</p>
+                                </div>
+                            </div>
+                            <div class="chat-input-container" style="display: flex; gap: 0.5rem; padding: 0.5rem; background-color: #252525; border-top: 1px solid #444; height: 2.5rem; min-height: 2.5rem;">
+                                <span style="color: #aaa; font-weight: bold; margin-right: 0.25rem; align-self: center;">&gt;</span>
+                                <input id="team-chat-input" type="text" style="flex: 1; padding: 0.5rem; border: 1px solid #007bff; border-radius: 4px; background-color: #1a1a1a; color: #fff; font-family: inherit; transition: border 0.2s, box-shadow 0.2s;" placeholder="Discuss with all Tekton components..."
+                                       onfocus="this.style.boxShadow='0 0 0 2px rgba(0, 123, 255, 0.25)';" 
+                                       onblur="this.style.boxShadow='none';">
+                                <button id="team-chat-send-button" style="padding: 0.25rem 0.75rem; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; white-space: nowrap; height: 2rem; align-self: center; font-weight: bold; transition: background-color 0.2s;"
+                                        onmouseover="this.style.backgroundColor='#0069d9';" 
+                                        onmouseout="this.style.backgroundColor='#007bff';">Send</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insert HTML into the panel
+        htmlPanel.innerHTML = ergonHtml;
+        
+        // Update the title based on environment setting
+        const updateTitle = () => {
+            const title = document.getElementById('ergon-title');
+            if (title) {
+                if (window.SHOW_GREEK_NAMES === true) {
+                    title.textContent = 'Ergon - Agents/Tools/MCP';
+                } else {
+                    title.textContent = 'Agents/Tools/MCP';
+                }
+            }
+        };
+        
+        // Check environment variable or set default
+        if (typeof window.SHOW_GREEK_NAMES === 'undefined') {
+            window.SHOW_GREEK_NAMES = true;
+        }
+        
+        // Update title initially
+        updateTitle();
+        
+        // Add tab switching functionality
+        const setupTabs = () => {
+            const tabs = document.querySelectorAll('.ergon-tab');
+            const panels = document.querySelectorAll('.ergon-panel');
+            
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    // Update active tab
+                    tabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.style.borderBottomColor = 'transparent';
+                    });
+                    tab.classList.add('active');
+                    tab.style.borderBottomColor = '#007bff';
+                    
+                    // Show active panel
+                    const panelId = tab.getAttribute('data-panel') + '-panel';
+                    panels.forEach(panel => {
+                        panel.style.display = 'none';
+                        panel.classList.remove('active');
+                    });
+                    const activePanel = document.getElementById(panelId);
+                    if (activePanel) {
+                        activePanel.style.display = 'block';
+                        activePanel.classList.add('active');
+                    }
+                    
+                    // Show/hide the clear chat button in the menu bar based on active tab
+                    const clearChatBtn = document.getElementById('clear-chat-btn');
+                    if (clearChatBtn) {
+                        const panelType = tab.getAttribute('data-panel');
+                        clearChatBtn.style.display = (panelType === 'ergon-chat' || panelType === 'team-chat') ? 'block' : 'none';
+                    }
+                    
+                    // Update the active tab in the Ergon component if it exists
+                    if (window.ergonComponent) {
+                        window.ergonComponent.activeTab = tab.getAttribute('data-panel');
+                    }
+                });
+            });
+        };
+        
+        // Setup chat functionality
+        const setupChat = () => {
+            // Function to create auto-resize chat inputs
+            const autoResizeInput = (input, container) => {
+                if (!container) return;
+                
+                // Save the current input value
+                const value = input.value;
+                
+                // Create a hidden div with same styling to measure text
+                const hiddenDiv = document.createElement('div');
+                hiddenDiv.style.position = 'absolute';
+                hiddenDiv.style.top = '-9999px';
+                hiddenDiv.style.width = input.offsetWidth + 'px';
+                hiddenDiv.style.padding = window.getComputedStyle(input).padding;
+                hiddenDiv.style.border = window.getComputedStyle(input).border;
+                hiddenDiv.style.fontSize = window.getComputedStyle(input).fontSize;
+                hiddenDiv.style.fontFamily = window.getComputedStyle(input).fontFamily;
+                hiddenDiv.style.lineHeight = window.getComputedStyle(input).lineHeight;
+                
+                // Set content and add to document
+                hiddenDiv.textContent = value || 'x';
+                document.body.appendChild(hiddenDiv);
+                
+                // Measure the height (with minimum)
+                const contentHeight = hiddenDiv.offsetHeight;
+                const minHeight = 24; // Minimum height for single line
+                const maxHeight = 100; // Maximum height before scrolling
+                
+                // Remove the hidden div
+                document.body.removeChild(hiddenDiv);
+                
+                // Set height of container and input
+                const newHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight);
+                container.style.height = (newHeight + 20) + 'px'; // Add padding
+                
+                // If content is larger than max, enable scrolling
+                if (contentHeight > maxHeight) {
+                    input.style.overflowY = 'auto';
+                } else {
+                    input.style.overflowY = 'hidden';
+                }
+            };
+            
+            // Create a reusable function for resetting input height
+            const resetInputHeight = (input, container) => {
+                if (container) {
+                    container.style.height = '2.5rem';
+                    container.style.minHeight = '2.5rem';
+                }
+                input.style.overflowY = 'hidden';
+            };
+            
+            // Setup Ergon Chat
+            const ergonChatInput = document.getElementById('ergon-chat-input');
+            const ergonSendButton = document.getElementById('ergon-send-button');
+            
+            if (ergonChatInput && ergonSendButton) {
+                // Set up auto-resize
+                ergonChatInput.addEventListener('input', () => autoResizeInput(ergonChatInput, ergonChatInput.parentElement));
+                
+                // Send message on button click
+                ergonSendButton.addEventListener('click', () => {
+                    const message = ergonChatInput.value.trim();
+                    if (message) {
+                        // Add user message to chat in a bubble
+                        const chatMessages = document.getElementById('ergon-chat-messages');
+                        if (chatMessages) {
+                            const userBubble = document.createElement('div');
+                            userBubble.className = 'chat-message user-message';
+                            userBubble.style.padding = '0.75rem 1rem';
+                            userBubble.style.margin = '0.5rem 1rem';
+                            userBubble.style.backgroundColor = '#1e3a8a';
+                            userBubble.style.borderRadius = '1rem 1rem 0 1rem';
+                            userBubble.style.maxWidth = '80%';
+                            userBubble.style.alignSelf = 'flex-end';
+                            userBubble.style.color = '#f0f0f0';
+                            userBubble.textContent = message;
+                            chatMessages.appendChild(userBubble);
+                            chatMessages.scrollTop = chatMessages.scrollHeight;
+                        }
+                        
+                        // Call Ergon service if available
+                        if (window.ergonService) {
+                            window.ergonService.sendMessage(message);
+                        } else {
+                            console.log('Ergon service not available, simulating response');
+                            // Simulate response for testing
+                            setTimeout(() => {
+                                const chatMessages = document.getElementById('ergon-chat-messages');
+                                if (chatMessages) {
+                                    const responseBubble = document.createElement('div');
+                                    responseBubble.className = 'chat-message ai-message';
+                                    responseBubble.style.padding = '0.75rem 1rem';
+                                    responseBubble.style.margin = '0.5rem 1rem';
+                                    responseBubble.style.backgroundColor = '#252525';
+                                    responseBubble.style.borderRadius = '1rem 1rem 1rem 0';
+                                    responseBubble.style.maxWidth = '80%';
+                                    responseBubble.style.alignSelf = 'flex-start';
+                                    responseBubble.style.color = '#f0f0f0';
+                                    responseBubble.textContent = 'I received your message: "' + message + '". This is a simulated response since the Ergon service is not available.';
+                                    chatMessages.appendChild(responseBubble);
+                                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                                }
+                            }, 1000);
+                        }
+                        // Clear input and reset height
+                        ergonChatInput.value = '';
+                        resetInputHeight(ergonChatInput, ergonChatInput.parentElement);
+                    }
+                });
+                
+                // Send message on Enter key (but allow Shift+Enter for new lines)
+                ergonChatInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        ergonSendButton.click();
+                    }
+                });
+            }
+            
+            // Setup Team Chat
+            const teamChatInput = document.getElementById('team-chat-input');
+            const teamChatSendButton = document.getElementById('team-chat-send-button');
+            
+            if (teamChatInput && teamChatSendButton) {
+                // Set up auto-resize
+                teamChatInput.addEventListener('input', () => autoResizeInput(teamChatInput, teamChatInput.parentElement));
+                
+                // Send message on button click
+                teamChatSendButton.addEventListener('click', () => {
+                    const message = teamChatInput.value.trim();
+                    if (message) {
+                        // Add user message to team chat in a bubble
+                        const teamChatMessages = document.getElementById('team-chat-messages');
+                        if (teamChatMessages) {
+                            const userBubble = document.createElement('div');
+                            userBubble.className = 'chat-message user-message';
+                            userBubble.style.padding = '0.75rem 1rem';
+                            userBubble.style.margin = '0.5rem 1rem';
+                            userBubble.style.backgroundColor = '#1e3a8a';
+                            userBubble.style.borderRadius = '1rem 1rem 0 1rem';
+                            userBubble.style.maxWidth = '80%';
+                            userBubble.style.alignSelf = 'flex-end';
+                            userBubble.style.color = '#f0f0f0';
+                            userBubble.textContent = message;
+                            teamChatMessages.appendChild(userBubble);
+                            teamChatMessages.scrollTop = teamChatMessages.scrollHeight;
+                        }
+                        
+                        // Call Team Chat service if available
+                        if (window.teamChatService) {
+                            window.teamChatService.sendMessage(message);
+                        } else {
+                            console.log('Team Chat service not available, simulating response');
+                            // Simulate response for testing
+                            setTimeout(() => {
+                                const teamChatMessages = document.getElementById('team-chat-messages');
+                                if (teamChatMessages) {
+                                    const responseBubble = document.createElement('div');
+                                    responseBubble.className = 'chat-message ai-message';
+                                    responseBubble.style.padding = '0.75rem 1rem';
+                                    responseBubble.style.margin = '0.5rem 1rem';
+                                    responseBubble.style.backgroundColor = '#252525';
+                                    responseBubble.style.borderRadius = '1rem 1rem 1rem 0';
+                                    responseBubble.style.maxWidth = '80%';
+                                    responseBubble.style.alignSelf = 'flex-start';
+                                    responseBubble.style.color = '#f0f0f0';
+                                    responseBubble.textContent = 'Team Chat: I received your message: "' + message + '". This is a simulated response from the Team Chat service.';
+                                    teamChatMessages.appendChild(responseBubble);
+                                    teamChatMessages.scrollTop = teamChatMessages.scrollHeight;
+                                }
+                            }, 1000);
+                        }
+                        // Clear input and reset height
+                        teamChatInput.value = '';
+                        resetInputHeight(teamChatInput, teamChatInput.parentElement);
+                    }
+                });
+                
+                // Send message on Enter key (but allow Shift+Enter for new lines)
+                teamChatInput.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' && !event.shiftKey) {
+                        event.preventDefault();
+                        teamChatSendButton.click();
+                    }
+                });
+            }
+            
+            // Setup the Clear Chat button to work with both chats
+            const clearChatBtn = document.getElementById('clear-chat-btn');
+            if (clearChatBtn) {
+                clearChatBtn.addEventListener('click', () => {
+                    // Determine which chat is active
+                    const activePanel = document.querySelector('.ergon-panel.active');
+                    if (activePanel) {
+                        if (activePanel.id === 'ergon-chat-panel') {
+                            // Clear Ergon Chat
+                            const chatMessages = document.getElementById('ergon-chat-messages');
+                            if (chatMessages) {
+                                // Keep only the welcome message
+                                const welcomeMessage = chatMessages.querySelector('.chat-message:first-child');
+                                chatMessages.innerHTML = '';
+                                if (welcomeMessage) {
+                                    chatMessages.appendChild(welcomeMessage);
+                                }
+                            }
+                        } else if (activePanel.id === 'team-chat-panel') {
+                            // Clear Team Chat
+                            const teamChatMessages = document.getElementById('team-chat-messages');
+                            if (teamChatMessages) {
+                                // Keep only the welcome message
+                                const welcomeMessage = teamChatMessages.querySelector('.chat-message:first-child');
+                                teamChatMessages.innerHTML = '';
+                                if (welcomeMessage) {
+                                    teamChatMessages.appendChild(welcomeMessage);
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        };
+        
+        // Initialize event listeners
+        const initEventListeners = () => {
+            // Setup agent-related event listeners
+            const createAgentBtn = document.getElementById('create-agent-btn');
+            if (createAgentBtn) {
+                createAgentBtn.addEventListener('click', () => {
+                    console.log('Create agent clicked');
+                    // Implement agent creation logic or show dialog
+                });
+            }
+            
+            // Setup tool-related event listeners
+            const installToolBtn = document.getElementById('install-tool-btn');
+            if (installToolBtn) {
+                installToolBtn.addEventListener('click', () => {
+                    console.log('Install tool clicked');
+                    // Implement tool installation logic or show dialog
+                });
+            }
+            
+            // Setup MCP-related event listeners
+            const addMcpBtn = document.getElementById('add-mcp-btn');
+            if (addMcpBtn) {
+                addMcpBtn.addEventListener('click', () => {
+                    console.log('Add MCP server clicked');
+                    // Implement MCP server addition logic or show dialog
+                });
+            }
+        };
+        
+        // Call setup functions
+        setupTabs();
+        setupChat();
+        initEventListeners();
+        
+        console.log('Ergon component loaded with direct HTML injection');
+        
+        // Update the component registry data if needed
+        this.components['ergon'] = {
+            id: 'ergon',
+            loaded: true,
+            usesTerminal: false
+        };
     }
 }

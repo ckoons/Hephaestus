@@ -26,21 +26,6 @@ class AthenaComponent {
             return this;
         }
         
-        // Ensure HTML panel is active using the UI manager
-        if (window.uiManager) {
-            console.log('Using UI Manager to activate HTML panel');
-            window.uiManager.activatePanel('html');
-        } else {
-            console.log('UI Manager not found, manually activating HTML panel');
-            const panels = document.querySelectorAll('.panel');
-            panels.forEach(p => p.classList.remove('active'));
-            const htmlPanel = document.getElementById('html-panel');
-            if (htmlPanel) {
-                htmlPanel.classList.add('active');
-                htmlPanel.style.display = 'block';
-            }
-        }
-        
         // Load component HTML
         this.loadComponentHTML();
         
@@ -56,26 +41,27 @@ class AthenaComponent {
     activateComponent() {
         console.log('Activating Athena component');
         
-        // Make sure we're using the HTML panel
+        // Force full width layout
         const htmlPanel = document.getElementById('html-panel');
         if (htmlPanel) {
-            // Make the HTML panel active
-            const panels = document.querySelectorAll('.panel');
-            panels.forEach(panel => panel.classList.remove('active'));
-            htmlPanel.classList.add('active');
-            
-            // Set styles to ensure full visibility
-            htmlPanel.style.display = 'block';
+            console.log('Setting html-panel to full width and height');
             htmlPanel.style.width = '100%';
             htmlPanel.style.height = '100%';
             htmlPanel.style.position = 'absolute';
             htmlPanel.style.top = '0';
             htmlPanel.style.left = '0';
+            htmlPanel.style.right = '0';
+            htmlPanel.style.bottom = '0';
             htmlPanel.style.overflow = 'auto';
             
-            // Ensure Athena container fills available space
+            // Also force the athena container to fill available space
             const athenaContainer = htmlPanel.querySelector('.athena-container');
             if (athenaContainer) {
+                athenaContainer.style.position = 'absolute';
+                athenaContainer.style.top = '0';
+                athenaContainer.style.left = '0';
+                athenaContainer.style.right = '0';
+                athenaContainer.style.bottom = '0';
                 athenaContainer.style.width = '100%';
                 athenaContainer.style.height = '100%';
             }
@@ -103,7 +89,11 @@ class AthenaComponent {
         
         try {
             // Show loading indicator
-            htmlPanel.innerHTML = '<div style="padding: 20px;">Loading Athena component...</div>';
+            if (window.uiUtils) {
+                window.uiUtils.showLoadingIndicator(htmlPanel, 'Athena');
+            } else {
+                htmlPanel.innerHTML = '<div style="padding: 20px;">Loading Athena component...</div>';
+            }
             
             // Fetch component HTML template with cache busting
             const cacheBuster = `?t=${new Date().getTime()}`;
@@ -125,20 +115,15 @@ class AthenaComponent {
             console.log('Athena component HTML loaded successfully');
         } catch (error) {
             console.error('Error loading Athena component:', error);
-            htmlPanel.innerHTML = `
-                <div class="error-message" style="padding: 20px; color: #f44336;">
-                    <h3>Error Loading Athena Component</h3>
-                    <p>${error.message}</p>
-                    <button id="retry-athena-btn" style="padding: 8px 16px; background-color: #2196F3; color: white; border: none; border-radius: 4px; cursor: pointer; margin-top: 10px;">
-                        Retry
-                    </button>
-                </div>
-            `;
-            
-            // Add retry handler
-            const retryBtn = document.getElementById('retry-athena-btn');
-            if (retryBtn) {
-                retryBtn.addEventListener('click', () => this.loadComponentHTML());
+            if (window.uiUtils) {
+                window.uiUtils.showErrorMessage(htmlPanel, 'Athena', error.message);
+            } else {
+                htmlPanel.innerHTML = `
+                    <div class="error-message">
+                        <h3>Error Loading Athena Component</h3>
+                        <p>${error.message}</p>
+                    </div>
+                `;
             }
         }
     }
@@ -155,8 +140,12 @@ class AthenaComponent {
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 // Update active tab
-                tabs.forEach(t => t.classList.remove('active'));
+                tabs.forEach(t => {
+                    t.classList.remove('active');
+                    t.style.borderBottomColor = 'transparent';
+                });
                 tab.classList.add('active');
+                tab.style.borderBottomColor = '#007bff';
                 
                 // Show active panel
                 const panelId = tab.getAttribute('data-tab') + '-panel';
@@ -174,7 +163,7 @@ class AthenaComponent {
                 const clearChatBtn = document.getElementById('clear-chat-btn');
                 if (clearChatBtn) {
                     const panelType = tab.getAttribute('data-tab');
-                    clearChatBtn.style.display = (panelType === 'chat') ? 'block' : 'none';
+                    clearChatBtn.style.display = (panelType === 'chat' || panelType === 'teamchat') ? 'block' : 'none';
                 }
                 
                 // Update the active tab in state
@@ -216,7 +205,8 @@ class AthenaComponent {
                 // Initialize query panel if needed
                 break;
             case 'chat':
-                // Chat is loaded by setupChat
+            case 'teamchat':
+                // These are loaded by setupChat
                 break;
         }
     }
@@ -227,9 +217,18 @@ class AthenaComponent {
     initializeGraph() {
         console.log('Initializing knowledge graph visualization');
         
-        // For now, just update the placeholder
+        // If we have a real graph implementation, it would be initialized here
+        // For now, we'll just show a placeholder
+        const graphContainer = document.getElementById('graph-container');
         const placeholder = document.getElementById('graph-placeholder');
-        if (placeholder) {
+        
+        if (graphContainer && placeholder) {
+            // In a real implementation, we would:
+            // 1. Fetch graph data from the backend
+            // 2. Initialize a graph visualization library (like D3, Sigma, etc.)
+            // 3. Render the graph in the container
+            
+            // For demo purposes, just update the placeholder
             placeholder.innerHTML = `
                 <div style="text-align: center; padding: 2rem;">
                     <h2 style="color: #999; margin-bottom: 1rem;">Knowledge Graph View</h2>
@@ -252,7 +251,8 @@ class AthenaComponent {
         const loading = document.getElementById('entity-list-loading');
         
         if (entityList && loading) {
-            // Show some sample entities after a delay
+            // In a real implementation, we would fetch entities from the backend
+            // For now, just show some sample entities after a delay
             setTimeout(() => {
                 loading.style.display = 'none';
                 entityList.style.display = 'block';
@@ -268,6 +268,9 @@ class AthenaComponent {
         
         // Set up knowledge chat
         this.setupChatInput('chat-input', 'send-button', 'chat-messages');
+        
+        // Set up team chat
+        this.setupChatInput('teamchat-input', 'teamchat-send-button', 'teamchat-messages');
     }
     
     /**
@@ -286,30 +289,100 @@ class AthenaComponent {
             return;
         }
         
+        // If we have UI utils, use those
+        if (window.uiUtils) {
+            window.uiUtils.setupChatInterface(inputId, buttonId, messagesId, 
+                (message) => this.sendChatMessage(message, messages));
+            return;
+        }
+        
+        // Otherwise, set up manually
+        
+        // Set up auto-resize
+        input.addEventListener('input', () => this.autoResizeInput(input));
+        
         // Send message on button click
-        button.addEventListener('click', () => {
-            const message = input.value.trim();
-            if (message) {
-                this.addUserMessageToChatUI(messages, message);
-                
-                // Simulate a response
-                setTimeout(() => {
-                    this.addAIMessageToChatUI(messages, 'I received your message: "' + message + 
-                        '". This is a simulated response from Athena Knowledge Graph.');
-                }, 1000);
-                
-                // Clear input
-                input.value = '';
-            }
-        });
+        button.addEventListener('click', () => this.sendChatMessage(input.value.trim(), messages));
         
         // Send message on Enter key (but allow Shift+Enter for new lines)
         input.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
                 event.preventDefault();
-                button.click();
+                this.sendChatMessage(input.value.trim(), messages);
+                input.value = '';
+                this.resetInputHeight(input);
             }
         });
+    }
+    
+    /**
+     * Auto-resize a chat input based on its content
+     * @param {HTMLElement} input - The input element to resize
+     */
+    autoResizeInput(input) {
+        const container = input.parentElement;
+        if (!container) return;
+        
+        // Save the current input value
+        const value = input.value;
+        
+        // Create a hidden div with same styling to measure text
+        const hiddenDiv = document.createElement('div');
+        hiddenDiv.style.position = 'absolute';
+        hiddenDiv.style.top = '-9999px';
+        hiddenDiv.style.width = input.offsetWidth + 'px';
+        hiddenDiv.style.padding = window.getComputedStyle(input).padding;
+        hiddenDiv.style.border = window.getComputedStyle(input).border;
+        hiddenDiv.style.fontSize = window.getComputedStyle(input).fontSize;
+        hiddenDiv.style.fontFamily = window.getComputedStyle(input).fontFamily;
+        hiddenDiv.style.lineHeight = window.getComputedStyle(input).lineHeight;
+        
+        // Set content and add to document
+        hiddenDiv.textContent = value || 'x';
+        document.body.appendChild(hiddenDiv);
+        
+        // Measure the height (with minimum)
+        const contentHeight = hiddenDiv.offsetHeight;
+        const minHeight = 24; // Minimum height for single line
+        const maxHeight = 100; // Maximum height before scrolling
+        
+        // Remove the hidden div
+        document.body.removeChild(hiddenDiv);
+        
+        // Set height of container and input
+        const newHeight = Math.min(Math.max(contentHeight, minHeight), maxHeight);
+        container.style.height = (newHeight + 20) + 'px'; // Add padding
+        
+        // If content is larger than max, enable scrolling
+        if (contentHeight > maxHeight) {
+            input.style.overflowY = 'auto';
+        } else {
+            input.style.overflowY = 'hidden';
+        }
+    }
+    
+    /**
+     * Send a chat message
+     * @param {string} message - The message text
+     * @param {HTMLElement} messages - The messages container
+     */
+    sendChatMessage(message, messages) {
+        if (!message) return;
+        
+        // Add user message to chat in a bubble
+        this.addUserMessageToChatUI(messages, message);
+        
+        // Call Athena service if available
+        if (window.athenaService) {
+            window.athenaService.sendMessage(message);
+        } else {
+            console.log('Athena service not available, simulating response');
+            // Simulate response for testing
+            setTimeout(() => {
+                this.addAIMessageToChatUI(messages, 'I received your message: "' + message + 
+                    '". This is a simulated response since the Athena service is not available.');
+            }, 1000);
+        }
     }
     
     /**
@@ -322,6 +395,13 @@ class AthenaComponent {
         
         const userBubble = document.createElement('div');
         userBubble.className = 'chat-message user-message';
+        userBubble.style.padding = '0.75rem 1rem';
+        userBubble.style.margin = '0.5rem 1rem';
+        userBubble.style.backgroundColor = '#1e3a8a';
+        userBubble.style.borderRadius = '1rem 1rem 0 1rem';
+        userBubble.style.maxWidth = '80%';
+        userBubble.style.alignSelf = 'flex-end';
+        userBubble.style.color = '#f0f0f0';
         userBubble.textContent = message;
         messages.appendChild(userBubble);
         messages.scrollTop = messages.scrollHeight;
@@ -337,16 +417,43 @@ class AthenaComponent {
         
         const aiBubble = document.createElement('div');
         aiBubble.className = 'chat-message ai-message';
+        aiBubble.style.padding = '0.75rem 1rem';
+        aiBubble.style.margin = '0.5rem 1rem';
+        aiBubble.style.backgroundColor = '#252525';
+        aiBubble.style.borderRadius = '1rem 1rem 1rem 0';
+        aiBubble.style.maxWidth = '80%';
+        aiBubble.style.alignSelf = 'flex-start';
+        aiBubble.style.color = '#f0f0f0';
         aiBubble.textContent = message;
         messages.appendChild(aiBubble);
         messages.scrollTop = messages.scrollHeight;
     }
     
     /**
+     * Reset the height of an input element
+     * @param {HTMLElement} input - The input element to reset
+     */
+    resetInputHeight(input) {
+        const container = input.parentElement;
+        if (container) {
+            container.style.height = '2.5rem';
+            container.style.minHeight = '2.5rem';
+        }
+        input.style.overflowY = 'hidden';
+    }
+    
+    /**
      * Clear the active chat messages
      */
     clearActiveChat() {
-        const messagesContainer = document.getElementById('chat-messages');
+        let messagesContainer;
+        
+        // Determine which chat is active
+        if (this.state.activeTab === 'chat') {
+            messagesContainer = document.getElementById('chat-messages');
+        } else if (this.state.activeTab === 'teamchat') {
+            messagesContainer = document.getElementById('teamchat-messages');
+        }
         
         if (messagesContainer) {
             // Keep only the welcome message
@@ -367,19 +474,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const athenaTab = document.querySelector('.nav-item[data-component="athena"]');
     if (athenaTab) {
         athenaTab.addEventListener('click', function() {
-            // First, make sure the HTML panel is visible
-            const htmlPanel = document.getElementById('html-panel');
-            if (htmlPanel) {
-                // Make it active and visible
-                const panels = document.querySelectorAll('.panel');
-                panels.forEach(panel => {
-                    panel.classList.remove('active');
-                    panel.style.display = 'none';
-                });
-                htmlPanel.classList.add('active');
-                htmlPanel.style.display = 'block';
-            }
-            
             // Initialize component if not already done
             if (window.athenaComponent) {
                 window.athenaComponent.init();

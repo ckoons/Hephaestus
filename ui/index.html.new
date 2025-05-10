@@ -208,7 +208,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="panel html-panel" id="html-panel" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: auto;">
+                <div class="panel html-panel" id="html-panel">
                     <!-- HTML controls will be loaded here -->
                 </div>
                 <div class="panel settings-panel" id="settings-panel">
@@ -239,17 +239,39 @@
     
     <!-- No splash screen -->
 
-    <!-- Load scripts -->
-    <script src="scripts/component-loader.js"></script>
-    <script src="scripts/ui-utils.js"></script>
-    <!-- Removed direct component loading to prevent conflicts with component loader -->
-    <!-- <script src="scripts/athena-component.js"></script> -->
-    <!-- <script src="scripts/ergon-component.js"></script> -->
-    <script src="scripts/main.js"></script>
-    <script src="scripts/ui-manager-core.js"></script>
-    <script src="scripts/terminal.js"></script>
+    <!-- Load shared utilities first -->
     <script src="scripts/storage.js"></script>
+
+    <!-- Load core modules -->
+    <script src="scripts/core/component-loader.js"></script>
+    <script src="scripts/core/panel-manager.js"></script>
+    <script src="scripts/core/ui-manager-core.js"></script>
+    
+    <!-- Load shared component utilities -->
+    <script src="scripts/components/shared/tab-navigation.js"></script>
+    <script src="scripts/components/shared/chat-panel.js"></script>
+    <script src="scripts/component-utils.js"></script>
+    
+    <!-- Load main script and legacy scripts for compatibility -->
+    <script src="scripts/main.js"></script>
+    <script src="scripts/ui-manager.js"></script>
+    <script src="scripts/terminal.js"></script>
     <script src="scripts/websocket.js"></script>
+    
+    <!-- Load component-specific scripts -->
+    <script src="scripts/components/athena/athena-component.js"></script>
+    <script src="scripts/components/ergon/ergon-component.js"></script>
+    
+    <!-- Legacy scripts for compatibility -->
+    <script src="scripts/terminal-chat.js"></script>
+    <script src="scripts/terminal-chat-enhanced.js"></script>
+    <script src="scripts/hermes-connector.js"></script>
+    
+    <!-- Settings and profile management -->
+    <script src="scripts/settings-manager.js"></script>
+    <script src="scripts/settings-ui.js"></script>
+    <script src="scripts/profile-manager.js"></script>
+    <script src="scripts/profile-ui.js"></script>
     
     <!-- Direct load of terma-terminal.js script with cache busting -->
     <script>
@@ -438,55 +460,7 @@
             }
         });
     </script>
-    
-    <!-- Settings and theming system -->
-    <script src="scripts/settings-manager.js"></script>
-    <script src="scripts/settings-ui.js"></script>
-    
-    <!-- Profile management system -->
-    <script src="scripts/profile-manager.js"></script>
-    <script src="scripts/profile-ui.js"></script>
-    
-    <!-- Enhanced terminal chat system -->
-    <script src="scripts/terminal-chat.js"></script> <!-- For compatibility -->
-    <script src="scripts/terminal-chat-enhanced.js"></script>
-    <script src="scripts/hermes-connector.js"></script>
-    
-    <!-- Component scripts -->
-    <script src="scripts/ergon-component.js"></script>
-    <script src="scripts/athena/athena-component.js"></script>
-    
-    <!-- Ensure Athena panel activation -->
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const athenaTab = document.querySelector('.nav-item[data-component="athena"]');
-        if (athenaTab) {
-          athenaTab.addEventListener('click', function(e) {
-            // Prevent default UI manager handling
-            e.stopPropagation();
-            
-            // Make sure HTML panel is active
-            const panels = document.querySelectorAll('.panel');
-            panels.forEach(panel => {
-              panel.classList.remove('active');
-              panel.style.display = 'none';
-            });
-            
-            const htmlPanel = document.getElementById('html-panel');
-            if (htmlPanel) {
-              htmlPanel.classList.add('active');
-              htmlPanel.style.display = 'block';
-            }
-            
-            // Initialize Athena component
-            if (window.athenaComponent) {
-              window.athenaComponent.init();
-            }
-          }, true); // Use capture phase to run before regular handlers
-        }
-      });
-    </script>
-    
+
     <!-- Direct script for simple terminal input -->
     <script>
       // Wait for DOM to be fully loaded

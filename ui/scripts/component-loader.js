@@ -15,6 +15,22 @@ class ComponentLoader {
     // Initialize theme tracking
     this.currentTheme = document.documentElement.dataset.theme || 'dark-blue';
     
+    // Component paths mapping
+    this.componentPaths = {
+      'athena': 'components/athena/athena-component.html',
+      'ergon': 'components/ergon/ergon-component.html',
+      'rhetor': 'components/rhetor/rhetor-component.html',
+      'terma': 'components/terma/terma-component.html',
+      'engram': 'components/engram/engram-component.html',
+      'hermes': 'components/hermes/hermes-component.html',
+      'codex': 'components/codex/codex-component.html',
+      'prometheus': 'components/prometheus/prometheus-component.html',
+      'telos': 'components/telos/telos-component.html',
+      'harmonia': 'components/harmonia/harmonia-component.html',
+      'synthesis': 'components/synthesis/synthesis-component.html',
+      'sophia': 'components/sophia/sophia-component.html'
+    };
+    
     // Setup theme observer for the document root
     this._setupDocumentThemeObserver();
   }
@@ -207,10 +223,13 @@ class ComponentLoader {
     
     // Add cache busting parameter
     const cacheBuster = `?t=${new Date().getTime()}`;
-    const componentPath = `/components/${componentId}/${componentId}-component.html${cacheBuster}`;
+    
+    // Use only the standardized nested structure
+    const componentPath = `components/${componentId}/${componentId}-component.html`;
     
     try {
-      const response = await fetch(componentPath);
+      console.log(`Loading HTML from: ${componentPath}`);
+      const response = await fetch(`${componentPath}${cacheBuster}`);
       
       if (!response.ok) {
         throw new Error(`Failed to load component HTML: ${response.status} ${response.statusText}`);
@@ -230,6 +249,7 @@ class ComponentLoader {
       // Append to shadow root
       shadowRoot.appendChild(wrapper);
       
+      console.log(`Successfully loaded HTML from ${componentPath}`);
       return wrapper;
     } catch (error) {
       console.error(`Error loading component HTML for ${componentId}:`, error);
@@ -249,17 +269,25 @@ class ComponentLoader {
     
     // Add cache busting parameter
     const cacheBuster = `?t=${new Date().getTime()}`;
-    const cssPath = `/styles/${componentId}/${componentId}-component.css${cacheBuster}`;
+    
+    // Use only the standardized nested structure
+    const cssPath = `styles/${componentId}/${componentId}-component.css`;
     
     try {
-      const response = await fetch(cssPath);
+      console.log(`Loading CSS from: ${cssPath}`);
+      const response = await fetch(`${cssPath}${cacheBuster}`);
       
       if (!response.ok) {
-        console.warn(`No dedicated CSS file found for ${componentId} (${response.status}), using default styles`);
+        console.warn(`No dedicated CSS file found for ${componentId} at ${cssPath}, using default styles`);
         return;
       }
       
       const css = await response.text();
+      
+      if (!css || css.trim().length === 0) {
+        console.warn(`Received empty CSS content from ${cssPath}, using default styles`);
+        return;
+      }
       
       // Create style element
       const style = document.createElement('style');
@@ -271,6 +299,7 @@ class ComponentLoader {
       // Add to shadow root
       shadowRoot.appendChild(style);
       
+      console.log(`Successfully loaded CSS from ${cssPath}`);
     } catch (error) {
       console.warn(`Error loading styles for ${componentId}, using default styles:`, error);
       // Non-critical error, we can continue without custom styles
@@ -289,13 +318,16 @@ class ComponentLoader {
     
     // Add cache busting parameter
     const cacheBuster = `?t=${new Date().getTime()}`;
-    const scriptPath = `/scripts/${componentId}/${componentId}-component.js${cacheBuster}`;
+    
+    // Use only the standardized nested structure
+    const scriptPath = `scripts/${componentId}/${componentId}-component.js`;
     
     try {
-      const response = await fetch(scriptPath);
+      console.log(`Loading script from: ${scriptPath}`);
+      const response = await fetch(`${scriptPath}${cacheBuster}`);
       
       if (!response.ok) {
-        console.warn(`No dedicated JS file found for ${componentId} (${response.status}), component may be static`);
+        console.warn(`Script not found at ${scriptPath}, component may be static`);
         return;
       }
       
@@ -355,13 +387,24 @@ class ComponentLoader {
       };
       
       // Create a scoped initialization function that executes the component code
-      // with the component context
+      // with the component context but allows global variable creation
       const initComponentFn = new Function('component', `
         try {
           // Execute component code with component context
-          (function(component) {
-            ${jsCode}
-          })(component);
+          // But without creating a closure to allow global window properties
+          eval(${JSON.stringify(jsCode)});
+          
+          // Make sure global instance uses our component context
+          if (window['${componentId}Component']) {
+            console.log('Connecting ${componentId} global instance to component context');
+            Object.assign(window['${componentId}Component'], { 
+              root: component.root,
+              $: component.$,
+              $$: component.$$,
+              dispatch: component.dispatch,
+              utils: component.utils
+            });
+          }
           
           // Return success
           return { success: true };
@@ -378,8 +421,10 @@ class ComponentLoader {
         throw new Error(`Failed to initialize component script: ${result.error}`);
       }
       
+      console.log(`Successfully loaded and initialized script from ${scriptPath}`);
+      
     } catch (error) {
-      console.error(`Error initializing scripts for ${componentId}:`, error);
+      console.error(`Error loading or initializing script for ${componentId}:`, error);
       throw error;
     }
   }
@@ -599,7 +644,7 @@ class ComponentLoader {
    */
   async loadComponentRegistry() {
     try {
-      const response = await fetch('/server/component_registry.json');
+      const response = await fetch('server/component_registry.json');
       
       if (!response.ok) {
         throw new Error(`Failed to load component registry: ${response.status}`);

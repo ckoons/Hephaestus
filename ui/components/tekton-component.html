@@ -1,0 +1,139 @@
+<!-- Tekton Component -->
+<div class="tekton-component">
+  <header class="tekton-header">
+    <div class="tekton-header-title">
+      <img src="/images/Tekton.png" alt="Tekton" class="tekton-logo">
+      <h1>Tekton Dashboard</h1>
+    </div>
+    <div class="tekton-header-controls">
+      <button class="tekton-refresh">Refresh</button>
+      <button class="tekton-settings">Settings</button>
+    </div>
+  </header>
+  
+  <div class="tekton-tabs">
+    <div class="tekton-tab active" data-panel="system">System</div>
+    <div class="tekton-tab" data-panel="components">Components</div>
+    <div class="tekton-tab" data-panel="resources">Resources</div>
+    <div class="tekton-tab" data-panel="projects">Projects</div>
+  </div>
+  
+  <div class="tekton-content">
+    <div class="tekton-panel active" id="system-panel">
+      <div class="system-dashboard">
+        <div class="system-status">
+          <h2>System Status</h2>
+          <div class="status-cards">
+            <div class="status-card">
+              <div class="status-card-header">Components</div>
+              <div class="status-card-value">13</div>
+              <div class="status-card-detail">8 Active, 5 Inactive</div>
+            </div>
+            <div class="status-card">
+              <div class="status-card-header">LLM</div>
+              <div class="status-card-value">Connected</div>
+              <div class="status-card-detail">Claude 3.7 Sonnet</div>
+            </div>
+            <div class="status-card">
+              <div class="status-card-header">Memory</div>
+              <div class="status-card-value">4.2 GB</div>
+              <div class="status-card-detail">42% Used</div>
+            </div>
+            <div class="status-card">
+              <div class="status-card-header">Requests</div>
+              <div class="status-card-value">128</div>
+              <div class="status-card-detail">12 Active, 116 Completed</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="system-activity">
+          <h2>Recent Activity</h2>
+          <div class="activity-list">
+            <div class="activity-item">
+              <div class="activity-time">13:30</div>
+              <div class="activity-component">Ergon</div>
+              <div class="activity-description">Agent "CodeReviewer" created</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-time">13:15</div>
+              <div class="activity-component">Engram</div>
+              <div class="activity-description">Memory snapshot created</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-time">13:02</div>
+              <div class="activity-component">Athena</div>
+              <div class="activity-description">Knowledge graph updated</div>
+            </div>
+            <div class="activity-item">
+              <div class="activity-time">12:45</div>
+              <div class="activity-component">Hermes</div>
+              <div class="activity-description">New service registered</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tekton-panel" id="components-panel">
+      <div class="components-container">
+        <h2>Component Status</h2>
+        <div class="component-list">
+          <div class="component-item active">
+            <div class="component-name">Hermes</div>
+            <div class="component-status">Active</div>
+            <div class="component-port">8000</div>
+          </div>
+          <div class="component-item active">
+            <div class="component-name">Engram</div>
+            <div class="component-status">Active</div>
+            <div class="component-port">8001</div>
+          </div>
+          <div class="component-item active">
+            <div class="component-name">Ergon</div>
+            <div class="component-status">Active</div>
+            <div class="component-port">8002</div>
+          </div>
+          <div class="component-item active">
+            <div class="component-name">Rhetor</div>
+            <div class="component-status">Active</div>
+            <div class="component-port">8003</div>
+          </div>
+          <div class="component-item active">
+            <div class="component-name">Athena</div>
+            <div class="component-status">Active</div>
+            <div class="component-port">8004</div>
+          </div>
+          <div class="component-item">
+            <div class="component-name">Prometheus</div>
+            <div class="component-status">Inactive</div>
+            <div class="component-port">8005</div>
+          </div>
+          <div class="component-item">
+            <div class="component-name">Harmonia</div>
+            <div class="component-status">Inactive</div>
+            <div class="component-port">8006</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tekton-panel" id="resources-panel">
+      <div class="resources-container">
+        <h2>System Resources</h2>
+        <div class="placeholder">
+          <p>System resource monitoring will be displayed here.</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="tekton-panel" id="projects-panel">
+      <div class="projects-container">
+        <h2>Projects</h2>
+        <div class="placeholder">
+          <p>Project management tools will be displayed here.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
