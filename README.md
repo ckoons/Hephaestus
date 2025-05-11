@@ -1,100 +1,80 @@
-# Hephaestus
+# Hephaestus Documentation
 
-Hephaestus is the UI component for the Tekton system. This is a complete redesign focusing on simplicity, maintainability, and integration with all Tekton components.
+## Overview
 
-![Tekton UI](../../images/Tekton.png)
+This documentation provides comprehensive information about the Hephaestus UI component of the Tekton AI orchestration system. Hephaestus serves as the unified user interface for interacting with all Tekton components through a combination of terminal and graphical interfaces.
 
-## Purpose
+## Documentation Contents
 
-The Hephaestus component provides a unified user interface for interacting with all Tekton system components. It serves as the main dashboard and control center for the entire Tekton orchestration system.
+### [Technical Documentation](./technical_documentation.md)
 
-## Development Status
+A comprehensive technical reference covering:
+- Architecture and system design
+- Core components and their functionality
+- Component isolation strategy
+- Integration points with other Tekton services
+- State management and theming
+- Error handling and performance optimization
 
-Implementation is in progress. The redesign uses a simpler architecture with vanilla JavaScript, HTML, and CSS instead of complex frameworks for better maintainability.
+### [Developer Guide](./developer_guide.md)
 
-### Current Status:
-- ✅ Core UI framework implemented
-- ✅ Basic component integration pattern established
-- ✅ Ergon component UI fully implemented
-- ✅ WebSocket communication infrastructure built
-- ✅ Terminal and HTML panel switching implemented
-- ✅ Dark/light theme support added
-- ⏳ Additional component UIs to be implemented
-- ⏳ Backend integration to be completed
+A practical guide for developers who want to create or extend Hephaestus components:
+- Step-by-step instructions for creating new components
+- CSS naming conventions and best practices
+- Using component utilities (notifications, dialogs, tabs, etc.)
+- Integrating with Tekton services (LLM Adapter, Hermes, Engram)
+- Testing and troubleshooting components
 
-**See [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) for detailed information about current progress, architecture, and next steps.**
+### [Architecture Overview](./architecture.md)
 
-## Architecture
+Visual diagrams and explanations of the Hephaestus architecture:
+- System architecture and layers
+- Component isolation using Shadow DOM
+- File structure and organization
+- Component loading flow
+- Theme propagation
+- WebSocket communication
+- Service integration patterns
 
-- **Vanilla Web Technologies**: Simple HTML/CSS/JS with no complex frameworks or build systems
-- **Component-Based Design**: Each Tekton component has its own UI module
-- **Logical Navigation**: Components organized in functional groups for intuitive access
-- **AI Assistant Tabs**: Support for multiple AI contexts within components (e.g., Ergon/Ergon-Team)
-- **Real-Time Communication**: WebSocket-based communication with backend services
-- **Persistent State**: Client-side storage for user preferences and context
-- **Dual Interface**: Support for both terminal and graphical interfaces
+## Key Features
 
-## Integration Points
+1. **Shadow DOM Isolation**: Components are loaded in isolated Shadow DOM contexts to prevent style bleeding and DOM conflicts.
 
-- **Hermes Integration**: Connects with Hermes for service discovery
-- **Component Interfaces**: Provides UI for all Tekton components
-- **System Monitoring**: Visualizes system status and component health 
-- **AI Communication**: Interfaces with component-specific AI models
-- **WebSocket Protocol**: Standardized message format for all communication
+2. **Component-Based Design**: Each Tekton subsystem has a dedicated UI component with its own HTML, CSS, and JavaScript.
 
-## Running the UI
+3. **Theme System**: Consistent theming across components using CSS variables propagated through Shadow DOM boundaries.
 
-```bash
-# Start the UI server on port 8080
-./run_ui.sh
+4. **Utilities Library**: Common UI patterns implemented as reusable utilities for notifications, dialogs, tabs, and more.
 
-# Access the UI in your browser
-# http://localhost:8080
-```
+5. **Service Integration**: Standardized patterns for integrating with Tekton services like LLM Adapter, Hermes message bus, and Engram memory system.
 
-## Adding New Components
+6. **WebSocket Communication**: Real-time communication with backend services through a unified WebSocket client.
 
-Follow the established pattern to add new component UIs:
+7. **Terminal Interface**: Terminal-based interaction alongside the graphical interface for command-line operations.
 
-1. Create an HTML template in `/ui/components/`
-2. Add CSS styling in `/ui/styles/`
-3. Implement JavaScript functionality in `/ui/scripts/`
-4. Add component to the navigation in `index.html`
-5. Register the component in the UI system
+## Getting Started
 
-Detailed component integration instructions are available in [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md#component-integration-guide).
+To start working with Hephaestus:
 
-## Component Structure
+1. **Setup**: Ensure you have the Tekton codebase cloned and set up locally
+2. **Run**: Use the `/Hephaestus/run_ui.sh` script to start the UI server
+3. **Access**: Open `http://localhost:8080` in your browser
+4. **Develop**: Follow the [Developer Guide](./developer_guide.md) to create or modify components
 
-```
-/ui/components/component-name.html   # HTML template
-/ui/styles/component-name.css        # Component-specific styles
-/ui/scripts/component-name.js        # Component functionality
-```
+## Contributing
 
-## Technical Design
+When contributing to Hephaestus, please:
 
-For more details on the UI implementation, see:
-- [UI_STYLING_GUIDE.md](./UI_STYLING_GUIDE.md) - Styling guidelines and best practices
-- [DEVELOPMENT_STATUS.md](./DEVELOPMENT_STATUS.md) - Current status and implementation details
-- [TektonUIOperation.md](./TektonUIOperation.md) - AI integration details
-- [HephaestusRedesign.md](./HephaestusRedesign.md) - Historical design decisions and approach
+1. Follow the established CSS naming convention
+2. Use Shadow DOM isolation for all components
+3. Implement proper theme support
+4. Add comprehensive error handling
+5. Test your components thoroughly
+6. Document any new features or changes
 
-## UI Image Management
+## See Also
 
-Images used in the UI should follow these guidelines:
-
-1. **Location:**
-   - UI-specific images should be placed in: `/Hephaestus/ui/images/`
-   - Shared Tekton images remain in: `/images/`
-
-2. **Referencing Images:**
-   - From HTML: Use relative paths (e.g., `images/icon.png`)
-   - Always include fallbacks: `onerror="this.src='images/fallback.png'"`
-
-3. **Image Formats:**
-   - Use PNG for icons and logos
-   - Use JPEG for photographs
-   - Keep image sizes reasonable (under 200KB)
-
-The UI server has been configured to properly serve images from these locations.
+- [DEVELOPMENT_STATUS.md](../DEVELOPMENT_STATUS.md) - Current development status and roadmap
+- [UI_STYLING_GUIDE.md](../UI_STYLING_GUIDE.md) - Detailed styling guidelines
+- [COMPONENT_ISOLATION_STRATEGY.md](../COMPONENT_ISOLATION_STRATEGY.md) - In-depth explanation of the isolation approach
+- [CSS_NAMING_CONVENTION.md](../CSS_NAMING_CONVENTION.md) - CSS naming conventions and examples
