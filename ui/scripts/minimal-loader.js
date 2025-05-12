@@ -39,6 +39,9 @@ class MinimalLoader {
       if (componentId === 'athena' && window.athenaComponent) {
         console.log('MinimalLoader: Re-initializing Athena component');
         window.athenaComponent.init();
+      } else if (componentId === 'ergon' && window.ergonComponent) {
+        console.log('MinimalLoader: Re-initializing Ergon component');
+        window.ergonComponent.init();
       }
 
       return;
@@ -85,6 +88,16 @@ class MinimalLoader {
             window.athenaComponent.init();
           } else {
             console.warn('MinimalLoader: Athena component not found in global scope');
+          }
+        }, 100); // Small delay to ensure script execution
+      } else if (componentId === 'ergon') {
+        // Check if ergonComponent was loaded via script tag
+        setTimeout(() => {
+          if (window.ergonComponent) {
+            console.log('MinimalLoader: Initializing Ergon component');
+            window.ergonComponent.init();
+          } else {
+            console.warn('MinimalLoader: Ergon component not found in global scope');
           }
         }, 100); // Small delay to ensure script execution
       }
