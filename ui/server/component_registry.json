@@ -109,22 +109,17 @@
     },
     {
       "id": "test",
-      "name": "Test Component",
-      "description": "Shadow DOM isolation test component",
+      "name": "BEM Test Component",
+      "description": "BEM pattern component isolation test",
       "icon": "🧪",
       "defaultMode": "html",
       "capabilities": [
         "testing",
-        "shadow_dom",
+        "bem_naming",
         "component_isolation"
       ],
       "componentPath": "components/test/test-component.html",
-      "scripts": [
-        "scripts/test/test-component.js"
-      ],
-      "styles": [
-        "styles/test/test-component.css"
-      ]
+      "usesShadowDom": false
     },
     {
       "id": "terma",

@@ -7,10 +7,10 @@
 class UIManagerCore {
     constructor() {
         this.components = {};
-        this.activeComponent = 'tekton'; // Default component
-        this.activePanel = 'terminal'; // Default panel (terminal, html, or settings)
-        this.useShadowDOM = true; // Flag to control Shadow DOM usage
-        
+        this.activeComponent = 'test'; // Default to test component for debugging
+        this.activePanel = 'html'; // Default panel (terminal, html, or settings)
+        this.useShadowDOM = false; // Disabled Shadow DOM for direct HTML injection
+
         // Track component availability
         this.availableComponents = {};
     }
@@ -134,8 +134,16 @@ class UIManagerCore {
      */
     activateComponent(componentId) {
         console.log(`Activating component: ${componentId}`);
-        
+
+        // Use the component loader if available
+        if (window.componentLoader) {
+            console.log(`Using ComponentLoader to load ${componentId}`);
+            window.componentLoader.loadComponent(componentId);
+            return;
+        }
+
         // SPECIAL CASES: Direct component loading for specific components
+        // This is fallback if componentLoader is not available
         const specialComponents = ['rhetor', 'budget', 'hermes', 'engram', 'athena', 'ergon'];
         if (specialComponents.includes(componentId)) {
             this._loadSpecialComponent(componentId);
@@ -576,70 +584,52 @@ class UIManagerCore {
             this.activateComponentUI(componentId);
             return;
         }
-        
+
         // Get HTML panel for component rendering
         const htmlPanel = document.getElementById('html-panel');
         if (!htmlPanel) {
             console.error('HTML panel not found!');
             return;
         }
-        
-        // If using Shadow DOM for components and the component loader is available
-        if (this.useShadowDOM && window.componentLoader) {
-            console.log(`Loading component ${componentId} with Shadow DOM isolation`);
-            
-            // For backwards compatibility with special components during migration
-            const specialComponents = ['rhetor', 'budget', 'terma', 'engram'];
-            
-            if (specialComponents.includes(componentId)) {
-                console.log(`Special component ${componentId} detected - using direct loading during migration`);
-                this._loadSpecialComponent(componentId);
-                return;
-            }
-            
+
+        // Use our component loader for all components
+        if (window.componentLoader) {
+            console.log(`Loading component ${componentId} with component loader`);
+
             try {
                 // Clear any existing content in the HTML panel
                 htmlPanel.innerHTML = '';
-                
-                // Create a container for the component
-                const container = document.createElement('div');
-                container.id = `${componentId}-container`;
-                container.className = 'shadow-component-container';
-                container.style.height = '100%';
-                container.style.width = '100%';
-                htmlPanel.appendChild(container);
-                
-                // Load the component using the component loader
-                const component = await window.componentLoader.loadComponent(componentId, container);
-                
+
+                // Load the component using the component loader directly
+                const component = await window.componentLoader.loadComponent(componentId, htmlPanel);
+
                 if (component) {
-                    // Register the component
+                    // Register the component in our local tracking
                     this.components[componentId] = {
                         id: componentId,
                         loaded: true,
-                        usesTerminal: false, // Shadow DOM components use HTML panel
-                        shadowComponent: true, // Mark as a shadow DOM component
-                        container
+                        usesTerminal: false, // Components use HTML panel by default
+                        container: htmlPanel
                     };
-                    
+
                     // Activate the HTML panel
                     if (window.uiUtils) {
                         window.uiUtils.activatePanel('html');
                     } else {
                         this.activatePanel('html');
                     }
-                    
-                    console.log(`Component ${componentId} loaded successfully with Shadow DOM`);
+
+                    console.log(`Component ${componentId} loaded successfully with component loader`);
                 } else {
-                    console.error(`Failed to load component ${componentId} with Shadow DOM`);
-                    
+                    console.error(`Failed to load component ${componentId} with component loader`);
+
                     // Fallback to terminal panel
                     this.components[componentId] = {
                         id: componentId,
                         loaded: true,
                         usesTerminal: true,
                     };
-                    
+
                     if (window.uiUtils) {
                         window.uiUtils.activatePanel('terminal');
                     } else {
@@ -647,35 +637,35 @@ class UIManagerCore {
                     }
                 }
             } catch (error) {
-                console.error(`Error loading component ${componentId} with Shadow DOM:`, error);
-                
+                console.error(`Error loading component ${componentId} with component loader:`, error);
+
                 // Fallback to terminal panel
                 this.components[componentId] = {
                     id: componentId,
                     loaded: true,
                     usesTerminal: true,
                 };
-                
+
                 if (window.uiUtils) {
                     window.uiUtils.activatePanel('terminal');
                 } else {
                     this.activatePanel('terminal');
                 }
             }
-            
+
             return;
         }
-        
-        // Legacy component loading (without Shadow DOM)
-        console.log(`Loading component ${componentId} using legacy method`);
-        
+
+        // Legacy component loading as fallback
+        console.log(`Component loader not available, using legacy method for ${componentId}`);
+
         // Default to terminal for now
         this.components[componentId] = {
             id: componentId,
             loaded: true,
             usesTerminal: true,
         };
-        
+
         // Activate the terminal panel
         if (window.uiUtils) {
             window.uiUtils.activatePanel('terminal');

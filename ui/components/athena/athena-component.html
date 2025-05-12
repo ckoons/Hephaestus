@@ -1,81 +1,145 @@
 <!-- Athena Component - Knowledge Graph and Entity Management -->
-<div class="athena-container">
+<div class="athena">
     <!-- Component Header with Title -->
-    <div class="component-header">
-        <div class="component-title-container">
-            <img src="/images/hexagon.jpg" alt="Tekton" class="component-icon">
-            <h2 class="component-title">
-                <span class="greek-name">Athena - </span>
-                <span>Knowledge</span>
+    <div class="athena__header">
+        <div class="athena__title-container">
+            <img src="/images/hexagon.jpg" alt="Tekton" class="athena__icon">
+            <h2 class="athena__title">
+                <span class="athena__title-main">Athena</span>
+                <span class="athena__title-sub">Knowledge Graph</span>
             </h2>
         </div>
     </div>
     
     <!-- Athena Menu Bar with Tab Navigation -->
-    <div class="athena-header">
-        <div class="tabs-container">
-            <div class="tab-button athena-tab active" data-tab="graph">
-                <span class="tab-label">Knowledge Graph</span>
+    <div class="athena__menu-bar">
+        <div class="athena__tabs">
+            <div class="athena__tab athena__tab--active" data-tab="graph">
+                <span class="athena__tab-label">Knowledge Graph</span>
             </div>
-            <div class="tab-button athena-tab" data-tab="entities">
-                <span class="tab-label">Entities</span>
+            <div class="athena__tab" data-tab="entities">
+                <span class="athena__tab-label">Entities</span>
             </div>
-            <div class="tab-button athena-tab" data-tab="query">
-                <span class="tab-label">Query Builder</span>
+            <div class="athena__tab" data-tab="query">
+                <span class="athena__tab-label">Query Builder</span>
             </div>
-            <div class="tab-button athena-tab" data-tab="chat">
-                <span class="tab-label">Knowledge Chat</span>
+            <div class="athena__tab" data-tab="chat">
+                <span class="athena__tab-label">Knowledge Chat</span>
             </div>
-            <div class="tab-button athena-tab" data-tab="teamchat">
-                <span class="tab-label">Team Chat</span>
+            <div class="athena__tab" data-tab="teamchat">
+                <span class="athena__tab-label">Team Chat</span>
             </div>
         </div>
-        <div class="header-actions">
-            <button id="clear-chat-btn" class="action-button" style="display: none;">
-                <span class="button-label">Clear</span>
+        <div class="athena__actions">
+            <button id="clear-chat-btn" class="athena__action-button" style="display: none;">
+                <span class="athena__button-label">Clear</span>
             </button>
         </div>
     </div>
     
     <!-- Athena Content Area -->
-    <div class="athena-content">
+    <div class="athena__content">
         <!-- Graph Tab (Default Active Tab) -->
-        <div id="graph-panel" class="athena-panel active">
-            <div class="control-bar">
-                <div class="search-container">
-                    <input type="text" id="graph-search" placeholder="Search entities...">
-                    <button id="graph-search-btn">Search</button>
+        <div id="graph-panel" class="athena__panel athena__panel--active">
+            <div class="athena__graph">
+                <div class="athena__control-bar">
+                    <div class="athena__search-container">
+                        <input type="text" id="graph-search" class="athena__search-input" placeholder="Search entities...">
+                        <button id="graph-search-btn" class="athena__search-button">Search</button>
+                    </div>
+                    <div class="athena__filter-container">
+                        <select id="entity-type-filter" class="athena__filter-select">
+                            <option value="all">All Types</option>
+                            <option value="person">Person</option>
+                            <option value="project">Project</option>
+                            <option value="document">Document</option>
+                            <option value="concept">Concept</option>
+                            <option value="organization">Organization</option>
+                        </select>
+                        <button id="apply-filter-btn" class="athena__filter-button">Apply</button>
+                    </div>
                 </div>
-                <div class="filter-container">
-                    <select id="entity-type-filter">
-                        <option value="all">All Types</option>
-                        <option value="person">Person</option>
-                        <option value="project">Project</option>
-                        <option value="document">Document</option>
-                        <option value="concept">Concept</option>
-                        <option value="organization">Organization</option>
-                    </select>
-                    <button id="apply-filter-btn">Apply</button>
-                </div>
-            </div>
-            <div id="graph-container" class="graph-container">
-                <div id="graph-placeholder" class="graph-placeholder">
-                    <div class="placeholder-content">
-                        <h3>Knowledge Graph Visualization</h3>
-                        <p>The graph will be displayed here once loaded.</p>
+                <div id="graph-container" class="athena__graph-container">
+                    <div id="graph-placeholder" class="athena__graph-placeholder">
+                        <div class="athena__placeholder-content">
+                            <h3 class="athena__placeholder-title">Knowledge Graph Visualization</h3>
+                            <p class="athena__placeholder-text">The graph will be displayed here once loaded.</p>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
         
+        <!-- Entities Tab -->
+        <div id="entities-panel" class="athena__panel">
+            <div class="athena__entities">
+                <div class="athena__control-bar">
+                    <div class="athena__search-container">
+                        <input type="text" id="entity-search" class="athena__search-input" placeholder="Search entities...">
+                        <button id="entity-search-btn" class="athena__search-button">Search</button>
+                    </div>
+                    <div class="athena__actions">
+                        <button id="add-entity-btn" class="athena__action-button">
+                            <span class="athena__button-icon">+</span>
+                            <span class="athena__button-label">Add Entity</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="athena__entity-list-container">
+                    <div id="entity-list-loading" class="athena__loading-indicator">
+                        <div class="athena__spinner"></div>
+                        <div class="athena__loading-text">Loading entities...</div>
+                    </div>
+                    <div id="entity-list-items" class="athena__entity-list" style="display: none;">
+                        <!-- Sample entities for UI testing -->
+                        <div class="athena__entity-item">
+                            <div class="athena__entity-type-icon athena__entity-type-icon--person">👤</div>
+                            <div class="athena__entity-details">
+                                <div class="athena__entity-name">Casey Koons</div>
+                                <div class="athena__entity-type">Person</div>
+                                <div class="athena__entity-properties">Project Lead, Engineering</div>
+                            </div>
+                            <div class="athena__entity-actions">
+                                <button class="athena__entity-action-btn">View</button>
+                                <button class="athena__entity-action-btn">Edit</button>
+                            </div>
+                        </div>
+                        <div class="athena__entity-item">
+                            <div class="athena__entity-type-icon athena__entity-type-icon--project">📂</div>
+                            <div class="athena__entity-details">
+                                <div class="athena__entity-name">Tekton</div>
+                                <div class="athena__entity-type">Project</div>
+                                <div class="athena__entity-properties">AI Orchestration System</div>
+                            </div>
+                            <div class="athena__entity-actions">
+                                <button class="athena__entity-action-btn">View</button>
+                                <button class="athena__entity-action-btn">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Query Builder Tab -->
+        <div id="query-panel" class="athena__panel">
+            <div class="athena__query-builder">
+                <h3 class="athena__section-title">Query Builder</h3>
+                <p class="athena__text">Construct queries to find entities and relationships in the knowledge graph.</p>
+                <div class="athena__query-form">
+                    <!-- Form will be populated here -->
+                </div>
+            </div>
+        </div>
+        
         <!-- Chat Tab -->
-        <div id="chat-panel" class="athena-panel">
-            <div id="chat-messages" class="chat-messages">
+        <div id="chat-panel" class="athena__panel">
+            <div id="chat-messages" class="athena__chat-messages">
                 <!-- Welcome message -->
-                <div class="chat-message system">
-                    <div class="message-content">
-                        <div class="message-text">
-                            <h3>Welcome to Athena Knowledge Chat</h3>
+                <div class="athena__message athena__message--system">
+                    <div class="athena__message-content">
+                        <div class="athena__message-text">
+                            <h3 class="athena__message-title">Welcome to Athena Knowledge Chat</h3>
                             <p>You can ask questions about any entities in the knowledge graph. Try questions like:</p>
                             <ul>
                                 <li>What do you know about [entity name]?</li>
@@ -89,198 +153,14 @@
             </div>
         </div>
         
-        <!-- Graph Tab -->
-        <div id="graph-panel" class="athena-panel">
-            <div class="control-bar">
-                <div class="search-container">
-                    <input type="text" id="graph-search" placeholder="Search entities...">
-                    <button id="graph-search-btn">Search</button>
-                </div>
-                <div class="filter-container">
-                    <select id="entity-type-filter">
-                        <option value="all">All Types</option>
-                        <option value="person">Person</option>
-                        <option value="project">Project</option>
-                        <option value="document">Document</option>
-                        <option value="concept">Concept</option>
-                        <option value="organization">Organization</option>
-                    </select>
-                    <button id="apply-filter-btn">Apply</button>
-                </div>
-            </div>
-            <div id="graph-container" class="graph-container">
-                <div id="graph-placeholder" class="graph-placeholder">
-                    <div class="placeholder-content">
-                        <h3>Knowledge Graph Visualization</h3>
-                        <p>The graph will be displayed here once loaded.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Entities Tab -->
-        <div id="entities-panel" class="athena-panel">
-            <div class="entity-controls">
-                <div class="search-container">
-                    <input type="text" id="entity-search" placeholder="Search entities...">
-                    <button id="entity-search-btn">Search</button>
-                </div>
-                <div class="add-entity-container">
-                    <button id="add-entity-btn" class="action-button">
-                        <span class="button-icon">+</span>
-                        <span class="button-label">Add Entity</span>
-                    </button>
-                </div>
-            </div>
-            <div class="entity-list-container">
-                <div id="entity-list-loading" class="loading-indicator">
-                    <div class="spinner"></div>
-                    <div class="loading-text">Loading entities...</div>
-                </div>
-                <div id="entity-list-items" class="entity-list" style="display: none;">
-                    <!-- Sample entities for UI testing -->
-                    <div class="entity-item">
-                        <div class="entity-type-icon person">👤</div>
-                        <div class="entity-details">
-                            <div class="entity-name">Casey Koons</div>
-                            <div class="entity-type">Person</div>
-                            <div class="entity-properties">Project Lead, Engineering</div>
-                        </div>
-                        <div class="entity-actions">
-                            <button class="entity-action-btn">View</button>
-                            <button class="entity-action-btn">Edit</button>
-                        </div>
-                    </div>
-                    <div class="entity-item">
-                        <div class="entity-type-icon project">📂</div>
-                        <div class="entity-details">
-                            <div class="entity-name">Tekton</div>
-                            <div class="entity-type">Project</div>
-                            <div class="entity-properties">AI Orchestration System</div>
-                        </div>
-                        <div class="entity-actions">
-                            <button class="entity-action-btn">View</button>
-                            <button class="entity-action-btn">Edit</button>
-                        </div>
-                    </div>
-                    <div class="entity-item">
-                        <div class="entity-type-icon document">📄</div>
-                        <div class="entity-details">
-                            <div class="entity-name">Athena Design Document</div>
-                            <div class="entity-type">Document</div>
-                            <div class="entity-properties">Created 2025-04-15</div>
-                        </div>
-                        <div class="entity-actions">
-                            <button class="entity-action-btn">View</button>
-                            <button class="entity-action-btn">Edit</button>
-                        </div>
-                    </div>
-                    <div class="entity-item">
-                        <div class="entity-type-icon concept">🧠</div>
-                        <div class="entity-details">
-                            <div class="entity-name">Knowledge Graph</div>
-                            <div class="entity-type">Concept</div>
-                            <div class="entity-properties">Data Structure</div>
-                        </div>
-                        <div class="entity-actions">
-                            <button class="entity-action-btn">View</button>
-                            <button class="entity-action-btn">Edit</button>
-                        </div>
-                    </div>
-                    <div class="entity-item">
-                        <div class="entity-type-icon organization">🏢</div>
-                        <div class="entity-details">
-                            <div class="entity-name">Engineering Team</div>
-                            <div class="entity-type">Organization</div>
-                            <div class="entity-properties">12 Members</div>
-                        </div>
-                        <div class="entity-actions">
-                            <button class="entity-action-btn">View</button>
-                            <button class="entity-action-btn">Edit</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Query Builder Tab -->
-        <div id="query-panel" class="athena-panel">
-            <div class="query-builder">
-                <div class="query-section">
-                    <h3>Query Builder</h3>
-                    <p>Construct queries to find entities and relationships in the knowledge graph.</p>
-                    
-                    <div class="query-form">
-                        <div class="form-group">
-                            <label for="start-entity">Start Entity:</label>
-                            <input type="text" id="start-entity" placeholder="Enter entity name or select below">
-                            <select id="start-entity-type">
-                                <option value="any">Any Type</option>
-                                <option value="person">Person</option>
-                                <option value="project">Project</option>
-                                <option value="document">Document</option>
-                                <option value="concept">Concept</option>
-                                <option value="organization">Organization</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="relationship-type">Relationship:</label>
-                            <select id="relationship-type">
-                                <option value="any">Any Relationship</option>
-                                <option value="works_on">Works On</option>
-                                <option value="created">Created</option>
-                                <option value="member_of">Member Of</option>
-                                <option value="related_to">Related To</option>
-                                <option value="depends_on">Depends On</option>
-                            </select>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="reverse-relationship"> 
-                                Include Reverse Relationship
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="end-entity">End Entity (Optional):</label>
-                            <input type="text" id="end-entity" placeholder="Leave empty for all related entities">
-                            <select id="end-entity-type">
-                                <option value="any">Any Type</option>
-                                <option value="person">Person</option>
-                                <option value="project">Project</option>
-                                <option value="document">Document</option>
-                                <option value="concept">Concept</option>
-                                <option value="organization">Organization</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button id="run-query-btn" class="action-button primary">Run Query</button>
-                            <button id="save-query-btn" class="action-button">Save Query</button>
-                            <button id="clear-query-btn" class="action-button">Clear</button>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="query-results">
-                    <h3>Query Results</h3>
-                    <div id="query-results-container" class="results-container">
-                        <div class="placeholder-message">
-                            <p>Query results will appear here.</p>
-                            <p>Build a query using the form and click "Run Query" to see results.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
         <!-- Team Chat Tab -->
-        <div id="teamchat-panel" class="athena-panel">
-            <div id="teamchat-messages" class="chat-messages">
+        <div id="teamchat-panel" class="athena__panel">
+            <div id="teamchat-messages" class="athena__chat-messages">
                 <!-- Welcome message -->
-                <div class="chat-message system">
-                    <div class="message-content">
-                        <div class="message-text">
-                            <h3>Tekton Team Chat</h3>
+                <div class="athena__message athena__message--system">
+                    <div class="athena__message-content">
+                        <div class="athena__message-text">
+                            <h3 class="athena__message-title">Tekton Team Chat</h3>
                             <p>This chat is shared across all Tekton components. Use this for team communication and coordination.</p>
                         </div>
                     </div>
@@ -289,85 +169,80 @@
         </div>
     </div>
     
-    <!-- Global Footer with Chat Input -->
-    <div class="athena-footer">
-        <div class="chat-input-container">
-            <div class="chat-prompt">></div>
-            <input type="text" id="chat-input" class="chat-input" 
+    <!-- Footer with Chat Input -->
+    <div class="athena__footer">
+        <div class="athena__chat-input-container">
+            <div class="athena__chat-prompt">></div>
+            <input type="text" id="chat-input" class="athena__chat-input" 
                    placeholder="Enter chat message for Athena knowledge graph queries, entities or information">
-            <button id="send-button" class="send-button">Send</button>
+            <button id="send-button" class="athena__send-button">Send</button>
         </div>
     </div>
 </div>
 
 <!-- Add component-specific styles -->
 <style>
-    .athena-container {
+    /* Athena component styles using BEM naming convention */
+    
+    /* Container */
+    .athena {
         display: flex;
         flex-direction: column;
         height: 100%;
         width: 100%;
         background-color: var(--bg-primary, #1e1e2e);
         color: var(--text-primary, #f0f0f0);
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
+        /* No absolute positioning - proper component containment */
     }
     
-    /* Component Header Styles */
-    .component-header {
+    /* Header */
+    .athena__header {
         display: flex;
         align-items: center;
         padding: 10px 16px;
         background-color: var(--bg-secondary, #252535);
         border-bottom: 1px solid var(--border-color, #444444);
-        height: 45px;
     }
     
-    .component-title-container {
+    .athena__title-container {
         display: flex;
         align-items: center;
     }
     
-    .component-icon {
+    .athena__icon {
         height: 30px;
         width: auto;
         margin-right: 12px;
     }
     
-    .component-title {
+    .athena__title {
         margin: 0;
         font-size: 1.2rem;
         font-weight: 500;
     }
     
-    .greek-name {
-        display: inline;
+    .athena__title-sub {
+        margin-left: 8px;
+        opacity: 0.8;
+        font-weight: normal;
     }
     
-    /* Hide Greek name when environment variable is false */
-    body:not([data-show-greek-names="true"]) .greek-name {
-        display: none;
-    }
-    
-    .athena-header {
+    /* Menu Bar */
+    .athena__menu-bar {
         display: flex;
         justify-content: space-between;
         align-items: center;
         padding: 6px 16px;
         background-color: var(--bg-secondary, #252535);
         border-bottom: 1px solid var(--border-color, #444444);
-        height: 42px;
     }
     
-    .tabs-container {
+    .athena__tabs {
         display: flex;
         gap: 8px;
     }
     
-    .tab-button {
+    .athena__tab {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -380,21 +255,21 @@
         transition: all 0.2s ease;
     }
     
-    .tab-button:hover {
+    .athena__tab:hover {
         background-color: var(--bg-hover, #3a3a4a);
     }
     
-    .tab-button.active {
+    .athena__tab--active {
         border-bottom-color: var(--color-primary, #7B1FA2);
         font-weight: 500;
     }
     
-    .header-actions {
+    .athena__actions {
         display: flex;
         gap: 8px;
     }
     
-    .action-button {
+    .athena__action-button {
         display: flex;
         align-items: center;
         gap: 6px;
@@ -407,78 +282,169 @@
         transition: all 0.2s ease;
     }
     
-    .action-button:hover {
+    .athena__action-button:hover {
         background-color: var(--bg-hover, #3a3a4a);
     }
     
-    .action-button.primary {
-        background-color: var(--color-primary, #7B1FA2);
-        border-color: var(--color-primary, #7B1FA2);
-    }
-    
-    .action-button.primary:hover {
-        background-color: var(--color-primary-hover, #6A1B9A);
-    }
-    
-    .athena-content {
+    /* Content Area */
+    .athena__content {
         flex: 1;
         overflow: hidden;
         position: relative;
     }
     
-    .athena-panel {
+    .athena__panel {
         display: none;
-        height: calc(100% - 70px); /* Subtract footer height to make scrollbar end exactly at footer */
+        height: 100%;
         width: 100%;
         overflow: auto;
-        padding-bottom: 0; /* Remove padding as we're using height calculation instead */
     }
     
-    .athena-panel.active {
+    .athena__panel--active {
         display: block;
     }
     
-    /* Footer Styles */
-    .athena-footer {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
+    /* Control Bar */
+    .athena__control-bar {
+        display: flex;
+        justify-content: space-between;
+        padding: 16px;
         background-color: var(--bg-secondary, #252535);
-        border-top: 1px solid var(--border-color, #444444);
-        padding: 12px 16px;
-        z-index: 100;
-        height: 70px; /* Fixed height to match the height calculation in athena-panel */
-        box-sizing: border-box; /* Ensure padding is included in height */
+        border-bottom: 1px solid var(--border-color, #444444);
     }
     
-    /* Make sure content extends all the way to the footer */
-    .athena-content {
-        padding-bottom: 0;
-        margin-bottom: 0;
-        position: relative; /* Establish positioning context for children */
-        height: 100%; /* Full height */
+    .athena__search-container {
+        display: flex;
+        gap: 8px;
     }
     
-    /* Chat Panel Styles */
-    #chat-panel, #teamchat-panel {
+    .athena__search-input {
+        padding: 8px 12px;
+        min-width: 260px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+    }
+    
+    .athena__filter-container {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .athena__filter-select {
+        padding: 8px 12px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+    }
+    
+    .athena__filter-button,
+    .athena__search-button {
+        padding: 8px 12px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+    }
+    
+    /* Graph Container */
+    .athena__graph-container {
+        height: calc(100% - 68px);
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .athena__graph-placeholder {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        width: 100%;
+        padding: 20px;
+        text-align: center;
+    }
+    
+    /* Entity List */
+    .athena__entity-list-container {
+        padding: 16px;
+    }
+    
+    .athena__entity-list {
         display: flex;
         flex-direction: column;
-        height: 100%;
+        gap: 12px;
     }
     
-    .chat-messages {
+    .athena__entity-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        background-color: var(--bg-secondary, #252535);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .athena__entity-item:hover {
+        background-color: var(--bg-hover, #3a3a4a);
+    }
+    
+    .athena__entity-type-icon {
+        font-size: 24px;
+        margin-right: 16px;
+        padding: 8px;
+        border-radius: 8px;
+        background-color: var(--bg-tertiary, #333345);
+    }
+    
+    .athena__entity-details {
+        flex: 1;
+    }
+    
+    .athena__entity-name {
+        font-weight: 500;
+        margin-bottom: 4px;
+    }
+    
+    .athena__entity-type {
+        color: var(--text-secondary, #aaaaaa);
+        margin-bottom: 4px;
+        font-size: 0.9em;
+    }
+    
+    .athena__entity-properties {
+        color: var(--text-secondary, #aaaaaa);
+        font-size: 0.9em;
+    }
+    
+    .athena__entity-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .athena__entity-action-btn {
+        padding: 4px 10px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+    }
+    
+    /* Chat Messages */
+    .athena__chat-messages {
         flex: 1;
         overflow-y: auto;
         padding: 16px;
         display: flex;
         flex-direction: column;
         gap: 12px;
-        margin-bottom: 0;
-        padding-bottom: 16px; /* Reduced padding to avoid unnecessary space */
     }
     
-    .chat-message {
+    .athena__message {
         border-radius: 16px;
         padding: 12px 16px;
         max-width: 85%;
@@ -486,49 +452,50 @@
         line-height: 1.4;
     }
     
-    .chat-message.system {
+    .athena__message--system {
         background-color: var(--bg-tertiary, #333345);
         align-self: center;
         max-width: 90%;
         width: 600px;
         margin: 8px 0;
         border-radius: 8px;
-        padding: 16px 24px; /* Increased padding to prevent text overflow */
+        padding: 16px 24px;
     }
     
-    /* Fix bullet point indentation in welcome message */
-    .chat-message.system ul {
-        padding-left: 24px; /* Properly indent the bullet points */
-        margin-top: 8px;
-    }
-    
-    .chat-message.user-message {
+    .athena__message--user {
         background-color: var(--color-primary, #7B1FA2);
         color: white;
         align-self: flex-end;
         border-radius: 16px 16px 0 16px;
     }
     
-    .chat-message.ai-message {
+    .athena__message--ai {
         background-color: var(--bg-secondary, #252535);
         align-self: flex-start;
         border-radius: 16px 16px 16px 0;
     }
     
-    .chat-input-container {
+    /* Chat Input */
+    .athena__footer {
+        background-color: var(--bg-secondary, #252535);
+        border-top: 1px solid var(--border-color, #444444);
+        padding: 12px 16px;
+    }
+    
+    .athena__chat-input-container {
         display: flex;
         align-items: center;
         gap: 12px;
         width: 100%;
     }
     
-    .chat-prompt {
+    .athena__chat-prompt {
         font-size: 18px;
         font-weight: bold;
-        color: #4CAF50; /* Green prompt */
+        color: #4CAF50;
     }
     
-    .chat-input {
+    .athena__chat-input {
         flex: 1;
         height: 44px;
         padding: 8px 16px;
@@ -539,12 +506,7 @@
         font-size: 14px;
     }
     
-    .chat-input::placeholder {
-        color: var(--text-secondary, #aaaaaa);
-        opacity: 0.7;
-    }
-    
-    .send-button {
+    .athena__send-button {
         height: 44px;
         padding: 0 20px;
         display: flex;
@@ -559,227 +521,12 @@
         transition: all 0.2s ease;
     }
     
-    .send-button:hover {
+    .athena__send-button:hover {
         background-color: var(--color-primary-hover, #6A1B9A);
     }
     
-    /* Graph Panel Styles */
-    .control-bar {
-        display: flex;
-        justify-content: space-between;
-        padding: 16px;
-        background-color: var(--bg-secondary, #252535);
-        border-bottom: 1px solid var(--border-color, #444444);
-    }
-    
-    .search-container {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .search-container input {
-        padding: 8px 12px;
-        min-width: 260px;
-        background-color: var(--bg-tertiary, #333345);
-        border: 1px solid var(--border-color, #444444);
-        border-radius: 4px;
-        color: var(--text-primary, #f0f0f0);
-    }
-    
-    .filter-container {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .filter-container select {
-        padding: 8px 12px;
-        background-color: var(--bg-tertiary, #333345);
-        border: 1px solid var(--border-color, #444444);
-        border-radius: 4px;
-        color: var(--text-primary, #f0f0f0);
-    }
-    
-    .filter-container button,
-    .search-container button {
-        padding: 8px 12px;
-        background-color: var(--bg-tertiary, #333345);
-        border: 1px solid var(--border-color, #444444);
-        border-radius: 4px;
-        color: var(--text-primary, #f0f0f0);
-        cursor: pointer;
-    }
-    
-    .graph-container {
-        height: calc(100% - 68px);
-        overflow: hidden;
-        position: relative;
-    }
-    
-    .graph-placeholder {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100%;
-        width: 100%;
-        padding: 20px;
-        text-align: center;
-    }
-    
-    /* Entities Tab Styles */
-    .entity-controls {
-        display: flex;
-        justify-content: space-between;
-        padding: 16px;
-        background-color: var(--bg-secondary, #252535);
-        border-bottom: 1px solid var(--border-color, #444444);
-    }
-    
-    .entity-list-container {
-        height: calc(100% - 68px);
-        overflow: auto;
-        padding: 16px;
-    }
-    
-    .entity-list {
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-    }
-    
-    .entity-item {
-        display: flex;
-        align-items: center;
-        padding: 12px;
-        background-color: var(--bg-secondary, #252535);
-        border: 1px solid var(--border-color, #444444);
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-    
-    .entity-item:hover {
-        background-color: var(--bg-hover, #3a3a4a);
-    }
-    
-    .entity-type-icon {
-        font-size: 24px;
-        margin-right: 16px;
-        padding: 8px;
-        border-radius: 8px;
-        background-color: var(--bg-tertiary, #333345);
-    }
-    
-    .entity-details {
-        flex: 1;
-    }
-    
-    .entity-name {
-        font-weight: 500;
-        margin-bottom: 4px;
-    }
-    
-    .entity-type {
-        color: var(--text-secondary, #aaaaaa);
-        margin-bottom: 4px;
-        font-size: 0.9em;
-    }
-    
-    .entity-properties {
-        color: var(--text-secondary, #aaaaaa);
-        font-size: 0.9em;
-    }
-    
-    .entity-actions {
-        display: flex;
-        gap: 8px;
-    }
-    
-    .entity-action-btn {
-        padding: 4px 10px;
-        background-color: var(--bg-tertiary, #333345);
-        border: 1px solid var(--border-color, #444444);
-        border-radius: 4px;
-        color: var(--text-primary, #f0f0f0);
-        cursor: pointer;
-    }
-    
-    /* Query Builder Styles */
-    .query-builder {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        height: 100%;
-        padding: 20px;
-    }
-    
-    .query-section {
-        background-color: var(--bg-secondary, #252535);
-        border-radius: 8px;
-        padding: 16px;
-    }
-    
-    .query-form {
-        display: flex;
-        flex-direction: column;
-        gap: 16px;
-        margin-top: 16px;
-    }
-    
-    .form-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-    
-    .form-group label {
-        font-weight: 500;
-    }
-    
-    .form-group input, 
-    .form-group select {
-        padding: 8px 12px;
-        background-color: var(--bg-tertiary, #333345);
-        border: 1px solid var(--border-color, #444444);
-        border-radius: 4px;
-        color: var(--text-primary, #f0f0f0);
-    }
-    
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 4px;
-    }
-    
-    .form-actions {
-        display: flex;
-        gap: 8px;
-        margin-top: 16px;
-    }
-    
-    .query-results {
-        background-color: var(--bg-secondary, #252535);
-        border-radius: 8px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    .results-container {
-        flex: 1;
-        overflow: auto;
-        margin-top: 16px;
-        background-color: var(--bg-tertiary, #333345);
-        border-radius: 4px;
-        padding: 16px;
-    }
-    
-    .placeholder-message {
-        color: var(--text-secondary, #aaaaaa);
-        text-align: center;
-        padding: 40px 0;
-    }
-    
-    .loading-indicator {
+    /* Loading Indicator */
+    .athena__loading-indicator {
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -787,17 +534,17 @@
         height: 200px;
     }
     
-    .spinner {
+    .athena__spinner {
         width: 40px;
         height: 40px;
         border: 4px solid rgba(255, 255, 255, 0.1);
         border-radius: 50%;
         border-top: 4px solid var(--color-primary, #7B1FA2);
-        animation: spin 1s linear infinite;
+        animation: athena-spin 1s linear infinite;
         margin-bottom: 16px;
     }
     
-    @keyframes spin {
+    @keyframes athena-spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }

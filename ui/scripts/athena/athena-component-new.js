@@ -7,7 +7,7 @@ class AthenaComponent {
     constructor() {
         this.state = {
             initialized: false,
-            activeTab: 'graph', // Default tab is now Knowledge Graph
+            activeTab: 'graph', // Default tab is Knowledge Graph
             graphLoaded: false,
             entitiesLoaded: false
         };
@@ -18,28 +18,24 @@ class AthenaComponent {
      */
     init() {
         console.log('Initializing Athena component');
-
+        
         // If already initialized, just activate
         if (this.state.initialized) {
             console.log('Athena component already initialized, just activating');
             this.activateComponent();
             return this;
         }
-
+        
         // Check SHOW_GREEK_NAMES environment variable
         this.checkGreekNamesVisibility();
-
-        // HTML panel is already active and displayed by the component loader
-        // We don't need to manipulate it here
-
+        
         // Initialize component functionality
-        // The HTML is already loaded by the component loader
         this.setupTabs();
         this.setupChat();
-
+        
         // Mark as initialized
         this.state.initialized = true;
-
+        
         console.log('Athena component initialized');
         return this;
     }
@@ -50,9 +46,9 @@ class AthenaComponent {
     checkGreekNamesVisibility() {
         // Check if the environment variable is available and set to true
         const showGreekNames = window.env && window.env.SHOW_GREEK_NAMES === 'true';
-
-        // Instead of modifying document.body, add a class to our container
-        const athenaContainer = document.querySelector('.athena-container');
+        
+        // Add a class to our container
+        const athenaContainer = document.querySelector('.athena');
         if (athenaContainer) {
             if (showGreekNames) {
                 athenaContainer.setAttribute('data-show-greek-names', 'true');
@@ -60,47 +56,21 @@ class AthenaComponent {
                 athenaContainer.removeAttribute('data-show-greek-names');
             }
         }
-
+        
         console.log(`Greek names visibility: ${showGreekNames ? 'visible' : 'hidden'}`);
     }
-
+    
     /**
      * Activate the component interface
      */
     activateComponent() {
         console.log('Activating Athena component');
-
-        // We no longer need to manipulate the panels or global DOM
-        // Our component loader handles this for us
-
+        
         // Find our component container
-        const athenaContainer = document.querySelector('.athena-container');
+        const athenaContainer = document.querySelector('.athena');
         if (athenaContainer) {
-            // We don't need to set dimensions because the container
-            // already has width and height set to 100% in the CSS
             console.log('Athena container found and activated');
         }
-
-        // We don't need to update the status indicator
-        // The component loader handles this for us
-    }
-    
-    /**
-     * Load the component HTML
-     *
-     * Note: This method is no longer used with the new component loader.
-     * It's retained for backward compatibility but doesn't do anything.
-     * The Component Loader now handles loading the HTML.
-     */
-    async loadComponentHTML() {
-        console.log('Legacy loadComponentHTML called - this is handled by the component loader now');
-
-        // Setup component functionality directly
-        // The HTML is already loaded by the component loader
-        this.setupTabs();
-        this.setupChat();
-
-        console.log('Athena component functionality initialized');
     }
     
     /**
@@ -108,39 +78,39 @@ class AthenaComponent {
      */
     setupTabs() {
         console.log('Setting up Athena tabs');
-
+        
         // Find Athena container
-        const container = document.querySelector('.athena-container');
+        const container = document.querySelector('.athena');
         if (!container) {
             console.error('Athena container not found!');
             return;
         }
-
+        
         // Scope all queries to our container
-        const tabs = container.querySelectorAll('.athena-tab');
-        const panels = container.querySelectorAll('.athena-panel');
-        const chatInput = container.querySelector('.chat-input');
-
+        const tabs = container.querySelectorAll('.athena__tab');
+        const panels = container.querySelectorAll('.athena__panel');
+        const chatInput = container.querySelector('.athena__chat-input');
+        
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
                 // Update active tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-
+                tabs.forEach(t => t.classList.remove('athena__tab--active'));
+                tab.classList.add('athena__tab--active');
+                
                 // Show active panel
                 const panelId = tab.getAttribute('data-tab') + '-panel';
                 panels.forEach(panel => {
                     panel.style.display = 'none';
-                    panel.classList.remove('active');
+                    panel.classList.remove('athena__panel--active');
                 });
-
+                
                 // Use container-scoped query instead of global getElementById
                 const activePanel = container.querySelector(`#${panelId}`);
                 if (activePanel) {
                     activePanel.style.display = 'block';
-                    activePanel.classList.add('active');
+                    activePanel.classList.add('athena__panel--active');
                 }
-
+                
                 // Show/hide the clear chat button in the menu bar based on active tab
                 // Use container-scoped query
                 const clearChatBtn = container.querySelector('#clear-chat-btn');
@@ -148,24 +118,24 @@ class AthenaComponent {
                     const panelType = tab.getAttribute('data-tab');
                     clearChatBtn.style.display = (panelType === 'chat' || panelType === 'teamchat') ? 'block' : 'none';
                 }
-
+                
                 // Update the active tab in state
                 this.state.activeTab = tab.getAttribute('data-tab');
-
+                
                 // Update chat input placeholder based on active tab
                 this.updateChatPlaceholder(this.state.activeTab);
-
+                
                 // Load tab-specific content if needed
                 this.loadTabContent(this.state.activeTab);
             });
         });
-
+        
         // Set up clear chat button - use container-scoped query
         const clearChatBtn = container.querySelector('#clear-chat-btn');
         if (clearChatBtn) {
             clearChatBtn.addEventListener('click', () => this.clearActiveChat());
         }
-
+        
         // Initial placeholder update
         this.updateChatPlaceholder(this.state.activeTab);
     }
@@ -176,13 +146,13 @@ class AthenaComponent {
      */
     updateChatPlaceholder(activeTab) {
         // Find Athena container
-        const container = document.querySelector('.athena-container');
+        const container = document.querySelector('.athena');
         if (!container) return;
-
+        
         // Get the chat input within our container
-        const chatInput = container.querySelector('.chat-input');
+        const chatInput = container.querySelector('.athena__chat-input');
         if (!chatInput) return;
-
+        
         switch(activeTab) {
             case 'graph':
                 chatInput.placeholder = "Ask about the knowledge graph visualization or search for connections...";
@@ -242,8 +212,12 @@ class AthenaComponent {
     initializeGraph() {
         console.log('Initializing knowledge graph visualization');
         
-        // For now, just update the placeholder
-        const placeholder = document.getElementById('graph-placeholder');
+        // Find Athena container
+        const container = document.querySelector('.athena');
+        if (!container) return;
+        
+        // Get the graph placeholder within our container
+        const placeholder = container.querySelector('#graph-placeholder');
         if (placeholder) {
             placeholder.innerHTML = `
                 <div style="text-align: center; padding: 2rem;">
@@ -263,8 +237,13 @@ class AthenaComponent {
     loadEntities() {
         console.log('Loading entities');
         
-        const entityList = document.getElementById('entity-list-items');
-        const loading = document.getElementById('entity-list-loading');
+        // Find Athena container
+        const container = document.querySelector('.athena');
+        if (!container) return;
+        
+        // Get the entity list and loading indicator within our container
+        const entityList = container.querySelector('#entity-list-items');
+        const loading = container.querySelector('#entity-list-loading');
         
         if (entityList && loading) {
             // Show some sample entities after a delay
@@ -281,8 +260,13 @@ class AthenaComponent {
     setupChat() {
         console.log('Setting up Athena chat');
         
-        const input = document.getElementById('chat-input');
-        const button = document.getElementById('send-button');
+        // Find Athena container
+        const container = document.querySelector('.athena');
+        if (!container) return;
+        
+        // Get the chat input and send button within our container
+        const input = container.querySelector('#chat-input');
+        const button = container.querySelector('#send-button');
         
         if (!input || !button) {
             console.error('Missing chat input elements');
@@ -299,11 +283,11 @@ class AthenaComponent {
             let responsePrefix = '';
             
             if (this.state.activeTab === 'teamchat') {
-                messagesContainer = document.getElementById('teamchat-messages');
+                messagesContainer = container.querySelector('#teamchat-messages');
                 responsePrefix = 'Team Chat: ';
             } else {
                 // Default to knowledge chat for all other tabs
-                messagesContainer = document.getElementById('chat-messages');
+                messagesContainer = container.querySelector('#chat-messages');
                 responsePrefix = 'Knowledge: ';
             }
             
@@ -356,7 +340,7 @@ class AthenaComponent {
         if (!messages) return;
         
         const userBubble = document.createElement('div');
-        userBubble.className = 'chat-message user-message';
+        userBubble.className = 'athena__message athena__message--user';
         userBubble.textContent = message;
         messages.appendChild(userBubble);
         messages.scrollTop = messages.scrollHeight;
@@ -371,7 +355,7 @@ class AthenaComponent {
         if (!messages) return;
         
         const aiBubble = document.createElement('div');
-        aiBubble.className = 'chat-message ai-message';
+        aiBubble.className = 'athena__message athena__message--ai';
         aiBubble.textContent = message;
         messages.appendChild(aiBubble);
         messages.scrollTop = messages.scrollHeight;
@@ -381,51 +365,46 @@ class AthenaComponent {
      * Clear the active chat messages
      */
     clearActiveChat() {
+        // Find Athena container
+        const container = document.querySelector('.athena');
+        if (!container) return;
+        
         let messagesContainer;
         
         // Determine which chat is active
         if (this.state.activeTab === 'chat') {
-            messagesContainer = document.getElementById('chat-messages');
+            messagesContainer = container.querySelector('#chat-messages');
         } else if (this.state.activeTab === 'teamchat') {
-            messagesContainer = document.getElementById('teamchat-messages');
+            messagesContainer = container.querySelector('#teamchat-messages');
         }
         
         if (messagesContainer) {
             // Keep only the welcome message
-            const welcomeMessage = messagesContainer.querySelector('.chat-message:first-child');
+            const welcomeMessage = messagesContainer.querySelector('.athena__message--system');
             messagesContainer.innerHTML = '';
             if (welcomeMessage) {
                 messagesContainer.appendChild(welcomeMessage);
             }
         }
     }
+    
+    /**
+     * Clean up resources used by this component
+     */
+    cleanup() {
+        console.log('Cleaning up Athena component');
+        
+        // Find Athena container
+        const container = document.querySelector('.athena');
+        if (!container) return;
+        
+        // Clean up event listeners if needed
+        // (In a full implementation, you'd want to properly remove event listeners here)
+    }
 }
 
 // Create global instance
 window.athenaComponent = new AthenaComponent();
 
-// Add handler to component activation
-document.addEventListener('DOMContentLoaded', function() {
-    const athenaTab = document.querySelector('.nav-item[data-component="athena"]');
-    if (athenaTab) {
-        athenaTab.addEventListener('click', function() {
-            // First, make sure the HTML panel is visible
-            const htmlPanel = document.getElementById('html-panel');
-            if (htmlPanel) {
-                // Make it active and visible
-                const panels = document.querySelectorAll('.panel');
-                panels.forEach(panel => {
-                    panel.classList.remove('active');
-                    panel.style.display = 'none';
-                });
-                htmlPanel.classList.add('active');
-                htmlPanel.style.display = 'block';
-            }
-            
-            // Initialize component if not already done
-            if (window.athenaComponent) {
-                window.athenaComponent.init();
-            }
-        });
-    }
-});
+// Initialize the component when the script loads
+window.athenaComponent.init();

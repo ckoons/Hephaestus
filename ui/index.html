@@ -240,7 +240,7 @@
     <!-- No splash screen -->
 
     <!-- Load scripts -->
-    <script src="scripts/component-loader.js"></script>
+    <script src="scripts/minimal-loader.js"></script>
     <script src="scripts/ui-utils.js"></script>
     <!-- Removed direct component loading to prevent conflicts with component loader -->
     <!-- <script src="scripts/athena-component.js"></script> -->
@@ -455,8 +455,64 @@
     <!-- Component scripts -->
     <script src="scripts/ergon-component.js"></script>
     <script src="scripts/athena/athena-component.js"></script>
-    
-    
+
+    <!-- Setup minimal component loader with navigation -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Handle navigation item clicks
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+          item.addEventListener('click', function() {
+            const componentId = this.getAttribute('data-component');
+            if (!componentId) return;
+
+            console.log(`Navigation item clicked: ${componentId}`);
+
+            // Update active nav item
+            navItems.forEach(navItem => {
+              navItem.classList.remove('active');
+            });
+            this.classList.add('active');
+
+            // Update component title
+            const componentTitle = document.querySelector('.component-title');
+            if (componentTitle) {
+              componentTitle.textContent = this.querySelector('.nav-label').textContent;
+            }
+
+            // Special case for terma
+            if (componentId === 'terma') {
+              // Let the special terma handler handle it
+              return;
+            }
+
+            // Make the HTML panel visible and active
+            const panels = document.querySelectorAll('.panel');
+            panels.forEach(panel => {
+              panel.classList.remove('active');
+              panel.style.display = 'none';
+            });
+
+            const htmlPanel = document.getElementById('html-panel');
+            if (htmlPanel) {
+              htmlPanel.classList.add('active');
+              htmlPanel.style.display = 'block';
+
+              // Use our minimal loader
+              if (window.minimalLoader) {
+                minimalLoader.loadComponent(componentId);
+              }
+            }
+          });
+        });
+
+        // Load test component by default
+        if (window.minimalLoader) {
+          minimalLoader.loadComponent('test');
+        }
+      });
+    </script>
+
     <!-- Direct script for simple terminal input -->
     <script>
       // Wait for DOM to be fully loaded

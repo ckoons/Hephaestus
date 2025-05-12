@@ -1,21 +1,16 @@
 /**
- * Component Loader for Hephaestus UI
+ * Minimal Component Loader for Hephaestus UI
  * 
- * Handles loading and lifecycle management of UI components using Shadow DOM
- * for proper isolation and encapsulation.
+ * Handles loading and basic lifecycle management of UI components
+ * using direct HTML injection for simplicity and reliability.
  */
 
 class ComponentLoader {
   constructor() {
     this.activeComponents = {};
-    this.themeObservers = {};
-    this.componentRegistry = {};
-    this.loadingComponents = new Set(); // Track components currently loading
-    
-    // Initialize theme tracking
-    this.currentTheme = document.documentElement.dataset.theme || 'dark-blue';
-    
-    // Component paths mapping
+    this.currentTheme = 'dark-blue';
+
+    // Component paths mapping - using standardized paths
     this.componentPaths = {
       'athena': 'components/athena/athena-component.html',
       'ergon': 'components/ergon/ergon-component.html',
@@ -28,204 +23,210 @@ class ComponentLoader {
       'telos': 'components/telos/telos-component.html',
       'harmonia': 'components/harmonia/harmonia-component.html',
       'synthesis': 'components/synthesis/synthesis-component.html',
-      'sophia': 'components/sophia/sophia-component.html'
+      'sophia': 'components/sophia/sophia-component.html',
+      'tekton': 'components/tekton/tekton-component.html',
+      'test': 'components/test/test-component.html'
     };
-    
-    // Setup theme observer for the document root
-    this._setupDocumentThemeObserver();
+
+    // Initialize registry from JSON
+    this.registry = null;
+    this.loadComponentRegistry().then(registry => {
+      this.registry = registry;
+      console.log('Registry loaded:', this.registry);
+    }).catch(error => {
+      console.error('Failed to load registry:', error);
+    });
   }
   
   /**
-   * Load a component into a container with Shadow DOM isolation
+   * Load a component into the right panel
    * 
    * @param {string} componentId - ID of the component to load
-   * @param {HTMLElement} containerElement - Container to load the component into
-   * @param {Object} options - Additional options for loading
+   * @param {HTMLElement} containerElement - Container element to load the component into
    * @returns {Promise<Object>} - Promise resolving to the component reference
    */
-  async loadComponent(componentId, containerElement, options = {}) {
+  async loadComponent(componentId, containerElement) {
     console.log(`Loading component: ${componentId}`);
-    
-    if (this.loadingComponents.has(componentId)) {
-      console.warn(`Component ${componentId} is already loading, ignoring duplicate request`);
-      return null;
+
+    // Check if we're loading the component too frequently - could cause flickering
+    const now = new Date().getTime();
+    const lastLoadTime = this.activeComponents[componentId]?.loadTime || 0;
+    if (now - lastLoadTime < 500) { // Less than 500ms since last load
+      console.warn(`Component ${componentId} loaded too frequently, potential loop detected. Skipping.`);
+      return this.activeComponents[componentId] || null;
     }
-    
-    // Mark component as loading
-    this.loadingComponents.add(componentId);
-    
+
+    // Prevent reloading the same component if it's already loaded and active
+    if (this.activeComponents[componentId] &&
+        this.activeComponents[componentId].loaded &&
+        this.activeComponents[componentId].active) {
+      console.log(`Component ${componentId} is already loaded and active, skipping reload`);
+      return this.activeComponents[componentId];
+    }
+
     try {
+      // First mark all components as inactive
+      Object.keys(this.activeComponents).forEach(id => {
+        if (this.activeComponents[id]) {
+          this.activeComponents[id].active = false;
+        }
+      });
+
       // Cleanup previous component if it exists
-      if (this.activeComponents[componentId]) {
-        this.cleanupComponent(componentId);
+      this.cleanupComponent(componentId);
+
+      // Get container element if not provided (default to html-panel)
+      if (!containerElement) {
+        containerElement = document.getElementById('html-panel');
+        if (!containerElement) {
+          throw new Error('HTML panel not found');
+        }
       }
-      
-      // Create shadow DOM for isolation
-      const shadowRoot = this._createShadowDOM(componentId, containerElement);
-      
-      // Add theme variables for styling consistency
-      this._addThemeStylesToShadowRoot(shadowRoot);
-      
-      // Load component HTML content into shadow root
-      const componentWrapper = await this._loadComponentContent(componentId, shadowRoot);
-      
-      // Load component-specific styles
-      await this._loadComponentStyles(componentId, shadowRoot);
-      
-      // Initialize component scripts
-      await this._initializeComponentScripts(componentId, shadowRoot);
-      
+
+      // Clear the panel and show loading indicator
+      containerElement.innerHTML = `<div class="loading-indicator">Loading ${componentId} component...</div>`;
+
+      // Make sure panels are visible and positioned correctly
+      containerElement.style.display = 'block';
+
+      // Activate the panel in the UI manager if available
+      if (window.uiManager) {
+        window.uiManager.activatePanel('html');
+      }
+
+      // Update navigation UI to show active component
+      this._updateComponentNav(componentId);
+
+      // Load component HTML content
+      const componentHtml = await this._loadComponentContent(componentId);
+
+      // Insert component HTML into panel
+      containerElement.innerHTML = componentHtml;
+
+      // Check if component uses Shadow DOM
+      const usesShadowDom = this._componentUsesShadowDom(componentId);
+      console.log(`Component ${componentId} uses shadow DOM: ${usesShadowDom}`);
+
+      // Load component-specific scripts
+      await this._loadComponentScript(componentId, containerElement);
+
+      // Add component ID as a data attribute to container
+      containerElement.setAttribute('data-component-id', componentId);
+
+      // Add component-specific class to container for styling
+      containerElement.classList.add(`${componentId}-container`);
+
       // Store active component reference
       this.activeComponents[componentId] = {
         id: componentId,
-        shadowRoot,
-        wrapper: componentWrapper,
-        container: containerElement
+        loaded: true,
+        active: true,
+        container: containerElement,
+        usesShadowDom: usesShadowDom,
+        loadTime: now // Track when this component was loaded
       };
-      
-      // Setup theme observer for this component
-      this._setupComponentThemeObserver(componentId, shadowRoot);
-      
-      // Mark component as no longer loading
-      this.loadingComponents.delete(componentId);
-      
+
       console.log(`Component ${componentId} loaded successfully`);
-      
+
+      // Initialize component if it has an init function
+      const componentGlobal = window[`${componentId}Component`];
+      if (componentGlobal && typeof componentGlobal.init === 'function') {
+        console.log(`Initializing ${componentId} component with global init function`);
+        componentGlobal.init();
+      } else {
+        // Only dispatch DOM event if there are no inline scripts
+        const hasInlineScripts = containerElement.querySelectorAll('script').length > 0;
+        if (!hasInlineScripts) {
+          console.log(`No initialization function found for ${componentId}, using DOMContentLoaded`);
+          const initEvent = new Event('DOMContentLoaded');
+          document.dispatchEvent(initEvent);
+        } else {
+          console.log(`Component ${componentId} has inline scripts, skipping DOMContentLoaded dispatch`);
+        }
+      }
+
       // Return component reference
       return this.activeComponents[componentId];
     } catch (error) {
       console.error(`Error loading component ${componentId}:`, error);
-      
-      // Show error in the container
-      this._showErrorInShadowRoot(componentId, containerElement, error);
-      
-      // Mark component as no longer loading
-      this.loadingComponents.delete(componentId);
-      
+      this._showErrorInPanel(componentId, containerElement, error);
       return null;
     }
   }
-  
+
   /**
-   * Create Shadow DOM for a component
-   * 
+   * Check if a component uses Shadow DOM based on registry
+   *
    * @param {string} componentId - ID of the component
-   * @param {HTMLElement} containerElement - Container element
-   * @returns {ShadowRoot} The created shadow root
+   * @returns {boolean} - Whether the component uses Shadow DOM
    */
-  _createShadowDOM(componentId, containerElement) {
-    console.log(`Creating Shadow DOM for ${componentId}`);
-    
-    // Clear container
-    containerElement.innerHTML = '';
-    
-    // Create host element
-    const host = document.createElement('div');
-    host.id = `${componentId}-host`;
-    host.dataset.componentId = componentId;
-    host.style.height = '100%';
-    host.style.width = '100%';
-    host.style.display = 'block';
-    containerElement.appendChild(host);
-    
-    // Create shadow root with open mode for debugging
-    const shadowRoot = host.attachShadow({ mode: 'open' });
-    
-    // Add component attribute to the shadow root for identification
-    shadowRoot.host.dataset.component = componentId;
-    
-    // Add current theme to the host element
-    shadowRoot.host.dataset.theme = this.currentTheme;
-    
-    return shadowRoot;
+  _componentUsesShadowDom(componentId) {
+    // Check registry if available
+    if (this.registry && this.registry.components) {
+      const component = this.registry.components.find(c => c.id === componentId);
+      if (component && component.hasOwnProperty('usesShadowDom')) {
+        return component.usesShadowDom;
+      }
+    }
+
+    // Default to false for new components
+    return false;
   }
   
   /**
-   * Add theme variables to a shadow root
+   * Update navigation UI to show active component
    * 
-   * @param {ShadowRoot} shadowRoot - The shadow root to add styles to
+   * @param {string} componentId - ID of the component to activate
    */
-  _addThemeStylesToShadowRoot(shadowRoot) {
-    const themeStyle = document.createElement('style');
-    themeStyle.id = 'theme-variables';
-    themeStyle.textContent = `
-      :host {
-        /* Import theme variables from parent */
-        --bg-primary: var(--bg-primary, #1e1e1e);
-        --bg-secondary: var(--bg-secondary, #252525);
-        --bg-tertiary: var(--bg-tertiary, #333333);
-        --bg-card: var(--bg-card, #2d2d2d);
-        --bg-hover: var(--bg-hover, #3a3a3a);
-        
-        /* Text colors */
-        --text-primary: var(--text-primary, #f0f0f0);
-        --text-secondary: var(--text-secondary, #aaaaaa);
-        --text-disabled: var(--text-disabled, #666666);
-        
-        /* Brand colors */
-        --color-primary: var(--color-primary, #007bff);
-        --color-primary-hover: var(--color-primary-hover, #0056b3);
-        --color-secondary: var(--color-secondary, #6c757d);
-        --color-success: var(--color-success, #28a745);
-        --color-warning: var(--color-warning, #ffc107);
-        --color-danger: var(--color-danger, #dc3545);
-        --color-info: var(--color-info, #17a2b8);
-        
-        /* Border colors */
-        --border-color: var(--border-color, #444444);
-        --border-radius-sm: var(--border-radius-sm, 4px);
-        --border-radius-md: var(--border-radius-md, 8px);
-        --border-radius-lg: var(--border-radius-lg, 12px);
-        
-        /* Spacing */
-        --spacing-xs: var(--spacing-xs, 4px);
-        --spacing-sm: var(--spacing-sm, 8px);
-        --spacing-md: var(--spacing-md, 16px);
-        --spacing-lg: var(--spacing-lg, 24px);
-        --spacing-xl: var(--spacing-xl, 32px);
-        
-        /* Typography */
-        --font-family-sans: var(--font-family-sans, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
-        --font-family-mono: var(--font-family-mono, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace);
-        --font-size-xs: var(--font-size-xs, 0.75rem);
-        --font-size-sm: var(--font-size-sm, 0.875rem);
-        --font-size-md: var(--font-size-md, 1rem);
-        --font-size-lg: var(--font-size-lg, 1.25rem);
-        --font-size-xl: var(--font-size-xl, 1.5rem);
-        
-        /* Effects */
-        --box-shadow-sm: var(--box-shadow-sm, 0 2px 4px rgba(0, 0, 0, 0.1));
-        --box-shadow-md: var(--box-shadow-md, 0 4px 8px rgba(0, 0, 0, 0.1));
-        --box-shadow-lg: var(--box-shadow-lg, 0 8px 16px rgba(0, 0, 0, 0.1));
-        
-        /* Set default styles for component */
-        display: block;
-        height: 100%;
-        width: 100%;
-        background-color: var(--bg-primary);
-        color: var(--text-primary);
-        font-family: var(--font-family-sans);
-        box-sizing: border-box;
+  _updateComponentNav(componentId) {
+    // Update navigation items to show active component
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+      if (item.getAttribute('data-component') === componentId) {
+        item.classList.add('active');
+        // Make status indicator visible for active component
+        const statusIndicator = item.querySelector('.status-indicator');
+        if (statusIndicator) {
+          statusIndicator.classList.add('active');
+        }
+      } else {
+        item.classList.remove('active');
+        // Remove active class from status indicator
+        const statusIndicator = item.querySelector('.status-indicator');
+        if (statusIndicator) {
+          statusIndicator.classList.remove('active');
+        }
       }
-    `;
-    shadowRoot.prepend(themeStyle);
+    });
+    
+    // Update component title
+    const componentTitle = document.querySelector('.component-title');
+    const activeNavItem = document.querySelector(`.nav-item[data-component="${componentId}"]`);
+    if (activeNavItem && componentTitle) {
+      componentTitle.textContent = activeNavItem.querySelector('.nav-label').textContent;
+    }
   }
   
   /**
    * Load component HTML content
    * 
    * @param {string} componentId - ID of the component
-   * @param {ShadowRoot} shadowRoot - Shadow root to load content into
-   * @returns {Promise<HTMLElement>} - Promise resolving to the component wrapper
+   * @returns {Promise<string>} - Promise resolving to the component HTML
    */
-  async _loadComponentContent(componentId, shadowRoot) {
+  async _loadComponentContent(componentId) {
     console.log(`Loading HTML content for ${componentId}`);
     
     // Add cache busting parameter
     const cacheBuster = `?t=${new Date().getTime()}`;
     
-    // Use only the standardized nested structure
-    const componentPath = `components/${componentId}/${componentId}-component.html`;
+    // Use standardized path or fallback to default pattern if not explicitly defined
+    let componentPath = this.componentPaths[componentId];
+
+    if (!componentPath) {
+      // Use standardized path pattern as fallback
+      console.warn(`Component path not explicitly defined for ${componentId}, using default pattern`);
+      componentPath = `components/${componentId}/${componentId}-component.html`;
+    }
     
     try {
       console.log(`Loading HTML from: ${componentPath}`);
@@ -241,16 +242,7 @@ class ComponentLoader {
         throw new Error('Received empty HTML content');
       }
       
-      // Create wrapper with component-specific class
-      const wrapper = document.createElement('div');
-      wrapper.className = `${componentId}-container`;
-      wrapper.innerHTML = html;
-      
-      // Append to shadow root
-      shadowRoot.appendChild(wrapper);
-      
-      console.log(`Successfully loaded HTML from ${componentPath}`);
-      return wrapper;
+      return html;
     } catch (error) {
       console.error(`Error loading component HTML for ${componentId}:`, error);
       throw error;
@@ -258,271 +250,164 @@ class ComponentLoader {
   }
   
   /**
-   * Load component CSS styles
+   * Load component-specific JavaScript
    * 
    * @param {string} componentId - ID of the component
-   * @param {ShadowRoot} shadowRoot - Shadow root to load styles into
+   * @param {HTMLElement} containerElement - Container element that contains the component
    * @returns {Promise<void>}
    */
-  async _loadComponentStyles(componentId, shadowRoot) {
-    console.log(`Loading styles for ${componentId}`);
-    
-    // Add cache busting parameter
-    const cacheBuster = `?t=${new Date().getTime()}`;
-    
-    // Use only the standardized nested structure
-    const cssPath = `styles/${componentId}/${componentId}-component.css`;
-    
-    try {
-      console.log(`Loading CSS from: ${cssPath}`);
-      const response = await fetch(`${cssPath}${cacheBuster}`);
-      
-      if (!response.ok) {
-        console.warn(`No dedicated CSS file found for ${componentId} at ${cssPath}, using default styles`);
-        return;
-      }
-      
-      const css = await response.text();
-      
-      if (!css || css.trim().length === 0) {
-        console.warn(`Received empty CSS content from ${cssPath}, using default styles`);
-        return;
-      }
-      
-      // Create style element
-      const style = document.createElement('style');
-      style.id = `${componentId}-styles`;
-      
-      // No need to process CSS, it's already scoped by shadow DOM
-      style.textContent = css;
-      
-      // Add to shadow root
-      shadowRoot.appendChild(style);
-      
-      console.log(`Successfully loaded CSS from ${cssPath}`);
-    } catch (error) {
-      console.warn(`Error loading styles for ${componentId}, using default styles:`, error);
-      // Non-critical error, we can continue without custom styles
-    }
-  }
-  
-  /**
-   * Initialize component scripts
-   * 
-   * @param {string} componentId - ID of the component
-   * @param {ShadowRoot} shadowRoot - Shadow root for the component
-   * @returns {Promise<void>}
-   */
-  async _initializeComponentScripts(componentId, shadowRoot) {
-    console.log(`Initializing scripts for ${componentId}`);
-    
-    // Add cache busting parameter
-    const cacheBuster = `?t=${new Date().getTime()}`;
-    
-    // Use only the standardized nested structure
-    const scriptPath = `scripts/${componentId}/${componentId}-component.js`;
-    
-    try {
-      console.log(`Loading script from: ${scriptPath}`);
-      const response = await fetch(`${scriptPath}${cacheBuster}`);
-      
-      if (!response.ok) {
-        console.warn(`Script not found at ${scriptPath}, component may be static`);
-        return;
-      }
-      
-      const jsCode = await response.text();
-      
-      // Create component context object
-      const component = {
-        id: componentId,
-        root: shadowRoot,
-        
-        // Scoped query selector that only searches within component
-        $: function(selector) {
-          return this.root.querySelector(selector);
-        },
-        
-        // Query selector all within component
-        $$: function(selector) {
-          return this.root.querySelectorAll(selector);
-        },
-        
-        // Event delegation helper
-        on: function(eventType, selector, handler) {
-          this.root.addEventListener(eventType, (event) => {
-            const elements = this.root.querySelectorAll(selector);
-            const element = event.target.closest(selector);
-            if (element && [...elements].includes(element)) {
-              handler.call(element, event, this);
-            }
-          });
-        },
-        
-        // Register cleanup function
-        registerCleanup: function(cleanupFn) {
-          if (typeof cleanupFn === 'function') {
-            window.__componentCleanupHandlers = window.__componentCleanupHandlers || {};
-            window.__componentCleanupHandlers[componentId] = cleanupFn;
-          }
-        },
-        
-        // Get global Tekton UI instance
-        getTektonUI: function() {
-          return window.tektonUI;
-        },
-        
-        // Dispatch custom event that can bubble up through shadow DOM
-        dispatch: function(eventName, detail = {}) {
-          const event = new CustomEvent(eventName, {
-            bubbles: true,
-            composed: true, // Allows event to cross shadow DOM boundary
-            detail: { ...detail, componentId }
-          });
-          this.root.host.dispatchEvent(event);
-        },
-        
-        // Use shared utilities
-        utils: window.tektonUI?.componentUtils || {}
-      };
-      
-      // Create a scoped initialization function that executes the component code
-      // with the component context but allows global variable creation
-      const initComponentFn = new Function('component', `
+  async _loadComponentScript(componentId, containerElement) {
+    console.log(`Loading script for ${componentId}`);
+
+    // First, check for inline scripts in the component HTML
+    const inlineScripts = containerElement.querySelectorAll('script');
+    if (inlineScripts.length > 0) {
+      console.log(`Found ${inlineScripts.length} inline scripts for ${componentId}`);
+
+      // Execute each inline script
+      for (const inlineScript of inlineScripts) {
         try {
-          // Execute component code with component context
-          // But without creating a closure to allow global window properties
-          eval(${JSON.stringify(jsCode)});
-          
-          // Make sure global instance uses our component context
-          if (window['${componentId}Component']) {
-            console.log('Connecting ${componentId} global instance to component context');
-            Object.assign(window['${componentId}Component'], { 
-              root: component.root,
-              $: component.$,
-              $$: component.$$,
-              dispatch: component.dispatch,
-              utils: component.utils
-            });
-          }
-          
-          // Return success
-          return { success: true };
+          // Create a new script element to execute the code
+          const newScript = document.createElement('script');
+          newScript.textContent = inlineScript.textContent;
+
+          // Remove the original inline script
+          inlineScript.remove();
+
+          // Append the new script to trigger execution
+          document.head.appendChild(newScript);
+
+          console.log(`Executed inline script for ${componentId}`);
         } catch (error) {
-          console.error('Error initializing component script:', error);
-          return { success: false, error: error.message };
+          console.warn(`Error executing inline script for ${componentId}:`, error);
         }
-      `);
-      
-      // Execute the component initialization
-      const result = initComponentFn(component);
-      
-      if (!result.success) {
-        throw new Error(`Failed to initialize component script: ${result.error}`);
       }
-      
-      console.log(`Successfully loaded and initialized script from ${scriptPath}`);
-      
+    }
+
+    // Set up context for component scripts
+    if (!window.componentContext) {
+      window.componentContext = {};
+    }
+
+    // Create context for this component
+    window.componentContext[componentId] = {
+      root: containerElement,
+      $: function(selector) { return containerElement.querySelector(selector); },
+      $$: function(selector) { return containerElement.querySelectorAll(selector); }
+    };
+
+    // Add cache busting parameter
+    const cacheBuster = `?t=${new Date().getTime()}`;
+
+    // Check if it's a nested path or a direct component path
+    let scriptPath;
+    if (componentId.includes('/')) {
+      // Handle nested path
+      scriptPath = `scripts/${componentId}-component.js`;
+    } else {
+      // Standard path structure
+      scriptPath = `scripts/${componentId}/${componentId}-component.js`;
+    }
+
+    // Check if component has external script
+    if (this._shouldLoadExternalScript(componentId)) {
+      return new Promise((resolve, reject) => {
+        try {
+          // Check if script already exists
+          const existingScript = document.querySelector(`script[src^="${scriptPath}"]`);
+          if (existingScript) {
+            existingScript.remove();
+          }
+
+          // Create script element
+          const script = document.createElement('script');
+          script.src = `${scriptPath}${cacheBuster}`;
+
+          // Handle script load events
+          script.onload = () => {
+            console.log(`External script loaded for ${componentId}`);
+            resolve();
+          };
+
+          script.onerror = (error) => {
+            console.warn(`Error loading external script for ${componentId}:`, error);
+            // Non-critical error, we can continue without script
+            resolve();
+          };
+
+          // Add script to document
+          document.head.appendChild(script);
+        } catch (error) {
+          console.warn(`Error setting up external script for ${componentId}:`, error);
+          // Non-critical error, we can continue without script
+          resolve();
+        }
+      });
+    }
+
+    return Promise.resolve();
+  }
+
+  /**
+   * Determine if a component should load an external script
+   *
+   * @param {string} componentId - ID of the component
+   * @returns {boolean} - Whether to load an external script
+   */
+  _shouldLoadExternalScript(componentId) {
+    // Check registry if available
+    if (this.registry && this.registry.components) {
+      const component = this.registry.components.find(c => c.id === componentId);
+      if (component && component.scripts && component.scripts.length > 0) {
+        return true;
+      }
+    }
+
+    // Fall back to a simple test for external script
+    try {
+      // Check if standard external script file exists
+      const scriptPath = `scripts/${componentId}/${componentId}-component.js`;
+      const request = new XMLHttpRequest();
+      request.open('HEAD', scriptPath, false);
+      request.send();
+      return request.status !== 404;
     } catch (error) {
-      console.error(`Error loading or initializing script for ${componentId}:`, error);
-      throw error;
+      console.warn(`Error checking for external script: ${error}`);
+      return false;
     }
   }
   
   /**
-   * Show error message in shadow root when component loading fails
+   * Show error message when component loading fails
    * 
    * @param {string} componentId - ID of the component
    * @param {HTMLElement} containerElement - Container element
    * @param {Error} error - The error that occurred
    */
-  _showErrorInShadowRoot(componentId, containerElement, error) {
-    // Clear container
-    containerElement.innerHTML = '';
+  _showErrorInPanel(componentId, containerElement, error) {
+    // Make sure we have a container element
+    if (!containerElement) {
+      containerElement = document.getElementById('html-panel');
+      if (!containerElement) return;
+    }
     
-    // Create host element
-    const host = document.createElement('div');
-    host.id = `${componentId}-host`;
-    host.dataset.componentId = componentId;
-    host.style.height = '100%';
-    host.style.width = '100%';
-    containerElement.appendChild(host);
-    
-    // Create shadow root
-    const shadowRoot = host.attachShadow({ mode: 'open' });
-    
-    // Add theme styles
-    this._addThemeStylesToShadowRoot(shadowRoot);
-    
-    // Add error message
-    const errorContainer = document.createElement('div');
-    errorContainer.className = 'component-error';
-    errorContainer.innerHTML = `
-      <style>
-        .component-error {
-          padding: 20px;
-          border: 1px solid var(--color-danger, #dc3545);
-          border-radius: var(--border-radius-md, 8px);
-          background-color: var(--bg-card, #2d2d2d);
-          color: var(--text-primary, #f0f0f0);
-          margin: 20px;
-        }
-        .component-error h3 {
-          color: var(--color-danger, #dc3545);
-          margin-top: 0;
-        }
-        .component-error .error-message {
-          font-family: var(--font-family-mono);
-          background-color: var(--bg-tertiary, #333333);
-          padding: 10px;
-          border-radius: var(--border-radius-sm, 4px);
-          white-space: pre-wrap;
-          overflow-x: auto;
-        }
-        .component-error .retry-button {
-          margin-top: 20px;
-          padding: 8px 16px;
-          background-color: var(--color-primary, #007bff);
-          color: white;
-          border: none;
-          border-radius: var(--border-radius-sm, 4px);
-          cursor: pointer;
-        }
-        .component-error .retry-button:hover {
-          background-color: var(--color-primary-hover, #0056b3);
-        }
-      </style>
-      <h3>Error Loading ${componentId} Component</h3>
-      <p>The component failed to load properly.</p>
-      <div class="error-message">${error.message}</div>
-      <h4>Troubleshooting:</h4>
-      <ol>
-        <li>Check that the component files exist in the correct locations</li>
-        <li>Verify that required services are running (check with tekton-status)</li>
-        <li>Restart the Hephaestus UI server</li>
-        <li>Check browser console for detailed error messages</li>
-      </ol>
-      <button class="retry-button" id="retry-button">Retry Loading</button>
+    // Show error message
+    containerElement.innerHTML = `
+      <div class="component-error" style="padding: 20px; margin: 20px; background-color: #2d2d2d; border: 1px solid #dc3545; border-radius: 8px;">
+        <h3 style="color: #dc3545; margin-top: 0;">Error Loading ${componentId} Component</h3>
+        <p>${error.message}</p>
+        <div class="error-message" style="background-color: #333; padding: 10px; border-radius: 4px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; color: #aaa;">${error.stack || ''}</div>
+        <button id="retry-button" style="background-color: #007bff; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Retry Loading</button>
+      </div>
     `;
     
-    shadowRoot.appendChild(errorContainer);
-    
     // Add retry button functionality
-    const retryButton = shadowRoot.getElementById('retry-button');
+    const retryButton = document.getElementById('retry-button');
     if (retryButton) {
       retryButton.addEventListener('click', () => {
-        // Try to reload the component
         this.loadComponent(componentId, containerElement);
       });
     }
-    
-    // Store this as an active component so it can be cleaned up
-    this.activeComponents[componentId] = {
-      id: componentId,
-      shadowRoot,
-      container: containerElement,
-      isError: true
-    };
   }
   
   /**
@@ -533,108 +418,37 @@ class ComponentLoader {
   cleanupComponent(componentId) {
     console.log(`Cleaning up component: ${componentId}`);
     
+    // Get cleanup function from global scope if it exists
     const component = this.activeComponents[componentId];
-    if (!component) {
-      console.warn(`Component ${componentId} not found, nothing to clean up`);
-      return;
+    
+    // Call component's cleanup method if available
+    if (component && typeof component.cleanup === 'function') {
+      try {
+        component.cleanup();
+      } catch (error) {
+        console.error(`Error executing cleanup method for ${componentId}:`, error);
+      }
     }
     
-    try {
-      // Execute registered cleanup handler if exists
-      if (window.__componentCleanupHandlers && 
-          window.__componentCleanupHandlers[componentId]) {
-        console.log(`Executing registered cleanup handler for ${componentId}`);
-        window.__componentCleanupHandlers[componentId]();
-        delete window.__componentCleanupHandlers[componentId];
+    // Also check for global cleanup function
+    const cleanupFnName = `${componentId}Cleanup`;
+    if (typeof window[cleanupFnName] === 'function') {
+      try {
+        window[cleanupFnName]();
+      } catch (error) {
+        console.error(`Error executing cleanup function for ${componentId}:`, error);
       }
-      
-      // Disconnect theme observer if exists
-      if (this.themeObservers[componentId]) {
-        console.log(`Disconnecting theme observer for ${componentId}`);
-        this.themeObservers[componentId].disconnect();
-        delete this.themeObservers[componentId];
-      }
-      
-      // Remove shadow root host from DOM
-      if (component.shadowRoot && component.shadowRoot.host) {
-        console.log(`Removing shadow root host for ${componentId}`);
-        component.shadowRoot.host.remove();
-      }
-      
-      // Remove from active components
+    }
+    
+    // Remove component context
+    if (window.componentContext && window.componentContext[componentId]) {
+      delete window.componentContext[componentId];
+    }
+    
+    // Remove active component reference
+    if (this.activeComponents[componentId]) {
       delete this.activeComponents[componentId];
-      
-    } catch (error) {
-      console.error(`Error cleaning up component ${componentId}:`, error);
     }
-  }
-  
-  /**
-   * Set up theme observer for document to detect theme changes
-   */
-  _setupDocumentThemeObserver() {
-    // Create MutationObserver to watch for theme attribute changes on document root
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-          const newTheme = document.documentElement.dataset.theme;
-          console.log(`Theme changed to: ${newTheme}`);
-          this._propagateThemeToComponents(newTheme);
-        }
-      });
-    });
-    
-    // Start observing
-    observer.observe(document.documentElement, { 
-      attributes: true,
-      attributeFilter: ['data-theme']
-    });
-    
-    // Store observer for potential cleanup
-    this.documentThemeObserver = observer;
-  }
-  
-  /**
-   * Set up theme observer for a specific component
-   * 
-   * @param {string} componentId - ID of the component
-   * @param {ShadowRoot} shadowRoot - Shadow root of the component
-   */
-  _setupComponentThemeObserver(componentId, shadowRoot) {
-    // Create MutationObserver to watch for theme changes on the host element
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'data-theme') {
-          console.log(`Theme changed for component ${componentId}`);
-          // Additional component-specific theme handling could go here
-        }
-      });
-    });
-    
-    // Start observing the host element
-    observer.observe(shadowRoot.host, { 
-      attributes: true,
-      attributeFilter: ['data-theme']
-    });
-    
-    // Store observer for cleanup
-    this.themeObservers[componentId] = observer;
-  }
-  
-  /**
-   * Propagate theme change to all active components
-   * 
-   * @param {string} newTheme - The new theme value
-   */
-  _propagateThemeToComponents(newTheme) {
-    this.currentTheme = newTheme;
-    
-    // Update each component's host element
-    Object.values(this.activeComponents).forEach(component => {
-      if (component.shadowRoot && component.shadowRoot.host) {
-        component.shadowRoot.host.dataset.theme = newTheme;
-      }
-    });
   }
   
   /**
@@ -651,7 +465,6 @@ class ComponentLoader {
       }
       
       const registry = await response.json();
-      this.componentRegistry = registry;
       
       console.log('Component registry loaded:', registry);
       return registry;
@@ -659,22 +472,6 @@ class ComponentLoader {
       console.error('Error loading component registry:', error);
       throw error;
     }
-  }
-  
-  /**
-   * Get component metadata from registry
-   * 
-   * @param {string} componentId - ID of the component
-   * @returns {Object|null} - Component metadata or null if not found
-   */
-  getComponentMeta(componentId) {
-    if (!this.componentRegistry || !this.componentRegistry.components) {
-      return null;
-    }
-    
-    return this.componentRegistry.components.find(
-      component => component.id === componentId
-    ) || null;
   }
 }
 
