@@ -23,44 +23,51 @@ class MinimalLoader {
    */
   async loadComponent(componentId) {
     console.log(`MinimalLoader: Loading component ${componentId}`);
-    
+
     // Get the RIGHT PANEL container
     const container = document.getElementById('html-panel');
     if (!container) {
       console.error('MinimalLoader: RIGHT PANEL (html-panel) not found');
       return null;
     }
-    
+
     // Don't reload if it's already the current component
     if (this.currentComponent === componentId) {
       console.log(`MinimalLoader: ${componentId} is already loaded, skipping`);
+
+      // Attempt to re-initialize the component if it exists
+      if (componentId === 'athena' && window.athenaComponent) {
+        console.log('MinimalLoader: Re-initializing Athena component');
+        window.athenaComponent.init();
+      }
+
       return;
     }
-    
+
     try {
       // Show loading indicator
       container.innerHTML = `<div style="padding: 20px; text-align: center;">Loading ${componentId}...</div>`;
-      
+
       // Determine component path
       const componentPath = this.componentPaths[componentId] || `/components/${componentId}/${componentId}-component.html`;
-      
+
       // Load the HTML
       const response = await fetch(componentPath);
       if (!response.ok) {
         throw new Error(`Failed to load component: ${response.status} ${response.statusText}`);
       }
-      
+
       const html = await response.text();
-      
+
       // Display the component HTML directly in the container
       container.innerHTML = html;
-      
+
       // Update current component
       this.currentComponent = componentId;
-      
+
       // Make sure the container is visible
       container.style.display = 'block';
-      
+
       // Run any scripts in the component
       const scripts = container.querySelectorAll('script');
       scripts.forEach(script => {
@@ -68,7 +75,20 @@ class MinimalLoader {
         newScript.textContent = script.textContent;
         document.head.appendChild(newScript);
       });
-      
+
+      // Initialize specific components
+      if (componentId === 'athena') {
+        // Check if athenaComponent was loaded via script tag
+        setTimeout(() => {
+          if (window.athenaComponent) {
+            console.log('MinimalLoader: Initializing Athena component');
+            window.athenaComponent.init();
+          } else {
+            console.warn('MinimalLoader: Athena component not found in global scope');
+          }
+        }, 100); // Small delay to ensure script execution
+      }
+
       console.log(`MinimalLoader: ${componentId} loaded successfully`);
     } catch (error) {
       console.error(`MinimalLoader: Error loading ${componentId}:`, error);

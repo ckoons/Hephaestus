@@ -109,36 +109,36 @@ class AthenaComponent {
     setupTabs() {
         console.log('Setting up Athena tabs');
 
-        // Find Athena container
-        const container = document.querySelector('.athena-container');
+        // Find Athena container with BEM naming
+        const container = document.querySelector('.athena');
         if (!container) {
             console.error('Athena container not found!');
             return;
         }
 
-        // Scope all queries to our container
-        const tabs = container.querySelectorAll('.athena-tab');
-        const panels = container.querySelectorAll('.athena-panel');
-        const chatInput = container.querySelector('.chat-input');
+        // Scope all queries to our container using BEM class names
+        const tabs = container.querySelectorAll('.athena__tab');
+        const panels = container.querySelectorAll('.athena__panel');
+        const chatInput = container.querySelector('.athena__chat-input');
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
-                // Update active tab
-                tabs.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+                // Update active tab using BEM modifier classes
+                tabs.forEach(t => t.classList.remove('athena__tab--active'));
+                tab.classList.add('athena__tab--active');
 
                 // Show active panel
                 const panelId = tab.getAttribute('data-tab') + '-panel';
                 panels.forEach(panel => {
                     panel.style.display = 'none';
-                    panel.classList.remove('active');
+                    panel.classList.remove('athena__panel--active');
                 });
 
                 // Use container-scoped query instead of global getElementById
                 const activePanel = container.querySelector(`#${panelId}`);
                 if (activePanel) {
                     activePanel.style.display = 'block';
-                    activePanel.classList.add('active');
+                    activePanel.classList.add('athena__panel--active');
                 }
 
                 // Show/hide the clear chat button in the menu bar based on active tab
@@ -175,12 +175,12 @@ class AthenaComponent {
      * @param {string} activeTab - The currently active tab
      */
     updateChatPlaceholder(activeTab) {
-        // Find Athena container
-        const container = document.querySelector('.athena-container');
+        // Find Athena container with BEM naming
+        const container = document.querySelector('.athena');
         if (!container) return;
 
-        // Get the chat input within our container
-        const chatInput = container.querySelector('.chat-input');
+        // Get the chat input within our container with BEM class
+        const chatInput = container.querySelector('.athena__chat-input');
         if (!chatInput) return;
 
         switch(activeTab) {
@@ -280,45 +280,53 @@ class AthenaComponent {
      */
     setupChat() {
         console.log('Setting up Athena chat');
-        
-        const input = document.getElementById('chat-input');
-        const button = document.getElementById('send-button');
-        
+
+        // Find Athena container with BEM naming
+        const container = document.querySelector('.athena');
+        if (!container) {
+            console.error('Athena container not found!');
+            return;
+        }
+
+        // Use scoped queries with container
+        const input = container.querySelector('#chat-input');
+        const button = container.querySelector('#send-button');
+
         if (!input || !button) {
             console.error('Missing chat input elements');
             return;
         }
-        
+
         // Send message on button click
         button.addEventListener('click', () => {
             const message = input.value.trim();
             if (!message) return;
-            
+
             // Determine which chat container to use based on active tab
             let messagesContainer;
             let responsePrefix = '';
-            
+
             if (this.state.activeTab === 'teamchat') {
-                messagesContainer = document.getElementById('teamchat-messages');
+                messagesContainer = container.querySelector('#teamchat-messages');
                 responsePrefix = 'Team Chat: ';
             } else {
                 // Default to knowledge chat for all other tabs
-                messagesContainer = document.getElementById('chat-messages');
+                messagesContainer = container.querySelector('#chat-messages');
                 responsePrefix = 'Knowledge: ';
             }
-            
+
             if (!messagesContainer) {
                 console.error('Chat messages container not found');
                 return;
             }
-            
+
             // Add user message to chat
             this.addUserMessageToChatUI(messagesContainer, message);
-            
+
             // Simulate a response based on the active tab
             setTimeout(() => {
                 let response;
-                
+
                 if (this.state.activeTab === 'teamchat') {
                     response = `${responsePrefix}I received your team message: "${message}". This would be shared with all Tekton components.`;
                 } else if (this.state.activeTab === 'graph') {
@@ -330,14 +338,14 @@ class AthenaComponent {
                 } else {
                     response = `${responsePrefix}I received your message: "${message}". This is a response from Athena Knowledge system.`;
                 }
-                
+
                 this.addAIMessageToChatUI(messagesContainer, response);
             }, 1000);
-            
+
             // Clear input
             input.value = '';
         });
-        
+
         // Send message on Enter key (but allow Shift+Enter for new lines)
         input.addEventListener('keydown', (event) => {
             if (event.key === 'Enter' && !event.shiftKey) {
@@ -354,14 +362,14 @@ class AthenaComponent {
      */
     addUserMessageToChatUI(messages, message) {
         if (!messages) return;
-        
+
         const userBubble = document.createElement('div');
-        userBubble.className = 'chat-message user-message';
+        userBubble.className = 'athena__message athena__message--user';
         userBubble.textContent = message;
         messages.appendChild(userBubble);
         messages.scrollTop = messages.scrollHeight;
     }
-    
+
     /**
      * Add an AI message to the chat UI
      * @param {HTMLElement} messages - The messages container element
@@ -369,9 +377,9 @@ class AthenaComponent {
      */
     addAIMessageToChatUI(messages, message) {
         if (!messages) return;
-        
+
         const aiBubble = document.createElement('div');
-        aiBubble.className = 'chat-message ai-message';
+        aiBubble.className = 'athena__message athena__message--ai';
         aiBubble.textContent = message;
         messages.appendChild(aiBubble);
         messages.scrollTop = messages.scrollHeight;
@@ -381,18 +389,22 @@ class AthenaComponent {
      * Clear the active chat messages
      */
     clearActiveChat() {
+        // Find Athena container with BEM naming
+        const container = document.querySelector('.athena');
+        if (!container) return;
+
         let messagesContainer;
-        
+
         // Determine which chat is active
         if (this.state.activeTab === 'chat') {
-            messagesContainer = document.getElementById('chat-messages');
+            messagesContainer = container.querySelector('#chat-messages');
         } else if (this.state.activeTab === 'teamchat') {
-            messagesContainer = document.getElementById('teamchat-messages');
+            messagesContainer = container.querySelector('#teamchat-messages');
         }
-        
+
         if (messagesContainer) {
-            // Keep only the welcome message
-            const welcomeMessage = messagesContainer.querySelector('.chat-message:first-child');
+            // Keep only the welcome message (system message with BEM class)
+            const welcomeMessage = messagesContainer.querySelector('.athena__message--system');
             messagesContainer.innerHTML = '';
             if (welcomeMessage) {
                 messagesContainer.appendChild(welcomeMessage);

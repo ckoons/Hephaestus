@@ -452,9 +452,31 @@
     <script src="scripts/terminal-chat-enhanced.js"></script>
     <script src="scripts/hermes-connector.js"></script>
     
-    <!-- Component scripts -->
+    <!-- Component scripts - we use a specific script tag to ensure athena-component.js loads correctly -->
     <script src="scripts/ergon-component.js"></script>
-    <script src="scripts/athena/athena-component.js"></script>
+    <script>
+      // Create a script tag with a specific load listener for athena-component.js
+      document.addEventListener('DOMContentLoaded', function() {
+        const athenaScript = document.createElement('script');
+        athenaScript.src = 'scripts/athena/athena-component.js';
+
+        // Add a listener for when the script loads
+        athenaScript.onload = function() {
+          console.log('Athena component script loaded successfully');
+
+          // Check if Athena component is the current one and initialize it
+          if (window.minimalLoader && window.minimalLoader.currentComponent === 'athena') {
+            console.log('Auto-initializing Athena component after script load');
+            if (window.athenaComponent) {
+              window.athenaComponent.init();
+            }
+          }
+        };
+
+        // Add the script to the document
+        document.head.appendChild(athenaScript);
+      });
+    </script>
 
     <!-- Setup minimal component loader with navigation -->
     <script>
