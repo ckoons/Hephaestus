@@ -21,7 +21,7 @@ class ErgonComponent {
         this.messageHistory = {
             'ergon': [],
             'awt-team': [],
-            'agora': []
+            'mcp': []
         };
         this.historyPosition = -1;
         this.currentInput = '';
@@ -53,6 +53,9 @@ class ErgonComponent {
             window.hermesConnector.connectToLLMAdapter();
         }
         
+        // Apply Greek name handling
+        this.handleGreekNames();
+        
         // Mark as initialized
         this.state.initialized = true;
         
@@ -67,6 +70,35 @@ class ErgonComponent {
         
         // Restore component state
         this.restoreComponentState();
+    }
+    
+    /**
+     * Handle Greek vs modern naming based on SHOW_GREEK_NAMES env var
+     */
+    handleGreekNames() {
+        // Find the Ergon container (scope all DOM operations to this container)
+        const container = document.querySelector('.ergon');
+        if (!container) {
+            console.error('Ergon container not found!');
+            return;
+        }
+        
+        // Get the title element
+        const titleElement = container.querySelector('.ergon__title-main');
+        const subtitleElement = container.querySelector('.ergon__title-sub');
+        
+        if (!titleElement || !subtitleElement) {
+            return;
+        }
+        
+        // Check environment setting
+        if (window.ENV && window.ENV.SHOW_GREEK_NAMES === 'false') {
+            // Hide the Greek name
+            titleElement.style.display = 'none';
+            // Make the modern name more prominent
+            subtitleElement.style.fontWeight = 'bold';
+            subtitleElement.style.fontSize = '1.5rem';
+        }
     }
     
     /**
@@ -124,7 +156,7 @@ class ErgonComponent {
         });
         
         // Show the specific tab content
-        const tabContent = container.querySelector(`#${tabId}-content`);
+        const tabContent = container.querySelector(`#${tabId}-panel`);
         if (tabContent) {
             tabContent.style.display = 'block';
         }
@@ -136,17 +168,17 @@ class ErgonComponent {
         // Add notification message to terminal
         if (window.websocketManager) {
             // Only add context switch notification for chat tabs
-            if (tabId === 'ergon' || tabId === 'awt-team') {
+            if (tabId === 'ergon' || tabId === 'awt-team' || tabId === 'mcp') {
                 websocketManager.addToTerminal("", 'white'); // blank line for spacing
                 websocketManager.addToTerminal(`Switched to ${tabId} chat interface.`, '#888888');
-                websocketManager.addToTerminal(`Type '@${tabId === 'awt-team' ? 'awt' : 'ergon'} your message' to chat directly`, '#888888');
+                websocketManager.addToTerminal(`Type '@${tabId === 'awt-team' ? 'awt' : tabId}' to chat directly`, '#888888');
             } else if (tabId === 'agents' || tabId === 'memory' || tabId === 'tools') {
                 websocketManager.addToTerminal(`Viewing ${tabId} panel. Use terminal commands to interact.`, '#888888');
             }
         }
         
         // Special handling for chat tabs
-        if (tabId === 'ergon' || tabId === 'awt-team') {
+        if (tabId === 'ergon' || tabId === 'awt-team' || tabId === 'mcp') {
             // Ensure LLM adapter is connected
             if (window.hermesConnector) {
                 // If we have an LLM adapter connector, make sure it's connected
@@ -156,7 +188,7 @@ class ErgonComponent {
                     window.hermesConnector.connectToLLMAdapter();
                     
                     // Add a system message that explains the LLM connection
-                    const chatMessages = container.querySelector(`#${tabId}-chat-messages`);
+                    const chatMessages = container.querySelector(`#${tabId}-messages`);
                     if (chatMessages) {
                         const systemMsgEl = document.createElement('div');
                         systemMsgEl.className = 'ergon__message ergon__message--system';
@@ -342,32 +374,32 @@ class ErgonComponent {
             }
         });
         
-        // Set up clear chat buttons
-        const clearButtons = {
-            'ergon': container.querySelector('#clear-ergon-chat'),
-            'awt-team': container.querySelector('#clear-awt-chat'),
-            'agora': container.querySelector('#clear-agora-chat')
-        };
+        // Connect main chat input from footer to active panel
+        const chatInput = container.querySelector('#chat-input');
+        const sendButton = container.querySelector('#send-button');
         
-        // Add event listeners to clear buttons
-        Object.entries(clearButtons).forEach(([context, button]) => {
-            if (button) {
-                button.addEventListener('click', () => {
-                    const chatMessages = container.querySelector(`#${context}-chat-messages`);
-                    if (chatMessages) {
-                        // Add confirmation
-                        if (confirm('Are you sure you want to clear this chat history?')) {
-                            // Keep only the welcome message
-                            const welcomeMessage = chatMessages.querySelector('.ergon__message--system');
-                            chatMessages.innerHTML = '';
-                            if (welcomeMessage) {
-                                chatMessages.appendChild(welcomeMessage);
-                            }
-                        }
+        if (chatInput && sendButton) {
+            // Clicking the send button sends message for active tab
+            sendButton.addEventListener('click', () => {
+                const message = chatInput.value.trim();
+                if (message) {
+                    this.sendChatMessage(this.state.activeTab, message);
+                    chatInput.value = '';
+                }
+            });
+            
+            // Enter key in input sends message
+            chatInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    const message = chatInput.value.trim();
+                    if (message) {
+                        this.sendChatMessage(this.state.activeTab, message);
+                        chatInput.value = '';
                     }
-                });
-            }
-        });
+                }
+            });
+        }
     }
     
     /**
@@ -383,54 +415,8 @@ class ErgonComponent {
             return;
         }
         
-        // Get all chat inputs
-        const chatInputs = container.querySelectorAll('.ergon__chat-input');
-        
-        console.log(`Found ${chatInputs.length} chat inputs`);
-        
-        // Add event listeners to all chat inputs
-        chatInputs.forEach(input => {
-            const context = input.getAttribute('data-context');
-            console.log(`Setting up input for context: ${context}`);
-            
-            // Store the chat input element for each context
-            this[`${context}ChatInput`] = input;
-            
-            // Send button
-            const sendButton = input.parentElement.querySelector(`.ergon__send-button`);
-            if (sendButton) {
-                sendButton.addEventListener('click', () => {
-                    const message = input.value.trim();
-                    if (message) {
-                        this.sendChatMessage(context, message);
-                        input.value = '';
-                    }
-                });
-            }
-            
-            // Add event listener for keydown
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault(); // Prevent default to avoid newline insertion
-                    const message = input.value.trim();
-                    if (message) {
-                        this.sendChatMessage(context, message);
-                        input.value = '';
-                    }
-                }
-            });
-            
-            // Focus input when container is clicked
-            const chatContainer = input.closest('.ergon__panel');
-            if (chatContainer) {
-                chatContainer.addEventListener('click', (e) => {
-                    // Only focus if the click wasn't on an interactive element
-                    if (e.target.tagName !== 'BUTTON' && e.target.tagName !== 'TEXTAREA' && e.target.tagName !== 'INPUT') {
-                        input.focus();
-                    }
-                });
-            }
-        });
+        // We don't need to set up individual chat inputs on each panel now
+        // since we're using a single chat input in the footer
     }
     
     /**
@@ -447,7 +433,7 @@ class ErgonComponent {
         }
         
         // Get the chat messages container
-        const chatMessages = container.querySelector(`#${context}-chat-messages`);
+        const chatMessages = container.querySelector(`#${context}-messages`);
         if (!chatMessages) return;
         
         console.log(`Sending message in ${context} context:`, message);
@@ -481,7 +467,7 @@ class ErgonComponent {
         // Also echo to main terminal
         if (window.websocketManager) {
             // Format as if it was entered in the main terminal with @ prefix
-            const termPrefix = context === 'awt-team' ? '@awt' : '@ergon';
+            const termPrefix = context === 'awt-team' ? '@awt' : `@${context}`;
             websocketManager.addToTerminal(`${termPrefix}: ${message}`, '#2962FF');
         }
         
@@ -533,7 +519,7 @@ class ErgonComponent {
                 
                 // Add response
                 const responseDiv = document.createElement('div');
-                responseDiv.className = 'ergon__message ergon__message--agent';
+                responseDiv.className = 'ergon__message ergon__message--ai';
                 responseDiv.innerHTML = `
                     <div class="ergon__message-content">
                         <div class="ergon__message-text">
@@ -549,7 +535,8 @@ class ErgonComponent {
                 
                 // Also echo to main terminal
                 if (window.websocketManager) {
-                    const targetName = context === 'awt-team' ? 'AWT-Team' : 'Ergon';
+                    const targetName = context === 'awt-team' ? 'AWT-Team' : 
+                                       context === 'mcp' ? 'MCP' : 'Ergon';
                     websocketManager.addToTerminal(`[${targetName}] I received your message: "${message}". How can I assist you further?`, '#00bfff');
                 }
             }, 1000);
@@ -567,7 +554,7 @@ class ErgonComponent {
             const { contextId, chunk } = data;
             
             // Handle chunk based on context
-            if (contextId === 'ergon' || contextId === 'awt-team' || contextId === 'agora') {
+            if (contextId === 'ergon' || contextId === 'awt-team' || contextId === 'mcp') {
                 this.handleStreamChunk(contextId, chunk);
             }
         });
@@ -582,7 +569,7 @@ class ErgonComponent {
             // Also echo to main terminal if needed
             if (window.websocketManager) {
                 const targetName = contextId === 'awt-team' ? 'AWT-Team' : 
-                                    contextId === 'agora' ? 'Agora' : 'Ergon';
+                                   contextId === 'mcp' ? 'MCP' : 'Ergon';
                 
                 // Extract first 100 chars for terminal summary
                 const summary = fullResponse.length > 100 ? 
@@ -626,7 +613,7 @@ class ErgonComponent {
         }
         
         // Get the chat messages container
-        const chatMessages = container.querySelector(`#${contextId}-chat-messages`);
+        const chatMessages = container.querySelector(`#${contextId}-messages`);
         if (!chatMessages) return;
         
         // Find or create streaming message element
@@ -638,7 +625,7 @@ class ErgonComponent {
             
             // Create new streaming message element
             streamingMessage = document.createElement('div');
-            streamingMessage.className = 'ergon__message ergon__message--agent ergon__streaming-message';
+            streamingMessage.className = 'ergon__message ergon__message--ai ergon__streaming-message';
             streamingMessage.innerHTML = `
                 <div class="ergon__message-content">
                     <div class="ergon__message-text"></div>
@@ -672,7 +659,7 @@ class ErgonComponent {
         }
         
         // Get the chat messages container
-        const chatMessages = container.querySelector(`#${contextId}-chat-messages`);
+        const chatMessages = container.querySelector(`#${contextId}-messages`);
         if (!chatMessages) return;
         
         // Find streaming message element
@@ -703,7 +690,7 @@ class ErgonComponent {
         }
         
         // Get the chat messages container
-        const chatMessages = container.querySelector(`#${contextId}-chat-messages`);
+        const chatMessages = container.querySelector(`#${contextId}-messages`);
         if (!chatMessages) return;
         
         // Check if typing indicator already exists
@@ -738,7 +725,7 @@ class ErgonComponent {
         }
         
         // Get the chat messages container
-        const chatMessages = container.querySelector(`#${contextId}-chat-messages`);
+        const chatMessages = container.querySelector(`#${contextId}-messages`);
         if (!chatMessages) return;
         
         // Remove typing indicators
@@ -797,12 +784,12 @@ class ErgonComponent {
                 const activeTab = container.querySelector('.ergon__tab--active');
                 if (activeTab) {
                     const tabId = activeTab.getAttribute('data-tab');
-                    if (tabId === 'ergon' || tabId === 'awt-team') {
-                        const chatMessages = container.querySelector(`#${tabId}-chat-messages`);
+                    if (tabId === 'ergon' || tabId === 'awt-team' || tabId === 'mcp') {
+                        const chatMessages = container.querySelector(`#${tabId}-messages`);
                         if (chatMessages) {
                             // Add AI message to chat
                             const responseDiv = document.createElement('div');
-                            responseDiv.className = 'ergon__message ergon__message--agent';
+                            responseDiv.className = 'ergon__message ergon__message--ai';
                             responseDiv.innerHTML = `
                                 <div class="ergon__message-content">
                                     <div class="ergon__message-text">${payload.response}</div>
@@ -825,7 +812,7 @@ class ErgonComponent {
             if (payload.status === 'typing') {
                 const context = payload.context || '';
                 
-                if (context === 'ergon' || context === 'awt-team') {
+                if (context === 'ergon' || context === 'awt-team' || context === 'mcp') {
                     if (payload.isTyping) {
                         this.showTypingIndicator(context);
                     } else {
@@ -858,12 +845,12 @@ class ErgonComponent {
         this.hideTypingIndicator(context);
         
         // Get the chat messages container
-        const chatMessages = container.querySelector(`#${context}-chat-messages`);
+        const chatMessages = container.querySelector(`#${context}-messages`);
         if (!chatMessages) return;
         
         // Add AI message to chat
         const responseDiv = document.createElement('div');
-        responseDiv.className = 'ergon__message ergon__message--agent';
+        responseDiv.className = 'ergon__message ergon__message--ai';
         responseDiv.innerHTML = `
             <div class="ergon__message-content">
                 <div class="ergon__message-text">${message}</div>
