@@ -126,8 +126,65 @@
             <div class="athena__query-builder">
                 <h3 class="athena__section-title">Query Builder</h3>
                 <p class="athena__text">Construct queries to find entities and relationships in the knowledge graph.</p>
+
                 <div class="athena__query-form">
-                    <!-- Form will be populated here -->
+                    <div class="athena__form-group">
+                        <label class="athena__form-label">Entity Type</label>
+                        <select class="athena__form-select" id="entity-type-select">
+                            <option value="any">Any Type</option>
+                            <option value="person">Person</option>
+                            <option value="project">Project</option>
+                            <option value="organization">Organization</option>
+                            <option value="document">Document</option>
+                            <option value="concept">Concept</option>
+                        </select>
+                    </div>
+
+                    <div class="athena__form-group">
+                        <label class="athena__form-label">Relationship Type</label>
+                        <select class="athena__form-select" id="relationship-type-select">
+                            <option value="any">Any Relationship</option>
+                            <option value="works_on">Works On</option>
+                            <option value="manages">Manages</option>
+                            <option value="member_of">Member Of</option>
+                            <option value="created">Created</option>
+                            <option value="related_to">Related To</option>
+                        </select>
+                    </div>
+
+                    <div class="athena__form-group">
+                        <label class="athena__form-label">Search Terms</label>
+                        <input type="text" class="athena__form-input" id="search-terms-input" placeholder="Enter search terms...">
+                    </div>
+
+                    <div class="athena__form-group">
+                        <label class="athena__form-label">Additional Filters</label>
+                        <div class="athena__checkbox-group">
+                            <label class="athena__checkbox-label">
+                                <input type="checkbox" class="athena__checkbox" id="include-archived"> Include archived entities
+                            </label>
+                            <label class="athena__checkbox-label">
+                                <input type="checkbox" class="athena__checkbox" id="exact-match"> Exact match only
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="athena__form-actions">
+                        <button class="athena__button athena__button--secondary" id="clear-query-btn">Clear</button>
+                        <button class="athena__button athena__button--primary" id="build-query-btn">Build Query</button>
+                    </div>
+                </div>
+
+                <div class="athena__query-result" style="margin-top: 20px; display: none;" id="query-result-container">
+                    <h4 class="athena__result-title">Generated Query</h4>
+                    <div class="athena__code-block" id="generated-query" style="background: #333; padding: 15px; border-radius: 6px; font-family: monospace; white-space: pre-wrap;">
+                        <!-- Generated query will appear here -->
+                    </div>
+
+                    <div class="athena__form-actions" style="margin-top: 15px;">
+                        <button class="athena__button athena__button--secondary" id="copy-query-btn">Copy Query</button>
+                        <button class="athena__button athena__button--primary" id="execute-query-btn">Execute Query</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -533,7 +590,7 @@
         justify-content: center;
         height: 200px;
     }
-    
+
     .athena__spinner {
         width: 40px;
         height: 40px;
@@ -543,7 +600,105 @@
         animation: athena-spin 1s linear infinite;
         margin-bottom: 16px;
     }
-    
+
+    /* Query Builder Form Styles */
+    .athena__query-builder {
+        padding: 20px;
+    }
+
+    .athena__section-title {
+        margin-bottom: 16px;
+        font-size: 24px;
+        color: var(--text-primary, #f0f0f0);
+    }
+
+    .athena__text {
+        margin-bottom: 24px;
+        color: var(--text-secondary, #aaaaaa);
+    }
+
+    .athena__query-form {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .athena__form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .athena__form-label {
+        font-weight: 500;
+        color: var(--text-primary, #f0f0f0);
+    }
+
+    .athena__form-select,
+    .athena__form-input {
+        padding: 10px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 6px;
+        color: var(--text-primary, #f0f0f0);
+        font-size: 14px;
+    }
+
+    .athena__checkbox-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .athena__checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-primary, #f0f0f0);
+    }
+
+    .athena__form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+
+    .athena__button {
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .athena__button--primary {
+        background-color: var(--color-primary, #7B1FA2);
+        color: white;
+    }
+
+    .athena__button--primary:hover {
+        background-color: var(--color-primary-hover, #6A1B9A);
+    }
+
+    .athena__button--secondary {
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        color: var(--text-primary, #f0f0f0);
+    }
+
+    .athena__button--secondary:hover {
+        background-color: var(--bg-hover, #3a3a4a);
+    }
+
+    .athena__result-title {
+        margin-bottom: 12px;
+        font-size: 18px;
+        color: var(--text-primary, #f0f0f0);
+    }
+
     @keyframes athena-spin {
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }

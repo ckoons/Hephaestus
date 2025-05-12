@@ -9,7 +9,8 @@ class AthenaComponent {
             initialized: false,
             activeTab: 'graph', // Default tab is now Knowledge Graph
             graphLoaded: false,
-            entitiesLoaded: false
+            entitiesLoaded: false,
+            queryBuilderLoaded: false
         };
     }
     
@@ -210,7 +211,7 @@ class AthenaComponent {
      */
     loadTabContent(tabId) {
         console.log(`Loading content for ${tabId} tab`);
-        
+
         switch (tabId) {
             case 'graph':
                 if (!this.state.graphLoaded) {
@@ -225,7 +226,10 @@ class AthenaComponent {
                 }
                 break;
             case 'query':
-                // Initialize query panel if needed
+                if (!this.state.queryBuilderLoaded) {
+                    this.setupQueryBuilder();
+                    this.state.queryBuilderLoaded = true;
+                }
                 break;
             case 'chat':
                 // Chat is loaded by setupChat
@@ -233,6 +237,181 @@ class AthenaComponent {
             case 'teamchat':
                 // Team chat is loaded by setupChat
                 break;
+        }
+    }
+
+    /**
+     * Set up the query builder functionality
+     */
+    setupQueryBuilder() {
+        console.log('Setting up Query Builder');
+
+        // Find Athena container
+        const container = document.querySelector('.athena');
+        if (!container) return;
+
+        // Get query builder elements
+        const buildQueryBtn = container.querySelector('#build-query-btn');
+        const clearQueryBtn = container.querySelector('#clear-query-btn');
+        const entityTypeSelect = container.querySelector('#entity-type-select');
+        const relationshipTypeSelect = container.querySelector('#relationship-type-select');
+        const searchTermsInput = container.querySelector('#search-terms-input');
+        const includeArchivedCheckbox = container.querySelector('#include-archived');
+        const exactMatchCheckbox = container.querySelector('#exact-match');
+        const queryResultContainer = container.querySelector('#query-result-container');
+        const generatedQueryElem = container.querySelector('#generated-query');
+        const copyQueryBtn = container.querySelector('#copy-query-btn');
+        const executeQueryBtn = container.querySelector('#execute-query-btn');
+
+        if (!buildQueryBtn || !clearQueryBtn) {
+            console.error('Query builder buttons not found');
+            return;
+        }
+
+        // Build Query button handler
+        buildQueryBtn.addEventListener('click', () => {
+            const entityType = entityTypeSelect.value;
+            const relationshipType = relationshipTypeSelect.value;
+            const searchTerms = searchTermsInput.value.trim();
+            const includeArchived = includeArchivedCheckbox.checked;
+            const exactMatch = exactMatchCheckbox.checked;
+
+            // Generate query string
+            let query = 'MATCH ';
+
+            if (entityType !== 'any') {
+                query += `(n:${entityType.charAt(0).toUpperCase() + entityType.slice(1)})`;
+            } else {
+                query += '(n)';
+            }
+
+            if (relationshipType !== 'any') {
+                query += `-[r:${relationshipType.toUpperCase()}]->(m)`;
+            } else {
+                query += '-[r]->(m)';
+            }
+
+            query += '\nWHERE ';
+
+            if (searchTerms) {
+                if (exactMatch) {
+                    query += `n.name = "${searchTerms}" OR m.name = "${searchTerms}"`;
+                } else {
+                    query += `n.name CONTAINS "${searchTerms}" OR m.name CONTAINS "${searchTerms}"`;
+                }
+            } else {
+                query += 'true';
+            }
+
+            if (!includeArchived) {
+                query += ' AND NOT n.archived AND NOT m.archived';
+            }
+
+            query += '\nRETURN n, r, m\nLIMIT 100;';
+
+            // Show the query result container
+            queryResultContainer.style.display = 'block';
+            generatedQueryElem.textContent = query;
+
+            // Scroll to show the generated query
+            queryResultContainer.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Clear Query button handler
+        clearQueryBtn.addEventListener('click', () => {
+            entityTypeSelect.value = 'any';
+            relationshipTypeSelect.value = 'any';
+            searchTermsInput.value = '';
+            includeArchivedCheckbox.checked = false;
+            exactMatchCheckbox.checked = false;
+
+            queryResultContainer.style.display = 'none';
+        });
+
+        // Copy Query button handler
+        if (copyQueryBtn) {
+            copyQueryBtn.addEventListener('click', () => {
+                if (generatedQueryElem) {
+                    const textToCopy = generatedQueryElem.textContent;
+
+                    // Use the clipboard API if available
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(textToCopy)
+                            .then(() => {
+                                copyQueryBtn.textContent = 'Copied!';
+                                setTimeout(() => {
+                                    copyQueryBtn.textContent = 'Copy Query';
+                                }, 2000);
+                            })
+                            .catch(err => {
+                                console.error('Error copying text: ', err);
+                            });
+                    } else {
+                        // Fallback for browsers without clipboard API
+                        const textarea = document.createElement('textarea');
+                        textarea.value = textToCopy;
+                        textarea.style.position = 'fixed'; // Avoid scrolling to bottom
+                        document.body.appendChild(textarea);
+                        textarea.focus();
+                        textarea.select();
+
+                        try {
+                            document.execCommand('copy');
+                            copyQueryBtn.textContent = 'Copied!';
+                            setTimeout(() => {
+                                copyQueryBtn.textContent = 'Copy Query';
+                            }, 2000);
+                        } catch (err) {
+                            console.error('Error copying text: ', err);
+                        }
+
+                        document.body.removeChild(textarea);
+                    }
+                }
+            });
+        }
+
+        // Execute Query button handler
+        if (executeQueryBtn) {
+            executeQueryBtn.addEventListener('click', () => {
+                // Simulate query execution
+                const queryText = generatedQueryElem.textContent;
+
+                // Add a message to the chat
+                this.state.activeTab = 'chat'; // Switch to chat tab
+
+                // Get the chat panel and make it active
+                const chatPanel = container.querySelector('#chat-panel');
+                const queryPanel = container.querySelector('#query-panel');
+                if (chatPanel && queryPanel) {
+                    queryPanel.style.display = 'none';
+                    queryPanel.classList.remove('athena__panel--active');
+                    chatPanel.style.display = 'block';
+                    chatPanel.classList.add('athena__panel--active');
+
+                    // Update active tab in nav
+                    const tabs = container.querySelectorAll('.athena__tab');
+                    tabs.forEach(tab => {
+                        if (tab.getAttribute('data-tab') === 'chat') {
+                            tab.classList.add('athena__tab--active');
+                        } else {
+                            tab.classList.remove('athena__tab--active');
+                        }
+                    });
+                }
+
+                // Add a user message
+                const chatMessages = container.querySelector('#chat-messages');
+                if (chatMessages) {
+                    this.addUserMessageToChatUI(chatMessages, `Execute query: ${queryText}`);
+
+                    // Simulate AI response
+                    setTimeout(() => {
+                        const response = 'The query was executed successfully. Found 15 matching relationships. Here are the results...';
+                        this.addAIMessageToChatUI(chatMessages, response);
+                    }, 1500);
+                }
+            });
         }
     }
     
