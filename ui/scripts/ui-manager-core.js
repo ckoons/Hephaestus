@@ -134,6 +134,39 @@ class UIManagerCore {
      */
     activateComponent(componentId) {
         console.log(`Activating component: ${componentId}`);
+        
+        // Check if this component should be ignored by UI manager
+        // This allows components to manage their own UI without interference
+        if (this._ignoreComponent === componentId) {
+            console.log(`UI Manager: Component ${componentId} has requested to be ignored by UI manager`);
+            
+            // IMPORTANT FIX: The ignored component is still activated in the navigation menu
+            // But we don't interfere with its internal workings
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                if (item.getAttribute('data-component') === componentId) {
+                    item.classList.add('active');
+                } else {
+                    item.classList.remove('active');
+                }
+            });
+            
+            // Update the component title to reflect the active component
+            const componentTitle = document.querySelector('.component-title');
+            const activeNavItem = document.querySelector(`.nav-item[data-component="${componentId}"]`);
+            if (activeNavItem && componentTitle) {
+                componentTitle.textContent = activeNavItem.querySelector('.nav-label').textContent;
+            }
+            
+            // Just update the active component state and return
+            this.activeComponent = componentId;
+            if (window.tektonUI) {
+                window.tektonUI.activeComponent = componentId;
+            }
+            
+            // We've updated the necessary state, but won't load or modify the component
+            return;
+        }
 
         // Use the component loader if available
         if (window.componentLoader) {

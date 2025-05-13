@@ -101,76 +101,44 @@ class AthenaComponent {
         // Setup component functionality directly
         // The HTML is already loaded by the component loader
         this.setupTabs();
+        this.setupClearButton();
         this.setupChat();
 
         console.log('Athena component functionality initialized');
     }
     
     /**
-     * Set up tab switching functionality
+     * Set up tab switching functionality - THIS METHOD IS DELIBERATELY DISABLED
+     * The actual tab switching is handled by the HTML component script directly
      */
     setupTabs() {
-        console.log('Setting up Athena tabs');
-        if (window.TektonDebug) TektonDebug.debug('athenaComponent', 'Setting up Athena tabs');
+        console.log('Athena tab handling now managed by HTML script');
+        if (window.TektonDebug) TektonDebug.debug('athenaComponent', 'Athena tab handling now managed by HTML script');
 
+        // Let the HTML-based tab activator handle all the tab switching
+        // We'll just update placeholders and load content when needed
+        
+        // Set initial state to default tab
+        this.state.activeTab = 'graph';
+        
+        // Trigger content loading for default tab
+        this.loadTabContent('graph');
+        
+        // No DOM manipulation here - it's all handled by the HTML script
+    }
+    
+    /**
+     * Set up clear chat button and other UI elements
+     * This method is called after setupTabs
+     */
+    setupClearButton() {
         // Find Athena container with BEM naming
         const container = document.querySelector('.athena');
         if (!container) {
             console.error('Athena container not found!');
-            if (window.TektonDebug) TektonDebug.error('athenaComponent', 'Athena container not found during tab setup');
             return;
         }
-
-        // Scope all queries to our container using BEM class names
-        const tabs = container.querySelectorAll('.athena__tab');
-        const panels = container.querySelectorAll('.athena__panel');
-        const chatInput = container.querySelector('.athena__chat-input');
-
-        tabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                if (window.TektonDebug) TektonDebug.debug('athenaComponent', `Tab clicked: ${tabId}`);
-                
-                // Update active tab using BEM modifier classes
-                tabs.forEach(t => t.classList.remove('athena__tab--active'));
-                tab.classList.add('athena__tab--active');
-
-                // Show active panel
-                const panelId = tabId + '-panel';
-                panels.forEach(panel => {
-                    panel.style.display = 'none';
-                    panel.classList.remove('athena__panel--active');
-                });
-
-                // Use container-scoped query instead of global getElementById
-                const activePanel = container.querySelector(`#${panelId}`);
-                if (activePanel) {
-                    activePanel.style.display = 'block';
-                    activePanel.classList.add('athena__panel--active');
-                    if (window.TektonDebug) TektonDebug.debug('athenaComponent', `Panel activated: ${panelId}`);
-                } else {
-                    if (window.TektonDebug) TektonDebug.error('athenaComponent', `Panel not found: ${panelId}`);
-                }
-
-                // Show/hide the clear chat button in the menu bar based on active tab
-                // Use container-scoped query
-                const clearChatBtn = container.querySelector('#clear-chat-btn');
-                if (clearChatBtn) {
-                    const panelType = tab.getAttribute('data-tab');
-                    clearChatBtn.style.display = (panelType === 'chat' || panelType === 'teamchat') ? 'block' : 'none';
-                }
-
-                // Update the active tab in state
-                this.state.activeTab = tab.getAttribute('data-tab');
-
-                // Update chat input placeholder based on active tab
-                this.updateChatPlaceholder(this.state.activeTab);
-
-                // Load tab-specific content if needed
-                this.loadTabContent(this.state.activeTab);
-            });
-        });
-
+        
         // Set up clear chat button - use container-scoped query
         const clearChatBtn = container.querySelector('#clear-chat-btn');
         if (clearChatBtn) {

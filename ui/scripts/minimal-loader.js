@@ -3,6 +3,9 @@
  * 
  * A stripped-down, extremely simple component loader for the Hephaestus UI.
  * Focuses only on loading a component's HTML into the RIGHT PANEL.
+ * 
+ * IMPORTANT: This is the only loader we need. We have ONE RIGHT PANEL and only
+ * ONE COMPONENT AT A TIME. This simplifies everything.
  */
 
 class MinimalLoader {
@@ -16,6 +19,45 @@ class MinimalLoader {
     
     // Keep track of the current component to prevent reloading
     this.currentComponent = null;
+    
+    // Utility libraries that might need to be loaded
+    this.utilityLoaded = {
+      'tab-navigation': false
+    };
+  }
+  
+  /**
+   * Load a utility library needed by components
+   * @param {string} utilName The name of the utility to load
+   * @returns {Promise} A promise that resolves when the utility is loaded
+   */
+  async loadUtility(utilName) {
+    if (this.utilityLoaded[utilName]) {
+      console.log(`MinimalLoader: Utility ${utilName} already loaded, reusing`);
+      return Promise.resolve();
+    }
+    
+    console.log(`MinimalLoader: Loading utility ${utilName}...`);
+    
+    return new Promise((resolve, reject) => {
+      // Add cache-busting timestamp to ensure we get the latest version
+      const timestamp = new Date().getTime();
+      const script = document.createElement('script');
+      script.src = `/scripts/shared/${utilName}.js?t=${timestamp}`;
+      script.async = false; // Use synchronous loading to ensure utilities load in order
+      script.onload = () => {
+        console.log(`MinimalLoader: Successfully loaded utility ${utilName}`);
+        this.utilityLoaded[utilName] = true;
+        
+        // Add a small delay to ensure script execution completes
+        setTimeout(() => resolve(), 20);
+      };
+      script.onerror = (err) => {
+        console.error(`MinimalLoader: Failed to load utility ${utilName}`, err);
+        reject(err);
+      };
+      document.head.appendChild(script);
+    });
   }
   
   /**
@@ -34,16 +76,6 @@ class MinimalLoader {
     // Don't reload if it's already the current component
     if (this.currentComponent === componentId) {
       console.log(`MinimalLoader: ${componentId} is already loaded, skipping`);
-
-      // Attempt to re-initialize the component if it exists
-      if (componentId === 'athena' && window.athenaComponent) {
-        console.log('MinimalLoader: Re-initializing Athena component');
-        window.athenaComponent.init();
-      } else if (componentId === 'ergon' && window.ergonComponent) {
-        console.log('MinimalLoader: Re-initializing Ergon component');
-        window.ergonComponent.init();
-      }
-
       return;
     }
 
@@ -54,7 +86,11 @@ class MinimalLoader {
       // Determine component path
       const componentPath = this.componentPaths[componentId] || `/components/${componentId}/${componentId}-component.html`;
 
-      // Load the HTML
+      // First, ensure we have the tab navigation utility loaded
+      // This helps standardize tab switching across components
+      await this.loadUtility('tab-navigation');
+
+      // Now load the component HTML
       const response = await fetch(componentPath);
       if (!response.ok) {
         throw new Error(`Failed to load component: ${response.status} ${response.statusText}`);
@@ -71,35 +107,70 @@ class MinimalLoader {
       // Make sure the container is visible
       container.style.display = 'block';
 
+      // Explicitly load TabNavigation and other utilities first to ensure they're available
+      // This ensures tabs work even if component_registry.json doesn't include them
+      try {
+        console.log(`MinimalLoader: Ensuring utilities are loaded before component scripts`);
+        
+        // Load TabNavigation
+        const tabNavScript = document.createElement('script');
+        tabNavScript.src = `/scripts/shared/tab-navigation.js?t=${new Date().getTime()}`;
+        document.head.appendChild(tabNavScript);
+        
+        // Load our debugging helpers
+        console.log(`MinimalLoader: Loading debugging helpers for TabNavigation`);
+        const debugScript = document.createElement('script');
+        debugScript.src = `/scripts/shared/tab-navigation-debug.js?t=${new Date().getTime()}`;
+        document.head.appendChild(debugScript);
+        
+        // Load component loading guard
+        console.log(`MinimalLoader: Loading component loading guard`);
+        const guardScript = document.createElement('script');
+        guardScript.src = `/scripts/shared/component-loading-guard.js?t=${new Date().getTime()}`;
+        document.head.appendChild(guardScript);
+        
+        // Load tab switcher utility
+        console.log(`MinimalLoader: Loading tab switcher utility`);
+        const tabSwitcherScript = document.createElement('script');
+        tabSwitcherScript.src = `/scripts/shared/tab-switcher.js?t=${new Date().getTime()}`;
+        document.head.appendChild(tabSwitcherScript);
+        
+        // Small delay to ensure utilities are loaded before running component scripts
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } catch (error) {
+        console.error('MinimalLoader: Error loading utilities:', error);
+      }
+      
+      // Set a global variable so component scripts know what's being loaded
+      window._currentLoadingComponent = componentId;
+      
       // Run any scripts in the component
+      console.log(`MinimalLoader: Running ${componentId} scripts`);
       const scripts = container.querySelectorAll('script');
-      scripts.forEach(script => {
+      
+      // Process the scripts in sequence to avoid race conditions
+      for (let i = 0; i < scripts.length; i++) {
+        const script = scripts[i];
         const newScript = document.createElement('script');
-        newScript.textContent = script.textContent;
-        document.head.appendChild(newScript);
-      });
-
-      // Initialize specific components
-      if (componentId === 'athena') {
-        // Check if athenaComponent was loaded via script tag
-        setTimeout(() => {
-          if (window.athenaComponent) {
-            console.log('MinimalLoader: Initializing Athena component');
-            window.athenaComponent.init();
+        
+        try {
+          if (script.src) {
+            newScript.src = script.src;
+            // For src scripts, we need to wait for them to load
+            await new Promise((resolve, reject) => {
+              newScript.onload = resolve;
+              newScript.onerror = reject;
+              document.head.appendChild(newScript);
+            });
+            console.log(`MinimalLoader: Loaded external script ${newScript.src}`);
           } else {
-            console.warn('MinimalLoader: Athena component not found in global scope');
+            newScript.textContent = script.textContent;
+            document.head.appendChild(newScript);
+            console.log(`MinimalLoader: Executed inline script for ${componentId}`);
           }
-        }, 100); // Small delay to ensure script execution
-      } else if (componentId === 'ergon') {
-        // Check if ergonComponent was loaded via script tag
-        setTimeout(() => {
-          if (window.ergonComponent) {
-            console.log('MinimalLoader: Initializing Ergon component');
-            window.ergonComponent.init();
-          } else {
-            console.warn('MinimalLoader: Ergon component not found in global scope');
-          }
-        }, 100); // Small delay to ensure script execution
+        } catch (error) {
+          console.error(`MinimalLoader: Error loading script for ${componentId}:`, error);
+        }
       }
 
       console.log(`MinimalLoader: ${componentId} loaded successfully`);

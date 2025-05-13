@@ -14,22 +14,22 @@
     <!-- Ergon Menu Bar with Tab Navigation -->
     <div class="ergon__menu-bar">
         <div class="ergon__tabs">
-            <div class="ergon__tab ergon__tab--active" data-tab="agents">
+            <div class="ergon__tab ergon__tab--active" data-tab="agents" onclick="ergon_switchTab('agents'); return false;">
                 <span class="ergon__tab-label">Agents</span>
             </div>
-            <div class="ergon__tab" data-tab="tools">
+            <div class="ergon__tab" data-tab="tools" onclick="ergon_switchTab('tools'); return false;">
                 <span class="ergon__tab-label">Tools</span>
             </div>
-            <div class="ergon__tab" data-tab="mcp">
+            <div class="ergon__tab" data-tab="mcp" onclick="ergon_switchTab('mcp'); return false;">
                 <span class="ergon__tab-label">MCP</span>
             </div>
-            <div class="ergon__tab" data-tab="memory">
+            <div class="ergon__tab" data-tab="memory" onclick="ergon_switchTab('memory'); return false;">
                 <span class="ergon__tab-label">Memory</span>
             </div>
-            <div class="ergon__tab" data-tab="ergon">
+            <div class="ergon__tab" data-tab="ergon" onclick="ergon_switchTab('ergon'); return false;">
                 <span class="ergon__tab-label">Tool Chat</span>
             </div>
-            <div class="ergon__tab" data-tab="awt-team">
+            <div class="ergon__tab" data-tab="awt-team" onclick="ergon_switchTab('awt-team'); return false;">
                 <span class="ergon__tab-label">Team Chat</span>
             </div>
         </div>
@@ -822,38 +822,169 @@
     }
 </style>
 
-<script>
-// Use direct script inclusion to ensure proper loading
-// This is an inline script that will be executed by the minimal-loader when the component HTML is loaded
+<script type="text/javascript">
+// SIMPLIFIED COMPONENT SCRIPT - FULLY SELF-CONTAINED
+// This version minimizes interference with other components
 
-// Create a dynamically inserted script with error handling to load the component
-const timestamp = new Date().getTime(); // Cache busting
-const scriptPath = `/scripts/ergon/ergon-component.js?t=${timestamp}`;
+// IMMEDIATELY SET UP UI MANAGER PROTECTION
+// Tell UI Manager to ignore this component - must be done IMMEDIATELY to avoid races
+if (window.uiManager) {
+    window.uiManager._ignoreComponent = 'ergon';
+    console.log('[ERGON] Set UI Manager to ignore ergon component');
+}
 
-console.log('Loading Ergon component script from:', scriptPath);
-
-// Create and insert the script element directly in the page
-const script = document.createElement('script');
-script.src = scriptPath;
-script.async = false; // Changed to false for more reliable loading order
-
-// Set up load and error handlers
-script.onload = function() {
-    console.log('Ergon component script loaded successfully');
-    // Initialize the component once loaded
-    if (window.ergonComponent && typeof window.ergonComponent.init === 'function') {
-        console.log('Initializing Ergon component');
-        window.ergonComponent.init();
-    } else {
-        console.error('Ergon component not properly loaded - window.ergonComponent object is missing or init method not available');
-        console.log('Available global objects:', Object.keys(window).filter(k => k.toLowerCase().includes('component')));
+// DEFINE TAB SWITCHING FUNCTION
+// CRITICAL: This uses no shared code/utilities to avoid conflicts
+window.ergon_switchTab = function(tabId) {
+    console.log('[ERGON] Switching to tab:', tabId);
+    
+    // Force HTML panel visibility
+    const htmlPanelElements = document.querySelectorAll('#html-panel');
+    htmlPanelElements.forEach(panel => {
+        if (panel) panel.style.display = 'block';
+    });
+    
+    try {
+        // Only select elements within ergon component to avoid conflicts with other components
+        const ergonContainer = document.querySelector('.ergon');
+        if (!ergonContainer) {
+            console.error('[ERGON] Tab Switch: Cannot find ergon container');
+            return false;
+        }
+        
+        // Update tab active state - ONLY WITHIN ERGON CONTAINER
+        const tabs = ergonContainer.querySelectorAll('.ergon__tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-tab') === tabId) {
+                tab.classList.add('ergon__tab--active');
+            } else {
+                tab.classList.remove('ergon__tab--active');
+            }
+        });
+        
+        // Update panel visibility - ONLY WITHIN ERGON CONTAINER
+        const panels = ergonContainer.querySelectorAll('.ergon__panel');
+        panels.forEach(panel => {
+            const panelId = panel.id;
+            if (panelId === tabId + '-panel') {
+                panel.style.display = 'block';
+                panel.classList.add('ergon__panel--active');
+            } else {
+                panel.style.display = 'none';
+                panel.classList.remove('ergon__panel--active');
+            }
+        });
+        
+        // Update component state
+        if (window.ergonComponent) {
+            window.ergonComponent.state = window.ergonComponent.state || {};
+            window.ergonComponent.state.activeTab = tabId;
+            
+            if (typeof window.ergonComponent.saveComponentState === 'function') {
+                window.ergonComponent.saveComponentState();
+            }
+        }
+    } catch (err) {
+        console.error('[ERGON] Error in tab switching:', err);
     }
+    
+    return false; // Stop event propagation
 };
 
-script.onerror = function(error) {
-    console.error('Failed to load Ergon component script:', error);
-};
+// LOAD COMPONENT
+// Load after defining tab switching to ensure it's available
+function ergon_loadComponent() {
+    console.log('[ERGON] Loading component script...');
+    
+    const timestamp = new Date().getTime();
+    const scriptPath = `/scripts/ergon/ergon-component.js?t=${timestamp}`;
+    
+    const script = document.createElement('script');
+    script.src = scriptPath;
+    script.async = false;
+    script.onload = function() {
+        console.log('[ERGON] Component script loaded successfully');
+        
+        if (window.ergonComponent && typeof window.ergonComponent.init === 'function') {
+            try {
+                window.ergonComponent.init();
+                console.log('[ERGON] Component initialized');
+            } catch (err) {
+                console.error('[ERGON] Component initialization error:', err);
+            }
+        } else {
+            console.warn('[ERGON] Component init function not found');
+        }
+    };
+    script.onerror = function() {
+        console.error('[ERGON] Failed to load component script');
+    };
+    
+    document.body.appendChild(script);
+}
 
-// Add the script to the document
-document.body.appendChild(script);
+// HTML PANEL PROTECTION
+// Setup explicit protection for the HTML panel to prevent it being hidden
+function ergon_protectHtmlPanel() {
+    const htmlPanel = document.getElementById('html-panel');
+    if (!htmlPanel) {
+        console.error('[ERGON] Cannot find HTML panel to protect');
+        return;
+    }
+    
+    console.log('[ERGON] Protecting HTML panel from being hidden');
+    htmlPanel.style.display = 'block'; // Force it to be visible
+    
+    // Store the original display value
+    if (!htmlPanel.hasOwnProperty('_ergonOriginalDisplay')) {
+        Object.defineProperty(htmlPanel, '_ergonOriginalDisplay', {
+            value: 'block',
+            writable: true,
+            configurable: true
+        });
+    }
+    
+    // Only define the getter/setter if it hasn't already been defined by this component
+    if (!htmlPanel.style._ergonProtected) {
+        // Mark the display property as protected by this component
+        Object.defineProperty(htmlPanel.style, '_ergonProtected', {
+            value: true,
+            writable: false,
+            configurable: true
+        });
+        
+        // Protect the display property
+        Object.defineProperty(htmlPanel.style, 'display', {
+            get: function() { 
+                return htmlPanel._ergonOriginalDisplay; 
+            },
+            set: function(value) {
+                console.log(`[ERGON] Intercepted attempt to set HTML panel display to: ${value}`);
+                if (value === 'none') {
+                    console.log('[ERGON] Blocked attempt to hide HTML panel');
+                    htmlPanel._ergonOriginalDisplay = 'block';
+                } else {
+                    htmlPanel._ergonOriginalDisplay = value;
+                }
+            },
+            configurable: true
+        });
+    }
+}
+
+// SETUP DONE AFTER PAGE LOAD
+// This ensures the functions are available before the tab events need them
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('[ERGON] DOM loaded, setting up Ergon component');
+    ergon_protectHtmlPanel();
+    ergon_loadComponent();
+});
+
+// IMMEDIATE PROTECTION
+// In case the DOM is already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('[ERGON] Document already loaded, setting up Ergon component immediately');
+    ergon_protectHtmlPanel();
+    ergon_loadComponent();
+}
 </script>

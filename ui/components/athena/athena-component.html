@@ -14,24 +14,24 @@
     <!-- Athena Menu Bar with Tab Navigation -->
     <div class="athena__menu-bar">
         <div class="athena__tabs">
-            <div class="athena__tab athena__tab--active" data-tab="graph">
+            <div class="athena__tab athena__tab--active" data-tab="graph" onclick="athena_switchTab('graph'); return false;">
                 <span class="athena__tab-label">Knowledge Graph</span>
             </div>
-            <div class="athena__tab" data-tab="entities">
+            <div class="athena__tab" data-tab="entities" onclick="athena_switchTab('entities'); return false;">
                 <span class="athena__tab-label">Entities</span>
             </div>
-            <div class="athena__tab" data-tab="query">
+            <div class="athena__tab" data-tab="query" onclick="athena_switchTab('query'); return false;">
                 <span class="athena__tab-label">Query Builder</span>
             </div>
-            <div class="athena__tab" data-tab="chat">
+            <div class="athena__tab" data-tab="chat" onclick="athena_switchTab('chat'); return false;">
                 <span class="athena__tab-label">Knowledge Chat</span>
             </div>
-            <div class="athena__tab" data-tab="teamchat">
+            <div class="athena__tab" data-tab="teamchat" onclick="athena_switchTab('teamchat'); return false;">
                 <span class="athena__tab-label">Team Chat</span>
             </div>
         </div>
         <div class="athena__actions">
-            <button id="clear-chat-btn" class="athena__action-button" style="display: none;">
+            <button id="clear-chat-btn" class="athena__action-button" style="display: none;" onclick="athena_clearChat(); return false;">
                 <span class="athena__button-label">Clear</span>
             </button>
         </div>
@@ -719,3 +719,223 @@
         100% { transform: rotate(360deg); }
     }
 </style>
+
+<script type="text/javascript">
+// SIMPLIFIED COMPONENT SCRIPT - FULLY SELF-CONTAINED
+// This version minimizes interference with other components
+
+// IMMEDIATELY SET UP UI MANAGER PROTECTION
+// Tell UI Manager to ignore this component - must be done IMMEDIATELY to avoid races
+if (window.uiManager) {
+    window.uiManager._ignoreComponent = 'athena';
+    console.log('[ATHENA] Set UI Manager to ignore athena component');
+}
+
+// DEFINE TAB SWITCHING FUNCTION
+// CRITICAL: This uses no shared code/utilities to avoid conflicts
+window.athena_switchTab = function(tabId) {
+    console.log('[ATHENA] Switching to tab:', tabId);
+    
+    // Force HTML panel visibility
+    const htmlPanelElements = document.querySelectorAll('#html-panel');
+    htmlPanelElements.forEach(panel => {
+        if (panel) panel.style.display = 'block';
+    });
+    
+    try {
+        // Only select elements within athena component to avoid conflicts with other components
+        const athenaContainer = document.querySelector('.athena');
+        if (!athenaContainer) {
+            console.error('[ATHENA] Tab Switch: Cannot find athena container');
+            return false;
+        }
+        
+        // Update tab active state - ONLY WITHIN ATHENA CONTAINER
+        const tabs = athenaContainer.querySelectorAll('.athena__tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-tab') === tabId) {
+                tab.classList.add('athena__tab--active');
+            } else {
+                tab.classList.remove('athena__tab--active');
+            }
+        });
+        
+        // Update panel visibility - ONLY WITHIN ATHENA CONTAINER
+        const panels = athenaContainer.querySelectorAll('.athena__panel');
+        panels.forEach(panel => {
+            const panelId = panel.id;
+            if (panelId === tabId + '-panel') {
+                panel.style.display = 'block';
+                panel.classList.add('athena__panel--active');
+            } else {
+                panel.style.display = 'none';
+                panel.classList.remove('athena__panel--active');
+            }
+        });
+        
+        // Update clear button visibility for chat tabs
+        const clearButton = athenaContainer.querySelector('#clear-chat-btn');
+        if (clearButton) {
+            clearButton.style.display = (tabId === 'chat' || tabId === 'teamchat') ? 'block' : 'none';
+        }
+        
+        // Update component state
+        if (window.athenaComponent) {
+            window.athenaComponent.state = window.athenaComponent.state || {};
+            window.athenaComponent.state.activeTab = tabId;
+            
+            // Call component-specific methods if available
+            if (typeof window.athenaComponent.updateChatPlaceholder === 'function') {
+                window.athenaComponent.updateChatPlaceholder(tabId);
+            }
+            
+            if (typeof window.athenaComponent.loadTabContent === 'function') {
+                window.athenaComponent.loadTabContent(tabId);
+            }
+            
+            if (typeof window.athenaComponent.saveComponentState === 'function') {
+                window.athenaComponent.saveComponentState();
+            }
+        }
+    } catch (err) {
+        console.error('[ATHENA] Error in tab switching:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// CHAT CLEARING FUNCTION
+window.athena_clearChat = function() {
+    console.log('[ATHENA] Clear chat clicked');
+    
+    try {
+        // Get active tab ID within athena container
+        const athenaContainer = document.querySelector('.athena');
+        if (!athenaContainer) {
+            console.error('[ATHENA] Clear Chat: Cannot find athena container');
+            return false;
+        }
+        
+        const activeTab = athenaContainer.querySelector('.athena__tab--active');
+        const tabId = activeTab ? activeTab.getAttribute('data-tab') : '';
+        
+        if (tabId === 'chat' || tabId === 'teamchat') {
+            // Get message container within athena container only
+            const panel = athenaContainer.querySelector('#' + tabId + '-messages');
+            if (panel) {
+                // Keep welcome message
+                const welcomeMsg = panel.querySelector('.athena__message--system');
+                if (welcomeMsg) {
+                    panel.innerHTML = '';
+                    panel.appendChild(welcomeMsg);
+                    console.log('[ATHENA] Cleared chat, kept welcome message');
+                } else {
+                    panel.innerHTML = '';
+                    console.log('[ATHENA] Cleared chat completely');
+                }
+            }
+        }
+    } catch (err) {
+        console.error('[ATHENA] Error clearing chat:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// LOAD COMPONENT
+// Load after defining tab switching to ensure it's available
+function athena_loadComponent() {
+    console.log('[ATHENA] Loading component script...');
+    
+    const timestamp = new Date().getTime();
+    const scriptPath = `/scripts/athena/athena-component.js?t=${timestamp}`;
+    
+    const script = document.createElement('script');
+    script.src = scriptPath;
+    script.async = false;
+    script.onload = function() {
+        console.log('[ATHENA] Component script loaded successfully');
+        
+        if (window.athenaComponent && typeof window.athenaComponent.init === 'function') {
+            try {
+                window.athenaComponent.init();
+                console.log('[ATHENA] Component initialized');
+            } catch (err) {
+                console.error('[ATHENA] Component initialization error:', err);
+            }
+        } else {
+            console.warn('[ATHENA] Component init function not found');
+        }
+    };
+    script.onerror = function() {
+        console.error('[ATHENA] Failed to load component script');
+    };
+    
+    document.body.appendChild(script);
+}
+
+// HTML PANEL PROTECTION
+// Setup explicit protection for the HTML panel to prevent it being hidden
+function athena_protectHtmlPanel() {
+    const htmlPanel = document.getElementById('html-panel');
+    if (!htmlPanel) {
+        console.error('[ATHENA] Cannot find HTML panel to protect');
+        return;
+    }
+    
+    console.log('[ATHENA] Protecting HTML panel from being hidden');
+    htmlPanel.style.display = 'block'; // Force it to be visible
+    
+    // Store the original display value
+    if (!htmlPanel.hasOwnProperty('_athenaOriginalDisplay')) {
+        Object.defineProperty(htmlPanel, '_athenaOriginalDisplay', {
+            value: 'block',
+            writable: true,
+            configurable: true
+        });
+    }
+    
+    // Only define the getter/setter if it hasn't already been defined by this component
+    if (!htmlPanel.style._athenaProtected) {
+        // Mark the display property as protected by this component
+        Object.defineProperty(htmlPanel.style, '_athenaProtected', {
+            value: true,
+            writable: false,
+            configurable: true
+        });
+        
+        // Protect the display property
+        Object.defineProperty(htmlPanel.style, 'display', {
+            get: function() { 
+                return htmlPanel._athenaOriginalDisplay; 
+            },
+            set: function(value) {
+                console.log(`[ATHENA] Intercepted attempt to set HTML panel display to: ${value}`);
+                if (value === 'none') {
+                    console.log('[ATHENA] Blocked attempt to hide HTML panel');
+                    htmlPanel._athenaOriginalDisplay = 'block';
+                } else {
+                    htmlPanel._athenaOriginalDisplay = value;
+                }
+            },
+            configurable: true
+        });
+    }
+}
+
+// SETUP DONE AFTER PAGE LOAD
+// This ensures the functions are available before the tab events need them
+window.addEventListener('DOMContentLoaded', function() {
+    console.log('[ATHENA] DOM loaded, setting up Athena component');
+    athena_protectHtmlPanel();
+    athena_loadComponent();
+});
+
+// IMMEDIATE PROTECTION
+// In case the DOM is already loaded
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    console.log('[ATHENA] Document already loaded, setting up Athena component immediately');
+    athena_protectHtmlPanel();
+    athena_loadComponent();
+}
+</script>

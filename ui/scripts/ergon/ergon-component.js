@@ -110,106 +110,30 @@ class ErgonComponent {
     }
     
     /**
-     * Set up tab switching functionality
+     * ERGON TAB SWITCHING IS NOW FULLY DISABLED
+     * All tab switching is handled by the HTML component
      */
     setupTabs() {
-        console.log('Setting up Ergon tabs');
-        if (window.TektonDebug) TektonDebug.debug('ergonComponent', 'Setting up Ergon tabs');
+        console.log('Setting up Ergon tabs - DISABLED - Tab management handled by HTML script');
+        if (window.TektonDebug) TektonDebug.debug('ergonComponent', 'Tab switching managed by HTML script');
         
-        // Find the Ergon container (scope all DOM operations to this container)
-        const container = document.querySelector('.ergon');
-        if (!container) {
-            console.error('Ergon container not found!');
-            if (window.TektonDebug) TektonDebug.error('ergonComponent', 'Ergon container not found during tab setup');
-            return;
-        }
+        // Deliberately do nothing - let the HTML script handle everything
+        // The default tab is set in the HTML script
         
-        // Get tabs within the container
-        const tabs = container.querySelectorAll('.ergon__tab');
-        console.log(`Found ${tabs.length} tabs:`, Array.from(tabs).map(t => t.getAttribute('data-tab')));
-        
-        // Add click handlers to tabs
-        tabs.forEach(tab => {
-            const tabId = tab.getAttribute('data-tab');
-            console.log(`Setting up click handler for tab: ${tabId}`);
-            
-            tab.addEventListener('click', () => {
-                console.log(`Tab clicked: ${tabId}`);
-                this.activateTab(tabId);
-            });
-        });
-        
-        // Activate the default tab
-        const defaultTab = this.state.activeTab || 'agents';
-        console.log(`Activating default tab: ${defaultTab}`);
-        this.activateTab(defaultTab);
+        // Set the initial state
+        this.state.activeTab = 'agents';
     }
     
     /**
-     * Activate a specific tab
+     * ERGON TAB ACTIVATION IS NOW FULLY DISABLED
+     * All tab activation is handled by the HTML component
      * @param {string} tabId - The ID of the tab to activate
      */
     activateTab(tabId) {
-        console.log(`Direct DOM: Activating tab: ${tabId}`);
-        if (window.TektonDebug) TektonDebug.debug('ergonComponent', `Activating tab: ${tabId}`);
-        
-        // Find the Ergon container (scope all DOM operations to this container)
-        const container = document.querySelector('.ergon');
-        if (!container) {
-            console.error('Ergon container not found!');
-            if (window.TektonDebug) TektonDebug.error('ergonComponent', 'Ergon container not found!');
-            return;
-        }
-        
-        // Update active tab - remove active class from all tabs
-        container.querySelectorAll('.ergon__tab').forEach(t => {
-            t.classList.remove('ergon__tab--active');
-        });
-        
-        // Add active class to the selected tab
-        const tabButton = container.querySelector(`.ergon__tab[data-tab="${tabId}"]`);
-        if (tabButton) {
-            tabButton.classList.add('ergon__tab--active');
-            if (window.TektonDebug) TektonDebug.trace('ergonComponent', `Tab button found for ${tabId}`, {element: tabButton.outerHTML});
-        } else {
-            console.error(`Tab button not found for tab: ${tabId}`);
-            if (window.TektonDebug) TektonDebug.error('ergonComponent', `Tab button not found for tab: ${tabId}`);
-            return; // Exit early if we can't find the tab
-        }
-        
-        // Get all panels and log what we find
-        const panels = container.querySelectorAll('.ergon__panel');
-        console.log(`Found ${panels.length} panels`);
-        
-        // Apply CSS style overrides directly to elements
-        panels.forEach(panel => {
-            // First remove the active class
-            panel.classList.remove('ergon__panel--active');
-            
-            // Then hide it with direct style manipulation
-            panel.style.display = 'none';
-            console.log(`Panel ${panel.id} hidden`);
-        });
-        
-        // Show the specific tab panel
-        const tabPanel = container.querySelector(`#${tabId}-panel`);
-        if (tabPanel) {
-            tabPanel.classList.add('ergon__panel--active');
-            
-            // Directly set display style - this is the key change
-            tabPanel.style.display = 'block';
-            console.log(`Panel ${tabPanel.id} shown with direct style.display = 'block'`);
-            
-            if (window.TektonDebug) TektonDebug.debug('ergonComponent', `Panel activated for tab: ${tabId}`);
-        } else {
-            console.error(`Panel not found for tab: ${tabId}`);
-            if (window.TektonDebug) TektonDebug.error('ergonComponent', `Panel not found for tab: ${tabId}`);
-        }
-        
-        // Save active tab to state
+        // State management only, no DOM manipulation whatsoever
+        console.log(`Ergon: Tab state updated to: ${tabId}`);
         this.state.activeTab = tabId;
         this.saveComponentState();
-        console.log(`Tab activation for ${tabId} complete`);
         
         // Add notification message to terminal
         if (window.websocketManager) {

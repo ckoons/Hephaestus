@@ -13,8 +13,8 @@
 window.TektonDebug = {
   // Configuration (can be updated by future logging system)
   config: {
-    enabled: false,                // Master switch, trivial to toggle on/off
-    logLevel: 'INFO',              // Default log level
+    enabled: true,                 // Master switch - ENABLED BY DEFAULT
+    logLevel: 'DEBUG',             // Default log level - set to DEBUG
     componentLevels: {},           // Component-specific overrides
     timestampFormat: 'HH:MM:SS.mmm', // How to format timestamps
     backendIntegration: true,      // Whether to forward logs to backend when possible

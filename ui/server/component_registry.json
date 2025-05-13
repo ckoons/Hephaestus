@@ -17,12 +17,13 @@
       ],
       "componentPath": "components/ergon/ergon-component.html",
       "scripts": [
+        "scripts/shared/tab-navigation.js",
         "scripts/shared/llm_adapter_client.js",
         "scripts/shared/chat-interface.js",
-        "scripts/ergon-state-manager.js",
-        "scripts/component-utils-ergon-state.js",
-        "scripts/ergon-service.js",
-        "scripts/ergon-state-test-utils.js",
+        "scripts/ergon/ergon-state-manager.js",
+        "scripts/ergon/component-utils-ergon-state.js",
+        "scripts/ergon/ergon-service.js",
+        "scripts/ergon/ergon-state-test-utils.js",
         "scripts/ergon/ergon-component.js"
       ],
       "styles": [
@@ -255,6 +256,7 @@
       ],
       "componentPath": "components/athena/athena-component.html",
       "scripts": [
+        "scripts/shared/tab-navigation.js",
         "scripts/athena/athena-component.js"
       ],
       "styles": [
