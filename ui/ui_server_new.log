@@ -1,0 +1,15 @@
+2025-05-13 12:16:41,308 [INFO] Serving files from: /Users/cskoons/projects/github/Tekton/Hephaestus/ui
+2025-05-13 12:16:41,308 [INFO] WebSocket server initialized for Single Port Architecture
+Traceback (most recent call last):
+  File "/Users/cskoons/projects/github/Tekton/Hephaestus/ui/server/server.py", line 890, in <module>
+    main()
+  File "/Users/cskoons/projects/github/Tekton/Hephaestus/ui/server/server.py", line 887, in main
+    run_http_server(directory, args.port)
+  File "/Users/cskoons/projects/github/Tekton/Hephaestus/ui/server/server.py", line 857, in run_http_server
+    with TektonTCPServer(("", port), handler) as httpd:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/anaconda3/lib/python3.12/socketserver.py", line 457, in __init__
+    self.server_bind()
+  File "/opt/anaconda3/lib/python3.12/socketserver.py", line 473, in server_bind
+    self.socket.bind(self.server_address)
+OSError: [Errno 48] Address already in use

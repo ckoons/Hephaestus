@@ -823,30 +823,37 @@
 </style>
 
 <script>
-// This script is a lightweight connector that loads the actual component script
-// from the correct location and initializes the component when the page loads.
+// Use direct script inclusion to ensure proper loading
+// This is an inline script that will be executed by the minimal-loader when the component HTML is loaded
 
-document.addEventListener('DOMContentLoaded', function() {
-    // Load the Ergon component script
-    const scriptPath = '/scripts/ergon/ergon-component.js';
-    
-    // Create a script element
-    const script = document.createElement('script');
-    script.src = scriptPath;
-    script.async = true;
-    script.onload = function() {
-        // Initialize the component once loaded
-        if (window.ergonComponent && typeof window.ergonComponent.init === 'function') {
-            window.ergonComponent.init();
-        } else {
-            console.error('Ergon component not properly loaded');
-        }
-    };
-    script.onerror = function() {
-        console.error('Failed to load Ergon component script');
-    };
-    
-    // Add the script to the document
-    document.head.appendChild(script);
-});
+// Create a dynamically inserted script with error handling to load the component
+const timestamp = new Date().getTime(); // Cache busting
+const scriptPath = `/scripts/ergon/ergon-component.js?t=${timestamp}`;
+
+console.log('Loading Ergon component script from:', scriptPath);
+
+// Create and insert the script element directly in the page
+const script = document.createElement('script');
+script.src = scriptPath;
+script.async = false; // Changed to false for more reliable loading order
+
+// Set up load and error handlers
+script.onload = function() {
+    console.log('Ergon component script loaded successfully');
+    // Initialize the component once loaded
+    if (window.ergonComponent && typeof window.ergonComponent.init === 'function') {
+        console.log('Initializing Ergon component');
+        window.ergonComponent.init();
+    } else {
+        console.error('Ergon component not properly loaded - window.ergonComponent object is missing or init method not available');
+        console.log('Available global objects:', Object.keys(window).filter(k => k.toLowerCase().includes('component')));
+    }
+};
+
+script.onerror = function(error) {
+    console.error('Failed to load Ergon component script:', error);
+};
+
+// Add the script to the document
+document.body.appendChild(script);
 </script>

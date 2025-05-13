@@ -116,17 +116,23 @@ class ErgonComponent {
         
         // Get tabs within the container
         const tabs = container.querySelectorAll('.ergon__tab');
+        console.log(`Found ${tabs.length} tabs:`, Array.from(tabs).map(t => t.getAttribute('data-tab')));
         
         // Add click handlers to tabs
         tabs.forEach(tab => {
+            const tabId = tab.getAttribute('data-tab');
+            console.log(`Setting up click handler for tab: ${tabId}`);
+            
             tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
+                console.log(`Tab clicked: ${tabId}`);
                 this.activateTab(tabId);
             });
         });
         
         // Activate the default tab
-        this.activateTab(this.state.activeTab || 'agents');
+        const defaultTab = this.state.activeTab || 'agents';
+        console.log(`Activating default tab: ${defaultTab}`);
+        this.activateTab(defaultTab);
     }
     
     /**
@@ -134,6 +140,8 @@ class ErgonComponent {
      * @param {string} tabId - The ID of the tab to activate
      */
     activateTab(tabId) {
+        console.log(`Activating tab: ${tabId}`);
+        
         // Find the Ergon container (scope all DOM operations to this container)
         const container = document.querySelector('.ergon');
         if (!container) {
@@ -141,29 +149,37 @@ class ErgonComponent {
             return;
         }
         
-        // Update active tab
+        // Update active tab - remove active class from all tabs
         container.querySelectorAll('.ergon__tab').forEach(t => {
             t.classList.remove('ergon__tab--active');
         });
+        
+        // Add active class to the selected tab
         const tabButton = container.querySelector(`.ergon__tab[data-tab="${tabId}"]`);
         if (tabButton) {
             tabButton.classList.add('ergon__tab--active');
+        } else {
+            console.error(`Tab button not found for tab: ${tabId}`);
+            return; // Exit early if we can't find the tab
         }
         
-        // Hide all tab content
-        container.querySelectorAll('.ergon__panel').forEach(content => {
-            content.style.display = 'none';
+        // Hide all panels by removing active class
+        container.querySelectorAll('.ergon__panel').forEach(panel => {
+            panel.classList.remove('ergon__panel--active');
         });
         
-        // Show the specific tab content
-        const tabContent = container.querySelector(`#${tabId}-panel`);
-        if (tabContent) {
-            tabContent.style.display = 'block';
+        // Show the specific tab panel by adding active class
+        const tabPanel = container.querySelector(`#${tabId}-panel`);
+        if (tabPanel) {
+            tabPanel.classList.add('ergon__panel--active');
+        } else {
+            console.error(`Panel not found for tab: ${tabId}`);
         }
         
         // Save active tab to state
         this.state.activeTab = tabId;
         this.saveComponentState();
+        console.log(`Tab activation for ${tabId} complete`);
         
         // Add notification message to terminal
         if (window.websocketManager) {
