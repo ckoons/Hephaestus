@@ -20,6 +20,10 @@ window.TEKTON_CORE_PORT = 8010; // Default Tekton Core port
 // UI Display settings
 window.SHOW_GREEK_NAMES = true; // Whether to show Greek names for components
 
+// Debug settings
+window.TEKTON_DEBUG = 'true';        // Master switch for debug instrumentation
+window.TEKTON_LOG_LEVEL = 'DEBUG';   // Default log level (TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF)
+
 // Function to update port values from server 
 function updatePortsFromServer() {
     // Try to fetch port configuration from server

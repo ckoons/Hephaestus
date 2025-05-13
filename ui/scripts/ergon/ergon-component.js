@@ -26,17 +26,25 @@ class ErgonComponent {
         this.historyPosition = -1;
         this.currentInput = '';
         this.streamHandlersRegistered = false;
+        
+        // Configure logging level - set to 'debug', 'info', 'warn', or 'error'
+        this.logLevel = 'info';
     }
     
     /**
      * Initialize the component
      */
     init() {
-        console.log('Initializing Ergon component');
+        // Original logging
+        this.log('info', 'Initializing Ergon component');
+        
+        // New debug instrumentation
+        if (window.TektonDebug) TektonDebug.info('ergonComponent', 'Initializing Ergon component');
         
         // If already initialized, just activate
         if (this.state.initialized) {
-            console.log('Ergon component already initialized, just activating');
+            this.log('info', 'Ergon component already initialized, just activating');
+            if (window.TektonDebug) TektonDebug.debug('ergonComponent', 'Already initialized, just activating');
             this.activateComponent();
             return this;
         }
@@ -106,11 +114,13 @@ class ErgonComponent {
      */
     setupTabs() {
         console.log('Setting up Ergon tabs');
+        if (window.TektonDebug) TektonDebug.debug('ergonComponent', 'Setting up Ergon tabs');
         
         // Find the Ergon container (scope all DOM operations to this container)
         const container = document.querySelector('.ergon');
         if (!container) {
             console.error('Ergon container not found!');
+            if (window.TektonDebug) TektonDebug.error('ergonComponent', 'Ergon container not found during tab setup');
             return;
         }
         
@@ -140,12 +150,14 @@ class ErgonComponent {
      * @param {string} tabId - The ID of the tab to activate
      */
     activateTab(tabId) {
-        console.log(`Activating tab: ${tabId}`);
+        console.log(`Direct DOM: Activating tab: ${tabId}`);
+        if (window.TektonDebug) TektonDebug.debug('ergonComponent', `Activating tab: ${tabId}`);
         
         // Find the Ergon container (scope all DOM operations to this container)
         const container = document.querySelector('.ergon');
         if (!container) {
             console.error('Ergon container not found!');
+            if (window.TektonDebug) TektonDebug.error('ergonComponent', 'Ergon container not found!');
             return;
         }
         
@@ -158,22 +170,40 @@ class ErgonComponent {
         const tabButton = container.querySelector(`.ergon__tab[data-tab="${tabId}"]`);
         if (tabButton) {
             tabButton.classList.add('ergon__tab--active');
+            if (window.TektonDebug) TektonDebug.trace('ergonComponent', `Tab button found for ${tabId}`, {element: tabButton.outerHTML});
         } else {
             console.error(`Tab button not found for tab: ${tabId}`);
+            if (window.TektonDebug) TektonDebug.error('ergonComponent', `Tab button not found for tab: ${tabId}`);
             return; // Exit early if we can't find the tab
         }
         
-        // Hide all panels by removing active class
-        container.querySelectorAll('.ergon__panel').forEach(panel => {
+        // Get all panels and log what we find
+        const panels = container.querySelectorAll('.ergon__panel');
+        console.log(`Found ${panels.length} panels`);
+        
+        // Apply CSS style overrides directly to elements
+        panels.forEach(panel => {
+            // First remove the active class
             panel.classList.remove('ergon__panel--active');
+            
+            // Then hide it with direct style manipulation
+            panel.style.display = 'none';
+            console.log(`Panel ${panel.id} hidden`);
         });
         
-        // Show the specific tab panel by adding active class
+        // Show the specific tab panel
         const tabPanel = container.querySelector(`#${tabId}-panel`);
         if (tabPanel) {
             tabPanel.classList.add('ergon__panel--active');
+            
+            // Directly set display style - this is the key change
+            tabPanel.style.display = 'block';
+            console.log(`Panel ${tabPanel.id} shown with direct style.display = 'block'`);
+            
+            if (window.TektonDebug) TektonDebug.debug('ergonComponent', `Panel activated for tab: ${tabId}`);
         } else {
             console.error(`Panel not found for tab: ${tabId}`);
+            if (window.TektonDebug) TektonDebug.error('ergonComponent', `Panel not found for tab: ${tabId}`);
         }
         
         // Save active tab to state
@@ -759,6 +789,19 @@ class ErgonComponent {
         // Send a command to request agent data if tektonUI exists
         if (window.tektonUI && typeof tektonUI.sendCommand === 'function') {
             tektonUI.sendCommand('get_agents', {});
+        }
+    }
+    
+    /**
+     * Simple logging function
+     * @param {string} level - Log level ('debug', 'info', 'warn', 'error')
+     * @param {string} message - The message to log
+     */
+    log(level, message) {
+        // Only log if level is at or above configured level
+        const levels = { debug: 0, info: 1, warn: 2, error: 3 };
+        if (levels[level] >= levels[this.logLevel]) {
+            console.log(`[Ergon:${level}] ${message}`);
         }
     }
     

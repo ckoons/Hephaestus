@@ -19,10 +19,12 @@ class AthenaComponent {
      */
     init() {
         console.log('Initializing Athena component');
+        if (window.TektonDebug) TektonDebug.info('athenaComponent', 'Initializing Athena component');
 
         // If already initialized, just activate
         if (this.state.initialized) {
             console.log('Athena component already initialized, just activating');
+            if (window.TektonDebug) TektonDebug.debug('athenaComponent', 'Already initialized, just activating');
             this.activateComponent();
             return this;
         }
@@ -109,11 +111,13 @@ class AthenaComponent {
      */
     setupTabs() {
         console.log('Setting up Athena tabs');
+        if (window.TektonDebug) TektonDebug.debug('athenaComponent', 'Setting up Athena tabs');
 
         // Find Athena container with BEM naming
         const container = document.querySelector('.athena');
         if (!container) {
             console.error('Athena container not found!');
+            if (window.TektonDebug) TektonDebug.error('athenaComponent', 'Athena container not found during tab setup');
             return;
         }
 
@@ -124,12 +128,15 @@ class AthenaComponent {
 
         tabs.forEach(tab => {
             tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                if (window.TektonDebug) TektonDebug.debug('athenaComponent', `Tab clicked: ${tabId}`);
+                
                 // Update active tab using BEM modifier classes
                 tabs.forEach(t => t.classList.remove('athena__tab--active'));
                 tab.classList.add('athena__tab--active');
 
                 // Show active panel
-                const panelId = tab.getAttribute('data-tab') + '-panel';
+                const panelId = tabId + '-panel';
                 panels.forEach(panel => {
                     panel.style.display = 'none';
                     panel.classList.remove('athena__panel--active');
@@ -140,6 +147,9 @@ class AthenaComponent {
                 if (activePanel) {
                     activePanel.style.display = 'block';
                     activePanel.classList.add('athena__panel--active');
+                    if (window.TektonDebug) TektonDebug.debug('athenaComponent', `Panel activated: ${panelId}`);
+                } else {
+                    if (window.TektonDebug) TektonDebug.error('athenaComponent', `Panel not found: ${panelId}`);
                 }
 
                 // Show/hide the clear chat button in the menu bar based on active tab
