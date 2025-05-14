@@ -58,7 +58,11 @@ class SettingsManager {
                         ...this.settings,
                         ...parsed
                     };
-                    console.log('Settings loaded from storage');
+                    console.log('Settings loaded from storage', this.settings);
+                    
+                    // DEBUGGING: Force Rhetor label to LLM/Prompt/Context
+                    console.log('DEBUG: Forcing Rhetor label update');
+                    storageManager.removeItem('ui_settings');
                 } catch (e) {
                     console.error('Error parsing settings:', e);
                 }
@@ -191,7 +195,7 @@ class SettingsManager {
                 case 'athena': return 'Athena - Knowledge';
                 case 'sophia': return 'Sophia - Learning';
                 case 'engram': return 'Engram - Memory';
-                case 'rhetor': return 'Rhetor - Context';
+                case 'rhetor': return 'Rhetor - LLM/Prompt/Context';
                 case 'hermes': return 'Hermes - Messages/Data';
                 case 'codex': return 'Codex - Coding';
                 case 'tekton': return 'Tekton - Projects';
@@ -209,7 +213,7 @@ class SettingsManager {
                 case 'athena': return 'Knowledge';
                 case 'sophia': return 'Learning';
                 case 'engram': return 'Memory';
-                case 'rhetor': return 'Context';
+                case 'rhetor': return 'LLM/Prompt/Context';
                 case 'hermes': return 'Messages/Data';
                 case 'codex': return 'Coding';
                 case 'tekton': return 'Projects';

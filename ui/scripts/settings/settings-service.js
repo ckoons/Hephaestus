@@ -216,7 +216,7 @@ class SettingsService extends window.tektonUI.componentUtils.BaseService {
                 case 'athena': return 'Athena - Knowledge';
                 case 'sophia': return 'Sophia - Learning';
                 case 'engram': return 'Engram - Memory';
-                case 'rhetor': return 'Rhetor - Context';
+                case 'rhetor': return 'Rhetor - LLM/Prompt/Context';
                 case 'hermes': return 'Hermes - Messages/Data';
                 case 'codex': return 'Codex - Coding';
                 case 'tekton': return 'Tekton - Projects';
@@ -234,7 +234,7 @@ class SettingsService extends window.tektonUI.componentUtils.BaseService {
                 case 'athena': return 'Knowledge';
                 case 'sophia': return 'Learning';
                 case 'engram': return 'Memory';
-                case 'rhetor': return 'Context';
+                case 'rhetor': return 'LLM/Prompt/Context';
                 case 'hermes': return 'Messages/Data';
                 case 'codex': return 'Coding';
                 case 'tekton': return 'Projects';

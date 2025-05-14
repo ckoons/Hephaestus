@@ -293,12 +293,14 @@
     {
       "id": "rhetor",
       "name": "Rhetor",
-      "description": "LLM management and prompt engineering",
+      "description": "LLM/Prompt/Context",
       "icon": "💬",
       "defaultMode": "html",
       "capabilities": [
         "llm_management",
         "prompt_engineering",
+        "context_management",
+        "agency_alignment",
         "communication_management",
         "budget_management",
         "shadow_dom",

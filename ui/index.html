@@ -153,7 +153,7 @@
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="rhetor">
-                        <span class="nav-label">Rhetor - Context</span>
+                        <span class="nav-label" data-greek-name="Rhetor - LLM/Prompt/Context" data-functional-name="LLM/Prompt/Context">Rhetor - LLM/Prompt/Context</span>
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="hermes">
@@ -447,6 +447,60 @@
     <!-- Settings and theming system -->
     <script src="scripts/settings-manager.js"></script>
     <script src="scripts/settings-ui.js"></script>
+    
+    <!-- Fix for Rhetor label -->
+    <script>
+      // This script runs after all other scripts have loaded
+      document.addEventListener('DOMContentLoaded', function() {
+        // Clear any saved settings that might be overriding our changes
+        if (window.localStorage) {
+          console.log('Clearing stored UI settings');
+          localStorage.removeItem('tekton_ui_settings');
+          
+          // Also try the unprefixed version
+          localStorage.removeItem('ui_settings');
+        }
+        
+        // Force the correct Rhetor label
+        const rhetorLabel = document.querySelector('.nav-item[data-component="rhetor"] .nav-label');
+        if (rhetorLabel) {
+          rhetorLabel.textContent = 'Rhetor - LLM/Prompt/Context';
+          console.log('Forced Rhetor label:', rhetorLabel.textContent);
+        }
+        
+        // Try again after a short delay to catch any updates
+        setTimeout(function() {
+          const rhetorLabel = document.querySelector('.nav-item[data-component="rhetor"] .nav-label');
+          if (rhetorLabel) {
+            rhetorLabel.textContent = 'Rhetor - LLM/Prompt/Context';
+            console.log('Forced Rhetor label (delayed):', rhetorLabel.textContent);
+          }
+        }, 500);
+        
+        // Add a MutationObserver to watch for changes to the label
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' || mutation.type === 'characterData') {
+              const rhetorLabel = document.querySelector('.nav-item[data-component="rhetor"] .nav-label');
+              if (rhetorLabel && rhetorLabel.textContent !== 'Rhetor - LLM/Prompt/Context') {
+                rhetorLabel.textContent = 'Rhetor - LLM/Prompt/Context';
+                console.log('MutationObserver fixed Rhetor label');
+              }
+            }
+          });
+        });
+        
+        // Start observing the navigation
+        const navContainer = document.querySelector('.left-panel-nav');
+        if (navContainer) {
+          observer.observe(navContainer, {
+            childList: true,
+            subtree: true,
+            characterData: true
+          });
+        }
+      });
+    </script>
     
     <!-- Profile management system -->
     <script src="scripts/profile-manager.js"></script>

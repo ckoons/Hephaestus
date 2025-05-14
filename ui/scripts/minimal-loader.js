@@ -14,7 +14,8 @@ class MinimalLoader {
     this.componentPaths = {
       'test': '/components/test/test-component.html',
       'athena': '/components/athena/athena-component.html',
-      'ergon': '/components/ergon/ergon-component.html'
+      'ergon': '/components/ergon/ergon-component.html',
+      'rhetor': '/components/rhetor/rhetor-component.html'
     };
     
     // Keep track of the current component to prevent reloading
@@ -65,6 +66,12 @@ class MinimalLoader {
    */
   async loadComponent(componentId) {
     console.log(`MinimalLoader: Loading component ${componentId}`);
+    
+    // DEBUGGING: Check the Rhetor label in the DOM
+    if (componentId === 'rhetor') {
+      const rhetorLabel = document.querySelector('.nav-item[data-component="rhetor"] .nav-label');
+      console.log('DEBUGGING: Rhetor label in DOM before loading:', rhetorLabel ? rhetorLabel.textContent : 'not found');
+    }
 
     // Get the RIGHT PANEL container
     const container = document.getElementById('html-panel');
