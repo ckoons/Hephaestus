@@ -29,8 +29,11 @@ Each component should follow this structure:
     <!-- Tab Navigation (if needed) -->
     <div class="{component}__menu-bar">
         <div class="{component}__tabs">
-            <div class="{component}__tab {component}__tab--active" data-tab="tab1">
+            <div class="{component}__tab {component}__tab--active" data-tab="tab1" onclick="{component}_switchTab('tab1'); return false;">
                 <span class="{component}__tab-label">Tab 1</span>
+            </div>
+            <div class="{component}__tab" data-tab="tab2" onclick="{component}_switchTab('tab2'); return false;">
+                <span class="{component}__tab-label">Tab 2</span>
             </div>
             <!-- Additional tabs... -->
         </div>
@@ -76,35 +79,162 @@ Each component should follow this structure:
     /* Additional component-specific styles... */
 </style>
 
-<!-- Script Loading - CORRECT PATTERN -->
-<script>
-    // Use direct script inclusion with cache busting
+<!-- Script Implementation - CORRECT PATTERN: SELF-CONTAINED WITH NO SHARED DEPENDENCIES -->
+<script type="text/javascript">
+// COMPONENT SCRIPT - FULLY SELF-CONTAINED
+// This prevents interference with other components
+
+// IMMEDIATELY SET UP UI MANAGER PROTECTION
+// Tell UI Manager to ignore this component - must be done IMMEDIATELY to avoid races
+if (window.uiManager) {
+    window.uiManager._ignoreComponent = '{component}';
+    console.log('[{COMPONENT}] Set UI Manager to ignore {component} component');
+}
+
+// DEFINE TAB SWITCHING FUNCTION
+// CRITICAL: This uses no shared code/utilities to avoid conflicts
+window.{component}_switchTab = function(tabId) {
+    console.log('[{COMPONENT}] Switching to tab:', tabId);
+    
+    // Force HTML panel visibility
+    const htmlPanelElements = document.querySelectorAll('#html-panel');
+    htmlPanelElements.forEach(panel => {
+        if (panel) panel.style.display = 'block';
+    });
+    
+    try {
+        // Only select elements within this component to avoid conflicts
+        const componentContainer = document.querySelector('.{component}');
+        if (!componentContainer) {
+            console.error('[{COMPONENT}] Tab Switch: Cannot find {component} container');
+            return false;
+        }
+        
+        // Update tab active state - ONLY WITHIN THIS COMPONENT'S CONTAINER
+        const tabs = componentContainer.querySelectorAll('.{component}__tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-tab') === tabId) {
+                tab.classList.add('{component}__tab--active');
+            } else {
+                tab.classList.remove('{component}__tab--active');
+            }
+        });
+        
+        // Update panel visibility - ONLY WITHIN THIS COMPONENT'S CONTAINER
+        const panels = componentContainer.querySelectorAll('.{component}__panel');
+        panels.forEach(panel => {
+            const panelId = panel.id;
+            if (panelId === tabId + '-panel') {
+                panel.style.display = 'block';
+                panel.classList.add('{component}__panel--active');
+            } else {
+                panel.style.display = 'none';
+                panel.classList.remove('{component}__panel--active');
+            }
+        });
+        
+        // Update component state
+        if (window.{component}Component) {
+            window.{component}Component.state = window.{component}Component.state || {};
+            window.{component}Component.state.activeTab = tabId;
+            
+            // Call component-specific methods if available
+            if (typeof window.{component}Component.saveComponentState === 'function') {
+                window.{component}Component.saveComponentState();
+            }
+        }
+    } catch (err) {
+        console.error('[{COMPONENT}] Error in tab switching:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// LOAD COMPONENT
+// Load after defining tab switching to ensure it's available
+function {component}_loadComponent() {
+    console.log('[{COMPONENT}] Loading component script...');
+    
     const timestamp = new Date().getTime();
     const scriptPath = `/scripts/{component}/{component}-component.js?t=${timestamp}`;
     
-    console.log('Loading {Component} component script from:', scriptPath);
-    
-    // Create and insert script directly (not in DOMContentLoaded)
     const script = document.createElement('script');
     script.src = scriptPath;
-    script.async = false; // Important for reliable loading
-    
-    // Handle loading and errors
+    script.async = false;
     script.onload = function() {
-        console.log('{Component} component script loaded successfully');
+        console.log('[{COMPONENT}] Component script loaded successfully');
+        
         if (window.{component}Component && typeof window.{component}Component.init === 'function') {
-            window.{component}Component.init();
+            try {
+                window.{component}Component.init();
+                console.log('[{COMPONENT}] Component initialized');
+            } catch (err) {
+                console.error('[{COMPONENT}] Component initialization error:', err);
+            }
         } else {
-            console.error('{Component} component not properly loaded');
+            console.warn('[{COMPONENT}] Component init function not found');
         }
     };
-    
-    script.onerror = function(error) {
-        console.error('Failed to load {Component} component script:', error);
+    script.onerror = function() {
+        console.error('[{COMPONENT}] Failed to load component script');
     };
     
-    // Add to document.body (not head) for better visibility
     document.body.appendChild(script);
+}
+
+// HTML PANEL PROTECTION
+// Setup explicit protection for the HTML panel to prevent it being hidden
+function {component}_protectHtmlPanel() {
+    const htmlPanel = document.getElementById('html-panel');
+    if (!htmlPanel) {
+        console.error('[{COMPONENT}] Cannot find HTML panel to protect');
+        return;
+    }
+    
+    console.log('[{COMPONENT}] Protecting HTML panel from being hidden');
+    htmlPanel.style.display = 'block'; // Force it to be visible
+    
+    // Store the original display value
+    if (!htmlPanel.hasOwnProperty('_{component}OriginalDisplay')) {
+        Object.defineProperty(htmlPanel, '_{component}OriginalDisplay', {
+            value: 'block',
+            writable: true,
+            configurable: true
+        });
+    }
+    
+    // Only define the getter/setter if it hasn't already been defined by this component
+    if (!htmlPanel.style._{component}Protected) {
+        // Mark the display property as protected by this component
+        Object.defineProperty(htmlPanel.style, '_{component}Protected', {
+            value: true,
+            writable: false,
+            configurable: true
+        });
+        
+        // Protect the display property
+        Object.defineProperty(htmlPanel.style, 'display', {
+            get: function() { 
+                return htmlPanel._{component}OriginalDisplay; 
+            },
+            set: function(value) {
+                console.log(`[{COMPONENT}] Intercepted attempt to set HTML panel display to: ${value}`);
+                if (value === 'none') {
+                    console.log('[{COMPONENT}] Blocked attempt to hide HTML panel');
+                    htmlPanel._{component}OriginalDisplay = 'block';
+                } else {
+                    htmlPanel._{component}OriginalDisplay = value;
+                }
+            },
+            configurable: true
+        });
+    }
+}
+
+// SETUP
+// Do immediate initialization on script load
+{component}_protectHtmlPanel();
+{component}_loadComponent();
 </script>
 ```
 
@@ -256,18 +386,31 @@ When the debug system is disabled (default), these calls have virtually zero ove
 - Use BEM naming to prevent CSS conflicts (`{component}__element--modifier`)
 - Scope all DOM operations to the component container
 - Avoid global state or direct DOM manipulation outside the component
+- Protect against UI Manager interference with `_ignoreComponent`
 
 ### Script Loading
-- Use the pattern shown above - direct script insertion with cache busting
-- Don't use DOMContentLoaded within components (already handled by minimal-loader)
-- Set `async=false` for reliable script execution order
-- Include proper error handling for script loading
+- Use the pattern shown above - self-contained script with component-specific namespacing
+- Use direct inline onclick handlers to prevent event bubbling issues
+- Always return false from click handlers to stop event propagation
+- Define tab-switching logic BEFORE loading the component JS
 
 ### Tab Switching
+- Use namespaced functions like `{component}_switchTab()` for all tab operations
 - Tabs must have `data-tab` attribute matching panel IDs (`data-tab="tab1"` → `id="tab1-panel"`)
 - Panels must have CSS classes for visibility control (`.{component}__panel--active`)
-- Use CSS classes, not inline styles, for showing/hiding panels
-- Follow the `activateTab()` pattern shown above
+- Use CSS classes AND inline display property for showing/hiding panels
+- Always scope DOM queries to the component container
+- Always add `onclick="{component}_switchTab('tabId'); return false;"` to tabs
+
+### HTML Panel Protection
+- Immediately protect the HTML panel from being hidden
+- Use component-specific property names (e.g., `_{component}Protected`)
+- Add property getters/setters to prevent hiding the panel
+- Block attempts to set display to 'none'
+
+### UI Manager Protection
+- Immediately set `window.uiManager._ignoreComponent = '{component}'` at the top of the script
+- This prevents UI Manager from interfering with component tab switching
 
 ### Debugging
 - Use the conditional debug instrumentation pattern
@@ -290,6 +433,27 @@ Your component must expose a global `{component}Component` object with an `init(
 - **CSS issues**: Ensure proper BEM naming and containment
 - **Initialization problems**: Verify the global component object and init() method
 
+## Component Issues & Solutions
+
+### Common Component Issues
+
+1. **Tab Switching Fails Between Components**
+   - **Cause**: Shared code and tab switching utilities cause conflicts
+   - **Solution**: Use self-contained tab switching with direct onclick handlers
+   
+2. **HTML Panel Gets Hidden**
+   - **Cause**: Other components or UI Manager try to hide the HTML panel
+   - **Solution**: Use property getters/setters to protect the display property
+
+3. **UI Manager Interference**
+   - **Cause**: UI Manager tries to manage components through its activateComponent method
+   - **Solution**: Set _ignoreComponent flag to prevent interference
+
+4. **Global Namespace Pollution**
+   - **Cause**: Components use generic function names that conflict
+   - **Solution**: Use component-specific namespaced functions (`{component}_functionName`)
+
 ## Example Components
-- See `/components/ergon/ergon-component.html` and `/scripts/ergon/ergon-component.js` for a working example
-- Also reference `/components/athena/athena-component.html` for another implementation
+- See `/components/ergon/ergon-component.html` for a working example of isolated tabs
+- Reference `/components/athena/athena-component.html` for another implementation
+- Both components use the same pattern for tab isolation and HTML panel protection

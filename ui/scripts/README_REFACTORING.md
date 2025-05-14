@@ -84,10 +84,18 @@ Legacy code cleanup will be performed after all components are implemented and t
 4. Permanently remove legacy files
 5. Conduct final verification testing
 
+## Implementation Standards
+
+All components MUST follow the Component Implementation Standard found in `/MetaData/UI/ComponentImplementationStandard.md`. This standard ensures components work reliably when loaded together and prevents tab switching issues between components.
+
+Refer to these reference implementations:
+- `/components/athena/athena-component.html` - Fully implemented using the standard pattern
+- `/components/ergon/ergon-component.html` - Fully implemented using the standard pattern
+
 ## Components Implemented
 
-- ✅ Athena - Fully implemented
-- 🔄 Ergon - Nearly complete
+- ✅ Athena - Fully implemented following the standard
+- ✅ Ergon - Fully implemented following the standard
 
 ## Components To Be Implemented
 
