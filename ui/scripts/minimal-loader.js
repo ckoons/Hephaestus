@@ -15,7 +15,9 @@ class MinimalLoader {
       'test': '/components/test/test-component.html',
       'athena': '/components/athena/athena-component.html',
       'ergon': '/components/ergon/ergon-component.html',
-      'rhetor': '/components/rhetor/rhetor-component.html'
+      'rhetor': '/components/rhetor/rhetor-component.html',
+      'apollo': '/components/apollo/apollo-component.html',
+      'metis': '/components/metis/metis-component.html'
     };
     
     // Keep track of the current component to prevent reloading

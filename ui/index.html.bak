@@ -30,9 +30,6 @@
         .nav-item[data-component="ergon"] .status-indicator { 
             background-color: #0097A7; /* Teal */
         }
-        .nav-item[data-component="metis"] .status-indicator { 
-            background-color: #00BFA5; /* Mint/Turquoise */
-        }
         .nav-item[data-component="harmonia"] .status-indicator { 
             background-color: #F57C00; /* Orange */
         }
@@ -47,9 +44,6 @@
         }
         .nav-item[data-component="engram"] .status-indicator { 
             background-color: #34A853; /* Green */
-        }
-        .nav-item[data-component="apollo"] .status-indicator { 
-            background-color: #FFD600; /* Amber/Golden Yellow */
         }
         .nav-item[data-component="rhetor"] .status-indicator { 
             background-color: #D32F2F; /* Red */
@@ -104,23 +98,6 @@
             padding: 12px 16px !important;
             height: 85px !important;
         }
-        
-        /* Optimized navigation item height */
-        .nav-item {
-            padding: 11px 16px !important; /* Reduced from 12px vertical padding */
-            height: 18px !important; /* Reduced from 20px height */
-        }
-        
-        /* Adjust footer navigation buttons to match main navigation */
-        .footer-buttons .control-button {
-            padding: 11px 16px !important; /* Match main navigation padding */
-            height: 18px !important; /* Match main navigation height */
-        }
-        
-        /* Optimized navigation container padding */
-        .component-nav {
-            padding: 8px 0 !important; /* Reduced from 10px vertical padding */
-        }
     </style>
 </head>
 <body data-theme="dark-blue">
@@ -155,10 +132,6 @@
                         <span class="nav-label">Ergon - Agents/Tools/MCP</span>
                         <span class="status-indicator"></span>
                     </li>
-                    <li class="nav-item" data-component="metis">
-                        <span class="nav-label" data-greek-name="Metis - Workflows" data-functional-name="Workflows">Metis - Workflows</span>
-                        <span class="status-indicator"></span>
-                    </li>
                     <li class="nav-item" data-component="harmonia">
                         <span class="nav-label">Harmonia - Orchestration</span>
                         <span class="status-indicator"></span>
@@ -177,10 +150,6 @@
                     </li>
                     <li class="nav-item" data-component="engram">
                         <span class="nav-label">Engram - Memory</span>
-                        <span class="status-indicator"></span>
-                    </li>
-                    <li class="nav-item" data-component="apollo">
-                        <span class="nav-label" data-greek-name="Apollo - Attention/Prediction" data-functional-name="Attention/Prediction">Apollo - Attention/Prediction</span>
                         <span class="status-indicator"></span>
                     </li>
                     <li class="nav-item" data-component="rhetor">

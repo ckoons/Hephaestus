@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Apollo component styles */
+        .apollo__container {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            color: var(--text-color, #f0f0f0);
+            background-color: var(--background-color, #1a1a1a);
+            font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+        }
+        
+        .apollo__header {
+            margin-bottom: 20px;
+        }
+        
+        .apollo__content {
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="apollo__container">
+        <div class="apollo__header">
+            <h2 id="apollo-title" data-greek-name="Apollo - Attention/Prediction" data-functional-name="Attention/Prediction">Apollo - Attention/Prediction</h2>
+            <p>This component is under development.</p>
+        </div>
+        <div class="apollo__content">
+            <p>Apollo will provide attention mechanisms and prediction capabilities for the Tekton system.</p>
+            <p>Features will include:</p>
+            <ul>
+                <li>Attention management for multi-modal inputs</li>
+                <li>Prediction of user intent and system needs</li>
+                <li>Proactive resource allocation based on predictions</li>
+                <li>Integration with Engram's memory systems and Rhetor's LLM capabilities</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Apollo component initialization script
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debug instrumentation
+            if (window.TektonDebug) {
+                TektonDebug.log('apollo', 'Apollo component loaded', 'info');
+            }
+            
+            console.log('Apollo component placeholder loaded');
+            
+            // Handle Greek/functional name display
+            const title = document.getElementById('apollo-title');
+            if (title) {
+                if (window.SHOW_GREEK_NAMES === false) {
+                    const functionalName = title.getAttribute('data-functional-name');
+                    if (functionalName) {
+                        title.textContent = functionalName;
+                        console.log('Using functional name for Apollo:', functionalName);
+                    }
+                } else {
+                    const greekName = title.getAttribute('data-greek-name');
+                    if (greekName) {
+                        title.textContent = greekName;
+                        console.log('Using Greek name for Apollo:', greekName);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

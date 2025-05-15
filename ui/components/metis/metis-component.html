@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        /* Metis component styles */
+        .metis__container {
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            box-sizing: border-box;
+            color: var(--text-color, #f0f0f0);
+            background-color: var(--background-color, #1a1a1a);
+            font-family: var(--font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+        }
+        
+        .metis__header {
+            margin-bottom: 20px;
+        }
+        
+        .metis__content {
+            height: calc(100% - 60px);
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="metis__container">
+        <div class="metis__header">
+            <h2 id="metis-title" data-greek-name="Metis - Workflows" data-functional-name="Workflows">Metis - Workflows</h2>
+            <p>This component is under development.</p>
+        </div>
+        <div class="metis__content">
+            <p>Metis will provide advanced workflow management for the Tekton system.</p>
+            <p>Features will include:</p>
+            <ul>
+                <li>Workflow definition and management</li>
+                <li>Process orchestration between Ergon agents and Harmonia systems</li>
+                <li>Task scheduling and tracking</li>
+                <li>Integration with other Tekton components for seamless workflow execution</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Metis component initialization script
+        document.addEventListener('DOMContentLoaded', function() {
+            // Debug instrumentation
+            if (window.TektonDebug) {
+                TektonDebug.log('metis', 'Metis component loaded', 'info');
+            }
+            
+            console.log('Metis component placeholder loaded');
+            
+            // Handle Greek/functional name display
+            const title = document.getElementById('metis-title');
+            if (title) {
+                if (window.SHOW_GREEK_NAMES === false) {
+                    const functionalName = title.getAttribute('data-functional-name');
+                    if (functionalName) {
+                        title.textContent = functionalName;
+                        console.log('Using functional name for Metis:', functionalName);
+                    }
+                } else {
+                    const greekName = title.getAttribute('data-greek-name');
+                    if (greekName) {
+                        title.textContent = greekName;
+                        console.log('Using Greek name for Metis:', greekName);
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

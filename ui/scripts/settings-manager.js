@@ -190,11 +190,13 @@ class SettingsManager {
                 case 'ergon': return 'Ergon - Agents/Tools/MCP';
                 case 'prometheus': return 'Prometheus - Planning';
                 case 'telos': return 'Telos - Requirements';
+                case 'metis': return 'Metis - Workflows';
                 case 'harmonia': return 'Harmonia - Orchestration';
                 case 'synthesis': return 'Synthesis - Integration';
                 case 'athena': return 'Athena - Knowledge';
                 case 'sophia': return 'Sophia - Learning';
                 case 'engram': return 'Engram - Memory';
+                case 'apollo': return 'Apollo - Attention/Prediction';
                 case 'rhetor': return 'Rhetor - LLM/Prompt/Context';
                 case 'hermes': return 'Hermes - Messages/Data';
                 case 'codex': return 'Codex - Coding';
@@ -208,11 +210,13 @@ class SettingsManager {
                 case 'ergon': return 'Agents/Tools/MCP';
                 case 'prometheus': return 'Planning';
                 case 'telos': return 'Requirements';
+                case 'metis': return 'Workflows';
                 case 'harmonia': return 'Orchestration';
                 case 'synthesis': return 'Integration';
                 case 'athena': return 'Knowledge';
                 case 'sophia': return 'Learning';
                 case 'engram': return 'Memory';
+                case 'apollo': return 'Attention/Prediction';
                 case 'rhetor': return 'LLM/Prompt/Context';
                 case 'hermes': return 'Messages/Data';
                 case 'codex': return 'Coding';

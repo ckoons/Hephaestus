@@ -1,120 +1,367 @@
-<!-- Profile Component UI Template with BEM naming -->
-<div class="profile-container">
-  <div class="profile-header">
-    <h2 class="profile-header__title">User Profile</h2>
-    <div class="profile-header__controls">
-      <button class="profile-button profile-button--primary" id="save-profile">Save Profile</button>
-    </div>
-  </div>
-  
-  <!-- Personal Information -->
-  <div class="profile-section">
-    <h3 class="profile-section__title">Personal Information</h3>
-    
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">Given Name</div>
-        <div class="profile-field__control">
-          <input type="text" id="given-name" placeholder="First/Given Name" class="profile-input">
+<!-- Profile Component - User Profile and Account Management -->
+<div class="profile">
+    <!-- Component Header with Title -->
+    <div class="profile__header">
+        <div class="profile__title-container">
+            <img src="/images/hexagon.jpg" alt="Tekton" class="profile__icon">
+            <h2 class="profile__title">
+                <span class="profile__title-main">Profile</span>
+                <span class="profile__title-sub">User Account Management</span>
+            </h2>
         </div>
-      </div>
     </div>
     
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">Family Name</div>
-        <div class="profile-field__control">
-          <input type="text" id="family-name" placeholder="Last/Family Name" class="profile-input">
+    <!-- Profile Menu Bar with Tab Navigation -->
+    <div class="profile__menu-bar">
+        <div class="profile__tabs">
+            <div class="profile__tab profile__tab--active" data-tab="personal" onclick="profile_switchTab('personal'); return false;">
+                <span class="profile__tab-label">Personal Info</span>
+            </div>
+            <div class="profile__tab" data-tab="contact" onclick="profile_switchTab('contact'); return false;">
+                <span class="profile__tab-label">Contact</span>
+            </div>
+            <div class="profile__tab" data-tab="social" onclick="profile_switchTab('social'); return false;">
+                <span class="profile__tab-label">Social Accounts</span>
+            </div>
+            <div class="profile__tab" data-tab="security" onclick="profile_switchTab('security'); return false;">
+                <span class="profile__tab-label">Security</span>
+            </div>
+            <div class="profile__tab" data-tab="preferences" onclick="profile_switchTab('preferences'); return false;">
+                <span class="profile__tab-label">Preferences</span>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
-  
-  <!-- Contact Information -->
-  <div class="profile-section">
-    <h3 class="profile-section__title">Contact Information</h3>
-    
-    <div class="profile-field">
-      <div class="profile-field__label">Email Addresses</div>
-      <div class="profile-field__description">
-        Add one or more email addresses. The first one will be used as your primary email.
-      </div>
-      <div id="email-container" class="profile-emails">
-        <div class="profile-emails__header">
-          <button class="profile-button profile-button--secondary" id="add-email">
-            <span class="profile-button__icon">+</span>
-            <span class="profile-button__label">Add Email</span>
-          </button>
-        </div>
-        <div id="email-fields" class="profile-emails__fields">
-          <!-- Email fields will be added here -->
-          <div class="profile-emails__item">
-            <input type="email" class="profile-input profile-input--email" placeholder="Email Address">
-            <button class="profile-button profile-button--remove">
-              <span class="profile-button__icon">-</span>
+        <div class="profile__actions">
+            <button id="save-profile-btn" class="profile__action-button" onclick="profile_saveProfile(); return false;">
+                <span class="profile__button-label">Save Profile</span>
             </button>
-          </div>
         </div>
-      </div>
     </div>
     
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">Phone Number</div>
-        <div class="profile-field__control">
-          <input type="tel" id="phone-number" placeholder="Phone Number" class="profile-input">
+    <!-- Profile Content Area -->
+    <div class="profile__content">
+        <!-- Personal Info Tab (Default Active Tab) -->
+        <div id="personal-panel" class="profile__panel profile__panel--active">
+            <div class="profile__section">
+                <h3 class="profile__section-title">Personal Information</h3>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Given Name</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="given-name" placeholder="First/Given Name" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Family Name</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="family-name" placeholder="Last/Family Name" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Display Name</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="display-name" placeholder="Display Name" class="profile__input">
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        This is how your name will appear to other users in the system.
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Profile Picture</div>
+                        <div class="profile__field-control">
+                            <div class="profile__avatar-container">
+                                <div class="profile__avatar-placeholder">
+                                    <!-- User avatar will be displayed here -->
+                                    <div class="profile__avatar-initials">CK</div>
+                                </div>
+                                <button class="profile__button profile__button--secondary" id="upload-avatar-btn">
+                                    <span class="profile__button-label">Upload</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-      </div>
+        
+        <!-- Contact Tab -->
+        <div id="contact-panel" class="profile__panel">
+            <div class="profile__section">
+                <h3 class="profile__section-title">Contact Information</h3>
+                
+                <div class="profile__field">
+                    <div class="profile__field-label">Email Addresses</div>
+                    <div class="profile__field-description">
+                        Add one or more email addresses. The first one will be used as your primary email.
+                    </div>
+                    <div id="email-container" class="profile__emails">
+                        <div class="profile__emails-header">
+                            <button class="profile__button profile__button--secondary" id="add-email">
+                                <span class="profile__button-icon">+</span>
+                                <span class="profile__button-label">Add Email</span>
+                            </button>
+                        </div>
+                        <div id="email-fields" class="profile__emails-fields">
+                            <!-- Email fields will be added here -->
+                            <div class="profile__emails-item">
+                                <input type="email" class="profile__input profile__input--email" placeholder="Email Address">
+                                <button class="profile__button profile__button--remove">
+                                    <span class="profile__button-icon">-</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Phone Number</div>
+                        <div class="profile__field-control">
+                            <input type="tel" id="phone-number" placeholder="Phone Number" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Address</div>
+                        <div class="profile__field-control">
+                            <textarea id="address" placeholder="Address" class="profile__textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Social Accounts Tab -->
+        <div id="social-panel" class="profile__panel">
+            <div class="profile__section">
+                <h3 class="profile__section-title">Social Accounts</h3>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">X / Twitter</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="x-account" placeholder="@username" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">BlueSky</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="bluesky-account" placeholder="@username" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">LinkedIn</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="linkedin-account" placeholder="LinkedIn URL or username" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">WeChat</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="wechat-account" placeholder="WeChat ID" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">WhatsApp</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="whatsapp-account" placeholder="WhatsApp ID" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">GitHub</div>
+                        <div class="profile__field-control">
+                            <input type="text" id="github-account" placeholder="GitHub username" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Tab -->
+        <div id="security-panel" class="profile__panel">
+            <div class="profile__section">
+                <h3 class="profile__section-title">Security Settings</h3>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Current Password</div>
+                        <div class="profile__field-control">
+                            <input type="password" id="current-password" placeholder="Current Password" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">New Password</div>
+                        <div class="profile__field-control">
+                            <input type="password" id="new-password" placeholder="New Password" class="profile__input">
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        Password must be at least 8 characters and include numbers, uppercase and lowercase letters.
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Confirm New Password</div>
+                        <div class="profile__field-control">
+                            <input type="password" id="confirm-password" placeholder="Confirm New Password" class="profile__input">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Two-Factor Authentication</div>
+                        <div class="profile__field-control">
+                            <div class="profile__switch">
+                                <input type="checkbox" id="tfa-toggle" class="profile__checkbox">
+                                <label for="tfa-toggle" class="profile__switch-label"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        Enable two-factor authentication for additional account security.
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Session Management</div>
+                        <div class="profile__field-control">
+                            <button class="profile__button profile__button--danger" id="logout-all-sessions-btn">
+                                <span class="profile__button-label">Logout All Sessions</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        This will log you out of all devices except the current one.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Preferences Tab -->
+        <div id="preferences-panel" class="profile__panel">
+            <div class="profile__section">
+                <h3 class="profile__section-title">User Preferences</h3>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Default Start Page</div>
+                        <div class="profile__field-control">
+                            <select id="default-page" class="profile__select">
+                                <option value="dashboard">Dashboard</option>
+                                <option value="terma">Terma</option>
+                                <option value="athena">Athena</option>
+                                <option value="ergon">Ergon</option>
+                                <option value="tekton">Tekton</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        This page will be shown first when you log in.
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Time Zone</div>
+                        <div class="profile__field-control">
+                            <select id="timezone" class="profile__select">
+                                <option value="UTC">UTC (Universal Time Coordinated)</option>
+                                <option value="EST">EST (Eastern Standard Time)</option>
+                                <option value="CST">CST (Central Standard Time)</option>
+                                <option value="MST">MST (Mountain Standard Time)</option>
+                                <option value="PST">PST (Pacific Standard Time)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Date Format</div>
+                        <div class="profile__field-control">
+                            <select id="date-format" class="profile__select">
+                                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Email Notifications</div>
+                        <div class="profile__field-control">
+                            <div class="profile__switch">
+                                <input type="checkbox" id="email-notif-toggle" class="profile__checkbox" checked>
+                                <label for="email-notif-toggle" class="profile__switch-label"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        Receive notifications about system events via email.
+                    </div>
+                </div>
+                
+                <div class="profile__field">
+                    <div class="profile__field-row">
+                        <div class="profile__field-label">Chat Notifications</div>
+                        <div class="profile__field-control">
+                            <div class="profile__switch">
+                                <input type="checkbox" id="chat-notif-toggle" class="profile__checkbox" checked>
+                                <label for="chat-notif-toggle" class="profile__switch-label"></label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile__field-description">
+                        Receive notifications for new chat messages.
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  
-  <!-- Social Accounts -->
-  <div class="profile-section">
-    <h3 class="profile-section__title">Social Accounts</h3>
     
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">X / Twitter</div>
-        <div class="profile-field__control">
-          <input type="text" id="x-account" placeholder="@username" class="profile-input">
+    <!-- Footer -->
+    <div class="profile__footer">
+        <div class="profile__footer-actions">
+            <button class="profile__button profile__button--secondary" id="reset-changes-btn" onclick="profile_resetChanges(); return false;">
+                <span class="profile__button-label">Reset Changes</span>
+            </button>
+            <button class="profile__button profile__button--primary" id="footer-save-btn" onclick="profile_saveProfile(); return false;">
+                <span class="profile__button-label">Save Profile</span>
+            </button>
         </div>
-      </div>
     </div>
-    
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">BlueSky</div>
-        <div class="profile-field__control">
-          <input type="text" id="bluesky-account" placeholder="@username" class="profile-input">
-        </div>
-      </div>
-    </div>
-    
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">WeChat</div>
-        <div class="profile-field__control">
-          <input type="text" id="wechat-account" placeholder="WeChat ID" class="profile-input">
-        </div>
-      </div>
-    </div>
-    
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">WhatsApp</div>
-        <div class="profile-field__control">
-          <input type="text" id="whatsapp-account" placeholder="WhatsApp ID" class="profile-input">
-        </div>
-      </div>
-    </div>
-    
-    <div class="profile-field">
-      <div class="profile-field__row">
-        <div class="profile-field__label">GitHub</div>
-        <div class="profile-field__control">
-          <input type="text" id="github-account" placeholder="GitHub username" class="profile-input">
-        </div>
-      </div>
-    </div>
-  </div>
 </div>
