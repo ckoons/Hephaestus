@@ -287,16 +287,6 @@
                 <div class="panel html-panel" id="html-panel" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: auto;">
                     <!-- HTML controls will be loaded here -->
                 </div>
-                <div class="panel settings-panel" id="settings-panel">
-                    <!-- Settings controls -->
-                    <div id="settings-tab-content">
-                        <iframe src="/components/settings.html" style="width: 100%; height: 100%; border: none;"></iframe>
-                    </div>
-                </div>
-                <div class="panel profile-panel" id="profile-panel">
-                    <!-- Profile UI will be loaded here -->
-                    <iframe src="/components/profile.html" style="width: 100%; height: 100%; border: none;"></iframe>
-                </div>
             </div>
         </div>
     </div>
@@ -516,8 +506,8 @@
     </script>
     
     <!-- Settings and theming system -->
-    <script src="scripts/settings-manager.js"></script>
-    <script src="scripts/settings-ui.js"></script>
+    <script src="scripts/settings/settings-manager.js"></script>
+    <script src="scripts/settings/settings-ui.js"></script>
     
     <!-- Fix for Rhetor and Budget labels -->
     <script>
@@ -605,8 +595,8 @@
     </script>
     
     <!-- Profile management system -->
-    <script src="scripts/profile-manager.js"></script>
-    <script src="scripts/profile-ui.js"></script>
+    <script src="scripts/profile/profile-manager.js"></script>
+    <script src="scripts/profile/profile-ui.js"></script>
     
     <!-- Enhanced terminal chat system -->
     <script src="scripts/terminal-chat.js"></script> <!-- For compatibility -->
@@ -635,7 +625,7 @@
     <!-- Setup minimal component loader with navigation -->
     <script>
       document.addEventListener('DOMContentLoaded', function() {
-        // Handle navigation item clicks
+        // Handle navigation item clicks - this includes ALL components now, including profile and settings
         const navItems = document.querySelectorAll('.nav-item');
         navItems.forEach(item => {
           item.addEventListener('click', function() {
@@ -656,7 +646,7 @@
               componentTitle.textContent = this.querySelector('.nav-label').textContent;
             }
 
-            // Special case for terma
+            // Special case for terma - it has a custom handler already
             if (componentId === 'terma') {
               // Let the special terma handler handle it
               return;
@@ -674,8 +664,9 @@
               htmlPanel.classList.add('active');
               htmlPanel.style.display = 'block';
 
-              // Use our minimal loader
+              // Use minimalLoader for all components - simple, standard, no special cases
               if (window.minimalLoader) {
+                console.log(`index.html nav handler: Using minimalLoader for ${componentId}`);
                 minimalLoader.loadComponent(componentId);
               }
             }

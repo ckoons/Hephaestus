@@ -1,14 +1,149 @@
 <!-- Settings Component UI Template -->
 <div class="settings-container">
   <div class="settings-header">
-    <h2 class="settings-header__title">Settings</h2>
-    <div class="settings-header__controls">
-      <button class="settings-button settings-button--primary" id="save-all-settings">Save All Settings</button>
+    <div class="settings-title-container">
+      <img src="/images/hexagon.jpg" alt="Tekton" class="settings-icon" style="height: 30px; width: auto;">
+      <h2 class="settings-header__title">
+        <span class="settings-title-main">Settings</span>
+        <span class="settings-title-sub">Tekton Configuration</span>
+      </h2>
     </div>
   </div>
   
-  <!-- Theme Settings -->
-  <div class="settings-section">
+  <!-- Settings Menu Bar with Tab Navigation -->
+  <div class="settings-menu-bar">
+    <div class="settings-tabs">
+      <div class="settings-tab settings-tab--active" data-tab="theme" onclick="settings_switchTab('theme'); return false;">
+        <span class="settings-tab-label">Theme</span>
+      </div>
+      <div class="settings-tab" data-tab="interface" onclick="settings_switchTab('interface'); return false;">
+        <span class="settings-tab-label">Interface</span>
+      </div>
+      <div class="settings-tab" data-tab="terminal" onclick="settings_switchTab('terminal'); return false;">
+        <span class="settings-tab-label">Terminal</span>
+      </div>
+      <div class="settings-tab" data-tab="chat" onclick="settings_switchTab('chat'); return false;">
+        <span class="settings-tab-label">Chat</span>
+      </div>
+      <div class="settings-tab" data-tab="integration" onclick="settings_switchTab('integration'); return false;">
+        <span class="settings-tab-label">Integrations</span>
+      </div>
+      <div class="settings-tab" data-tab="system" onclick="settings_switchTab('system'); return false;">
+        <span class="settings-tab-label">System</span>
+      </div>
+    </div>
+    <div class="settings-actions">
+      <button class="settings-button settings-button--primary" id="save-all-settings" onclick="settings_saveAllSettings(); return false;">Save Settings</button>
+    </div>
+  </div>
+
+<script type="text/javascript">
+// SETTINGS TAB SWITCHING FUNCTION
+// Define tab switching function to match budget_switchTab pattern
+window.settings_switchTab = function(tabId) {
+    console.log('[SETTINGS] Switching to tab:', tabId);
+    console.log('[SETTINGS] IMPORTANT DEBUG: settings_switchTab function called');
+    
+    // Force HTML panel visibility
+    const htmlPanelElements = document.querySelectorAll('#html-panel');
+    htmlPanelElements.forEach(panel => {
+        if (panel) panel.style.display = 'block';
+    });
+    
+    try {
+        // Only select elements within settings component to avoid conflicts with other components
+        const settingsContainer = document.querySelector('.settings-container');
+        if (!settingsContainer) {
+            console.error('[SETTINGS] Tab Switch: Cannot find settings container');
+            return false;
+        }
+        
+        // Update tab active state if there are settings tabs
+        const tabs = settingsContainer.querySelectorAll('.settings-tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-tab') === tabId) {
+                tab.classList.add('settings-tab--active');
+            } else {
+                tab.classList.remove('settings-tab--active');
+            }
+        });
+        
+        // Update panel visibility
+        const panels = settingsContainer.querySelectorAll('.settings-panel');
+        panels.forEach(panel => {
+            const panelId = panel.id;
+            if (panelId === tabId + '-panel') {
+                panel.style.display = 'block';
+                panel.classList.add('settings-panel--active');
+            } else {
+                panel.style.display = 'none';
+                panel.classList.remove('settings-panel--active');
+            }
+        });
+        
+        // Update component state if settingsComponent is available
+        if (window.settingsComponent) {
+            window.settingsComponent.state = window.settingsComponent.state || {};
+            window.settingsComponent.state.activeTab = tabId;
+            
+            // Call component-specific methods if available
+            if (typeof window.settingsComponent.loadTabContent === 'function') {
+                window.settingsComponent.loadTabContent(tabId);
+            }
+            
+            if (typeof window.settingsComponent.saveComponentState === 'function') {
+                window.settingsComponent.saveComponentState();
+            }
+        }
+    } catch (err) {
+        console.error('[SETTINGS] Error in tab switching:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// Save All Settings Function
+window.settings_saveAllSettings = function() {
+    console.log('[SETTINGS] Save all settings button clicked');
+    
+    try {
+        if (window.settingsComponent && typeof window.settingsComponent.saveAllSettings === 'function') {
+            window.settingsComponent.saveAllSettings();
+        } else {
+            console.log('[SETTINGS] Component not available for saving, will try again');
+            setTimeout(window.settings_saveAllSettings, 1000); // Retry after 1 second
+        }
+    } catch (err) {
+        console.error('[SETTINGS] Error saving all settings:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// Reset All Settings Function
+window.settings_resetAllSettings = function() {
+    console.log('[SETTINGS] Reset all settings button clicked');
+    
+    try {
+        if (window.settingsComponent && typeof window.settingsComponent.resetAllSettings === 'function') {
+            window.settingsComponent.resetAllSettings();
+        } else {
+            console.log('[SETTINGS] Component not available for reset, will try again');
+            setTimeout(window.settings_resetAllSettings, 1000); // Retry after 1 second
+        }
+    } catch (err) {
+        console.error('[SETTINGS] Error resetting all settings:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+</script>
+  
+  <!-- Settings Content Area -->
+  <div class="settings-content">
+    <!-- Theme Tab (Default Active Tab) -->
+    <div id="theme-panel" class="settings-panel settings-panel--active">
+      <div class="settings-section">
     <h3 class="settings-section__title">Theme Settings</h3>
     
     <div class="settings-group">
@@ -48,8 +183,12 @@
     </div>
   </div>
   
-  <!-- UI Settings -->
-  <div class="settings-section">
+      </div>
+    </div>
+    
+    <!-- Interface Tab -->
+    <div id="interface-panel" class="settings-panel">
+      <div class="settings-section">
     <h3 class="settings-section__title">Interface Settings</h3>
     
     <div class="settings-group">
@@ -82,8 +221,12 @@
     </div>
   </div>
   
-  <!-- Terminal Settings -->
-  <div class="settings-section">
+      </div>
+    </div>
+    
+    <!-- Terminal Tab -->
+    <div id="terminal-panel" class="settings-panel">
+      <div class="settings-section">
     <h3 class="settings-section__title">Terminal Settings</h3>
     
     <div class="settings-group">
@@ -205,8 +348,12 @@
     </div>
   </div>
   
-  <!-- Chat Settings -->
-  <div class="settings-section">
+      </div>
+    </div>
+    
+    <!-- Chat Tab -->
+    <div id="chat-panel" class="settings-panel">
+      <div class="settings-section">
     <h3 class="settings-section__title">Chat Settings</h3>
     
     <div class="settings-group">
@@ -256,8 +403,12 @@
     </div>
   </div>
   
-  <!-- Hermes Integration Settings -->
-  <div class="settings-section">
+      </div>
+    </div>
+    
+    <!-- Integration Tab -->
+    <div id="integration-panel" class="settings-panel">
+      <div class="settings-section">
     <h3 class="settings-section__title">Hermes Integration</h3>
     
     <div class="settings-group">
@@ -292,8 +443,12 @@
     </div>
   </div>
   
-  <!-- System Settings -->
-  <div class="settings-section">
+      </div>
+    </div>
+    
+    <!-- System Tab -->
+    <div id="system-panel" class="settings-panel">
+      <div class="settings-section">
     <h3 class="settings-section__title">System</h3>
     
     <div class="settings-group">
@@ -309,5 +464,118 @@
         Warning: This will reset all settings to their default values.
       </div>
     </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- Add component-specific styles -->
+<style>
+    /* Settings component styles using BEM naming convention */
+    
+    /* Container */
+    .settings-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        background-color: var(--bg-primary, #1e1e2e);
+        color: var(--text-primary, #f0f0f0);
+    }
+    
+    /* Header */
+    .settings-header {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        background-color: var(--bg-secondary, #252535);
+        border-bottom: 1px solid var(--border-color, #444444);
+        height: 46px;
+    }
+    
+    .settings-title-container {
+        display: flex;
+        align-items: center;
+    }
+    
+    .settings-icon {
+        height: 30px;
+        width: auto;
+        margin-right: 12px;
+    }
+    
+    .settings-header__title {
+        margin: 0;
+        font-size: 1.2rem;
+        font-weight: 500;
+    }
+    
+    .settings-title-sub {
+        margin-left: 8px;
+        opacity: 0.8;
+        font-weight: normal;
+    }
+    
+    /* Menu Bar */
+    .settings-menu-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 16px;
+        background-color: var(--bg-secondary, #252535);
+        border-bottom: 1px solid var(--border-color, #444444);
+        height: 46px;
+    }
+    
+    .settings-tabs {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .settings-tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .settings-tab:hover {
+        background-color: var(--bg-hover, #3a3a4a);
+    }
+    
+    .settings-tab--active {
+        border-bottom-color: var(--color-primary, #10A283);
+        font-weight: 500;
+    }
+    
+    /* Content Area */
+    .settings-content {
+        flex: 1;
+        overflow: auto;
+        position: relative;
+    }
+    
+    .settings-panel {
+        display: none;
+        padding: 16px;
+    }
+    
+    .settings-panel--active {
+        display: block;
+    }
+    
+    /* General styles */
+    .settings-section {
+        background-color: var(--bg-secondary, #252535);
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #444444);
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+</style>

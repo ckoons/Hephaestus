@@ -6,7 +6,7 @@
 class SettingsUI {
     constructor() {
         this.initialized = false;
-        this.containerId = 'settings-tab-content';
+        this.containerId = 'html-panel'; // Use standard Clean Slate html-panel instead of settings-tab-content
         this.container = null;
         this.settingsManager = window.settingsManager;
     }
@@ -24,29 +24,16 @@ class SettingsUI {
             this.settingsManager = window.settingsManager;
         }
         
-        // Find container
+        // Find container - the standard for Clean Slate architecture
         this.container = document.getElementById(this.containerId);
         if (!this.container) {
-            // Delay initialization if container isn't ready
-            console.log('Settings container not found, waiting...');
-            setTimeout(() => this.init(), 500);
+            console.error('HTML panel not found for Settings UI');
             return;
         }
         
-        // Load the settings component if not already loaded
-        if (this.container.children.length === 0) {
-            this.loadSettingsComponent();
-            return;
-        }
+        // Always load the settings component on initialization
+        this.loadSettingsComponent();
         
-        // Set up listeners
-        this.setupEventListeners();
-        
-        // Update UI to reflect current settings
-        this.updateSettingsUI();
-        
-        this.initialized = true;
-        console.log('Settings UI initialized');
         return this;
     }
     
@@ -56,8 +43,8 @@ class SettingsUI {
     loadSettingsComponent() {
         console.log('Loading settings component...');
         
-        // Load the component using fetch
-        fetch('components/settings.html')
+        // Load the component using fetch with absolute path
+        fetch('/components/settings/settings-component.html')
             .then(response => response.text())
             .then(html => {
                 this.container.innerHTML = html;

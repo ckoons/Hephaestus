@@ -18,7 +18,9 @@ class MinimalLoader {
       'rhetor': '/components/rhetor/rhetor-component.html',
       'apollo': '/components/apollo/apollo-component.html',
       'metis': '/components/metis/metis-component.html',
-      'budget': '/components/budget/budget-component.html'
+      'budget': '/components/budget/budget-component.html',
+      'profile': '/components/profile/profile-component.html',
+      'settings': '/components/settings/settings-component.html'
     };
     
     // Keep track of the current component to prevent reloading
@@ -68,7 +70,14 @@ class MinimalLoader {
    * Load a component into the specified container
    */
   async loadComponent(componentId) {
-    console.log(`MinimalLoader: Loading component ${componentId}`);
+    console.log(`MinimalLoader: Loading component ${componentId} - DEBUG LOG`);
+    
+    // Debug logging to show which loader is handling the component
+    if (componentId === 'profile' || componentId === 'settings') {
+      console.log(`MinimalLoader: IMPORTANT DEBUG - Loading ${componentId} component`);
+      console.log(`MinimalLoader: Component paths: ${JSON.stringify(this.componentPaths)}`);
+      console.log(`MinimalLoader: Path for ${componentId}: ${this.componentPaths[componentId]}`);
+    }
     
     // DEBUGGING: Check the Rhetor label in the DOM
     if (componentId === 'rhetor') {

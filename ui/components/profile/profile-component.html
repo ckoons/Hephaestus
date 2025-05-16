@@ -3,7 +3,7 @@
     <!-- Component Header with Title -->
     <div class="profile__header">
         <div class="profile__title-container">
-            <img src="/images/hexagon.jpg" alt="Tekton" class="profile__icon">
+            <img src="/images/hexagon.jpg" alt="Tekton" class="profile__icon" style="height: 30px; width: auto;">
             <h2 class="profile__title">
                 <span class="profile__title-main">Profile</span>
                 <span class="profile__title-sub">User Account Management</span>
@@ -36,6 +36,108 @@
             </button>
         </div>
     </div>
+
+<script type="text/javascript">
+// PROFILE TAB SWITCHING FUNCTION
+// Define tab switching function to match budget_switchTab pattern
+window.profile_switchTab = function(tabId) {
+    console.log('[PROFILE] Switching to tab:', tabId);
+    console.log('[PROFILE] IMPORTANT DEBUG: profile_switchTab function called');
+    
+    // Force HTML panel visibility
+    const htmlPanelElements = document.querySelectorAll('#html-panel');
+    htmlPanelElements.forEach(panel => {
+        if (panel) panel.style.display = 'block';
+    });
+    
+    try {
+        // Only select elements within profile component to avoid conflicts with other components
+        const profileContainer = document.querySelector('.profile');
+        if (!profileContainer) {
+            console.error('[PROFILE] Tab Switch: Cannot find profile container');
+            return false;
+        }
+        
+        // Update tab active state - ONLY WITHIN PROFILE CONTAINER
+        const tabs = profileContainer.querySelectorAll('.profile__tab');
+        tabs.forEach(tab => {
+            if (tab.getAttribute('data-tab') === tabId) {
+                tab.classList.add('profile__tab--active');
+            } else {
+                tab.classList.remove('profile__tab--active');
+            }
+        });
+        
+        // Update panel visibility - ONLY WITHIN PROFILE CONTAINER
+        const panels = profileContainer.querySelectorAll('.profile__panel');
+        panels.forEach(panel => {
+            const panelId = panel.id;
+            if (panelId === tabId + '-panel') {
+                panel.style.display = 'block';
+                panel.classList.add('profile__panel--active');
+            } else {
+                panel.style.display = 'none';
+                panel.classList.remove('profile__panel--active');
+            }
+        });
+        
+        // Update component state if profileComponent is available
+        if (window.profileComponent) {
+            window.profileComponent.state = window.profileComponent.state || {};
+            window.profileComponent.state.activeTab = tabId;
+            
+            // Call component-specific methods if available
+            if (typeof window.profileComponent.loadTabContent === 'function') {
+                window.profileComponent.loadTabContent(tabId);
+            }
+            
+            if (typeof window.profileComponent.saveComponentState === 'function') {
+                window.profileComponent.saveComponentState();
+            }
+        }
+    } catch (err) {
+        console.error('[PROFILE] Error in tab switching:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// Profile Save Function
+window.profile_saveProfile = function() {
+    console.log('[PROFILE] Save profile button clicked');
+    
+    try {
+        if (window.profileComponent && typeof window.profileComponent.saveProfile === 'function') {
+            window.profileComponent.saveProfile();
+        } else {
+            console.log('[PROFILE] Component not available for saving, will try again');
+            setTimeout(window.profile_saveProfile, 1000); // Retry after 1 second
+        }
+    } catch (err) {
+        console.error('[PROFILE] Error saving profile:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+
+// Reset Changes Function
+window.profile_resetChanges = function() {
+    console.log('[PROFILE] Reset changes button clicked');
+    
+    try {
+        if (window.profileComponent && typeof window.profileComponent.resetChanges === 'function') {
+            window.profileComponent.resetChanges();
+        } else {
+            console.log('[PROFILE] Component not available for reset, will try again');
+            setTimeout(window.profile_resetChanges, 1000); // Retry after 1 second
+        }
+    } catch (err) {
+        console.error('[PROFILE] Error resetting changes:', err);
+    }
+    
+    return false; // Stop event propagation
+};
+</script>
     
     <!-- Profile Content Area -->
     <div class="profile__content">
@@ -365,3 +467,78 @@
         </div>
     </div>
 </div>
+
+<!-- Add component-specific styles -->
+<style>
+    /* Profile component styles using BEM naming convention */
+    
+    /* Make sure the component style matches the Budget component style */
+    .profile__icon {
+        height: 30px;
+        width: auto;
+        margin-right: 12px;
+    }
+    
+    /* Additional styles to ensure proper layout */
+    .profile {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        width: 100%;
+        background-color: var(--bg-primary, #1e1e2e);
+        color: var(--text-primary, #f0f0f0);
+    }
+    
+    .profile__menu-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 16px;
+        background-color: var(--bg-secondary, #252535);
+        border-bottom: 1px solid var(--border-color, #444444);
+        height: 46px;
+    }
+    
+    .profile__tabs {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .profile__tab {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: transparent;
+        border: none;
+        border-bottom: 2px solid transparent;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .profile__tab:hover {
+        background-color: var(--bg-hover, #3a3a4a);
+    }
+    
+    .profile__tab--active {
+        border-bottom-color: var(--color-primary, #7356BF);
+        font-weight: 500;
+    }
+    
+    .profile__content {
+        flex: 1;
+        overflow: auto;
+        padding: 16px;
+    }
+    
+    .profile__panel {
+        display: none;
+        height: 100%;
+        width: 100%;
+    }
+    
+    .profile__panel--active {
+        display: block;
+    }
+</style>

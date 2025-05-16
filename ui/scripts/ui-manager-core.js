@@ -46,37 +46,9 @@ class UIManagerCore {
         // Initialize component availability checks
         this.initComponentAvailabilityChecks();
         
-        // Set up settings nav item (the new approach)
-        const settingsNavItem = document.querySelector('.nav-item[data-component="settings"]');
-        if (settingsNavItem) {
-            settingsNavItem.addEventListener('click', () => {
-                this.showSettingsPanel();
-            });
-        } else {
-            // Fallback for the old button if it exists
-            const settingsButton = document.getElementById('settings-button');
-            if (settingsButton) {
-                settingsButton.addEventListener('click', () => {
-                    this.showSettingsPanel();
-                });
-            }
-        }
-        
-        // Set up profile nav item (the new approach)
-        const profileNavItem = document.querySelector('.nav-item[data-component="profile"]');
-        if (profileNavItem) {
-            profileNavItem.addEventListener('click', () => {
-                this.showProfilePanel();
-            });
-        } else {
-            // Fallback for the old button if it exists
-            const profileButton = document.getElementById('profile-button');
-            if (profileButton) {
-                profileButton.addEventListener('click', () => {
-                    this.showProfilePanel();
-                });
-            }
-        }
+        // Profile and Settings components now use the standard component loading process
+        // No special handling required as they're loaded via the minimal-loader
+        // just like other components
         
         // We don't need to add a click handler for the budget button here.
         // The main.js file already handles this and calls this.activateComponent('budget')
@@ -180,7 +152,14 @@ class UIManagerCore {
             return;
         }
 
-        // Use the component loader if available
+        // Use the minimal loader if available (for all components including profile and settings)
+        if (window.minimalLoader) {
+            console.log(`Using MinimalLoader to load ${componentId}`);
+            window.minimalLoader.loadComponent(componentId);
+            return;
+        }
+        
+        // Fallback to ComponentLoader if minimalLoader is not available
         if (window.componentLoader) {
             console.log(`Using ComponentLoader to load ${componentId}`);
             window.componentLoader.loadComponent(componentId);
@@ -188,8 +167,8 @@ class UIManagerCore {
         }
 
         // SPECIAL CASES: Direct component loading for specific components
-        // This is fallback if componentLoader is not available
-        const specialComponents = ['rhetor', 'budget', 'hermes', 'engram', 'athena', 'ergon'];
+        // This is the last fallback if both minimalLoader and componentLoader are not available
+        const specialComponents = ['rhetor', 'budget', 'hermes', 'engram', 'athena', 'ergon', 'profile', 'settings'];
         if (specialComponents.includes(componentId)) {
             this._loadSpecialComponent(componentId);
             return;
@@ -275,12 +254,72 @@ class UIManagerCore {
     _loadSpecialComponent(componentId) {
         console.log(`Loading special component: ${componentId}`);
         
+        // Debug log for profile and settings components
+        if (componentId === 'profile' || componentId === 'settings') {
+            console.log(`SPECIAL COMPONENT DEBUG: Loading ${componentId} via _loadSpecialComponent method`);
+        }
+        
         // Update active component state first
         this.activeComponent = componentId;
         if (window.tektonUI) {
             window.tektonUI.activeComponent = componentId;
         }
         
+        // Special case for Profile and Settings components
+        if (componentId === 'profile' || componentId === 'settings') {
+            console.log(`Loading ${componentId} component using direct approach...`);
+            
+            // Get HTML panel for component rendering
+            const htmlPanel = document.getElementById('html-panel');
+            if (!htmlPanel) {
+                console.error('HTML panel not found!');
+                return;
+            }
+            
+            // Show loading message
+            htmlPanel.innerHTML = `<div style="padding: 20px; text-align: center;">Loading ${componentId} component...</div>`;
+            this.activatePanel('html');
+            
+            // Add cache busting parameter
+            const cacheBuster = `?t=${new Date().getTime()}`;
+            
+            // Load component HTML directly
+            fetch(`/components/${componentId}/${componentId}-component.html${cacheBuster}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Failed to load ${componentId} template: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    // Clear the panel first
+                    htmlPanel.innerHTML = '';
+                    
+                    // Set innerHTML for the component
+                    htmlPanel.innerHTML = html;
+                    
+                    // Force display styles
+                    htmlPanel.style.display = 'block';
+                    htmlPanel.style.visibility = 'visible';
+                    htmlPanel.style.opacity = '1';
+                    
+                    console.log(`${componentId} component loaded successfully`);
+                    
+                    // Force a refresh by triggering a reflow
+                    void htmlPanel.offsetWidth;
+                    
+                    // Debug output
+                    console.log(`DEBUG - ${componentId} component HTML:`, html.substring(0, 200) + '...');
+                    console.log(`DEBUG - HTML panel now contains:`, htmlPanel.innerHTML.substring(0, 200) + '...');
+                })
+                .catch(error => {
+                    console.error(`Error loading ${componentId} component:`, error);
+                    htmlPanel.innerHTML = `<div style="padding: 20px; color: red;">Error loading ${componentId} component: ${error.message}</div>`;
+                });
+                
+            return;
+        }
+
         // Special case for Athena component
         if (componentId === 'athena') {
             console.log('Loading Athena component using direct approach...');
@@ -762,14 +801,14 @@ class UIManagerCore {
     }
     
     /**
-     * Switch between terminal, HTML, settings, and profile panels
-     * @param {string} panelId - 'terminal', 'html', 'settings', or 'profile'
+     * Switch between terminal and HTML panels
+     * @param {string} panelId - 'terminal' or 'html'
      */
     activatePanel(panelId) {
         console.log(`Activating panel: ${panelId}`);
         
-        // Make sure we're dealing with a valid panel ID
-        if (!['terminal', 'html', 'settings', 'profile'].includes(panelId)) {
+        // Make sure we're dealing with a valid panel ID - we now only support terminal and html panels
+        if (!['terminal', 'html'].includes(panelId)) {
             console.error(`Invalid panel ID: ${panelId}`);
             return;
         }
@@ -810,43 +849,8 @@ class UIManagerCore {
         }
     }
     
-    /**
-     * Show the settings panel
-     */
-    showSettingsPanel() {
-        console.log('Showing settings panel');
-        
-        // Activate the settings panel directly
-        if (window.uiUtils) {
-            window.uiUtils.activatePanel('settings');
-        } else {
-            this.activatePanel('settings');
-        }
-        
-        // Initialize settings UI if it hasn't been initialized
-        if (window.settingsUI && !window.settingsUI.initialized) {
-            window.settingsUI.init();
-        }
-    }
-    
-    /**
-     * Show the profile panel
-     */
-    showProfilePanel() {
-        console.log('Showing profile panel');
-        
-        // Activate the profile panel directly
-        if (window.uiUtils) {
-            window.uiUtils.activatePanel('profile');
-        } else {
-            this.activatePanel('profile');
-        }
-        
-        // Initialize profile UI if it hasn't been initialized
-        if (window.profileUI && !window.profileUI.initialized) {
-            window.profileUI.init();
-        }
-    }
+    // Profile and Settings components now use the standard component loading process via minimal-loader
+    // No special panel methods required
     
     /**
      * Initialize component availability checks
