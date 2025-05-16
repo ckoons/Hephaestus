@@ -62,14 +62,8 @@ class UIManagerCore {
             });
         }
         
-        // Also check budget button
-        const budgetButton = document.getElementById('budget-button');
-        if (budgetButton) {
-            budgetButton.addEventListener('click', () => {
-                // Instead of showing a modal, load the budget component
-                this.activateComponent('budget');
-            });
-        }
+        // We don't need to add a click handler for the budget button here.
+        // The main.js file already handles this and calls this.activateComponent('budget')
         
         // Set initial active component
         this.activateComponent(this.activeComponent);
@@ -133,7 +127,9 @@ class UIManagerCore {
      * @param {string} componentId - ID of the component to activate
      */
     activateComponent(componentId) {
-        console.log(`Activating component: ${componentId}`);
+        console.log(`COMPONENT ACTIVATION: Activating component: ${componentId}`);
+        // Add stack trace to see where this is being called from
+        console.trace(`Call stack for activating component: ${componentId}`);
         
         // Check if this component should be ignored by UI manager
         // This allows components to manage their own UI without interference

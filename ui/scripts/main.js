@@ -164,19 +164,52 @@ document.addEventListener('DOMContentLoaded', function() {
     websocketManager.connect();
     
     // Override the budget button to use our component instead of a modal
-    const budgetButton = document.getElementById('budget-button');
-    if (budgetButton) {
-        budgetButton.addEventListener('click', function() {
-            console.log('Budget button clicked - loading budget component');
+    function setupBudgetButton() {
+        console.log('Setting up budget button handler...');
+        const budgetButton = document.getElementById('budget-button');
+        
+        if (!budgetButton) {
+            console.error('Budget button not found in DOM!');
+            return;
+        }
+        
+        console.log('Found budget button:', budgetButton);
+        
+        // Remove previous click listeners
+        budgetButton.removeEventListener('click', handleBudgetClick);
+        
+        // Define our handler
+        function handleBudgetClick(event) {
+            console.log('BUDGET BUTTON CLICKED!', event);
+            alert('Budget button clicked!');
+            
             if (window.uiManager) {
-                // Use the UI Manager to load the budget component
-                window.uiManager.loadBudgetComponent();
+                console.log('UI Manager found, activating budget component...');
+                window.uiManager.activateComponent('budget');
             } else {
-                // Fallback to modal if UI Manager not available
-                tektonUI.showModal('Budget', '<div class="budget-panel"><h3>Resource Usage</h3><p>AI Credits: 2,450 / 5,000</p><p>Storage: 1.2 GB / 10 GB</p><p>API Calls: 325 / 1,000</p></div>');
+                console.error('UI Manager not found!');
+                if (window.tektonUI) {
+                    tektonUI.showModal('Budget', '<div class="budget-panel"><h3>Resource Usage</h3><p>AI Credits: 2,450 / 5,000</p><p>Storage: 1.2 GB / 10 GB</p><p>API Calls: 325 / 1,000</p></div>');
+                }
             }
-        });
+            
+            // Prevent event propagation and default
+            event.stopPropagation();
+            event.preventDefault();
+            return false;
+        }
+        
+        // Add our click listener directly
+        budgetButton.addEventListener('click', handleBudgetClick);
+        console.log('Budget button click handler added');
     }
+    
+    // Run setup now
+    setupBudgetButton();
+    
+    // Also set up again after a short delay to ensure it's applied 
+    // after any other scripts might overwrite it
+    setTimeout(setupBudgetButton, 1000);
     
     // Set up status indicators for demo
     setTimeout(() => {

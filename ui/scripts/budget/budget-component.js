@@ -9,6 +9,7 @@ class BudgetComponent {
     constructor() {
         this.budgetService = null;
         this.state = {
+            initialized: false,
             activeTab: 'dashboard',
             loading: false,
             budgetData: null,
@@ -17,6 +18,7 @@ class BudgetComponent {
         };
         
         console.log('[BUDGET] Component constructed');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Component constructed');
     }
     
     /**
@@ -24,12 +26,50 @@ class BudgetComponent {
      */
     async init() {
         console.log('[BUDGET] Initializing component');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Initializing component');
+        
+        // If already initialized, just activate
+        if (this.state.initialized) {
+            console.log('[BUDGET] Component already initialized, just activating');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Already initialized, just activating');
+            this.activateComponent();
+            return this;
+        }
+        
         this.setupBudgetService();
         this.setupEventListeners();
         this.loadComponentState();
         
+        // Set initialized flag
+        this.state.initialized = true;
+        
         // Load initial data
         this.refreshData();
+        
+        console.log('[BUDGET] Component initialized');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Component initialized');
+        return this;
+    }
+    
+    /**
+     * Activate the component
+     */
+    activateComponent() {
+        console.log('[BUDGET] Activating budget component');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Activating component');
+        
+        // We don't need to manipulate the panels or global DOM
+        // Our component loader handles this for us
+        
+        // Find our component container
+        const budgetContainer = document.querySelector('.budget');
+        if (budgetContainer) {
+            console.log('[BUDGET] Budget container found and activated');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Container found and activated');
+        }
+        
+        // Refresh data for the active tab
+        this.loadTabContent(this.state.activeTab);
     }
     
     /**
@@ -37,16 +77,19 @@ class BudgetComponent {
      */
     setupBudgetService() {
         console.log('[BUDGET] Setting up budget service');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Setting up budget service');
         
         // Attempt to use the budget service from window
         if (window.tektonUI?.services?.budgetService) {
             this.budgetService = window.tektonUI.services.budgetService;
             console.log('[BUDGET] Using global budget service');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Using global budget service');
         } else {
             // Create a new budget service if not available globally
             const BudgetService = window.BudgetService || this._createFallbackService();
             this.budgetService = new BudgetService();
             console.log('[BUDGET] Created new budget service');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Created new budget service');
         }
     }
     
@@ -55,11 +98,13 @@ class BudgetComponent {
      */
     setupEventListeners() {
         console.log('[BUDGET] Setting up event listeners');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Setting up event listeners');
         
         // Get the budget container
         const budgetContainer = document.querySelector('.budget');
         if (!budgetContainer) {
             console.error('[BUDGET] Cannot find budget container for setting up event listeners');
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', 'Cannot find budget container for event listeners');
             return;
         }
         
@@ -70,10 +115,51 @@ class BudgetComponent {
         if (chatInput && sendButton) {
             sendButton.addEventListener('click', () => this.handleChatMessage());
             chatInput.addEventListener('keydown', e => {
-                if (e.key === 'Enter') {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
                     this.handleChatMessage();
                 }
             });
+        }
+        
+        // Update placeholder based on active tab
+        this.updateChatPlaceholder(this.state.activeTab);
+    }
+    
+    /**
+     * Update chat input placeholder based on active tab
+     */
+    updateChatPlaceholder(activeTab) {
+        // Find budget container
+        const budgetContainer = document.querySelector('.budget');
+        if (!budgetContainer) return;
+        
+        // Get chat input
+        const chatInput = budgetContainer.querySelector('#chat-input');
+        if (!chatInput) return;
+        
+        // Update placeholder based on active tab
+        switch(activeTab) {
+            case 'dashboard':
+                chatInput.placeholder = "Ask about budget dashboard data or metrics...";
+                break;
+            case 'details':
+                chatInput.placeholder = "Ask about usage details or filter results...";
+                break;
+            case 'settings':
+                chatInput.placeholder = "Ask about budget settings and configuration...";
+                break;
+            case 'alerts':
+                chatInput.placeholder = "Ask about budget alerts and notifications...";
+                break;
+            case 'budgetchat':
+                chatInput.placeholder = "Ask about budget optimization and cost management...";
+                break;
+            case 'teamchat':
+                chatInput.placeholder = "Enter team chat message for all Tekton components";
+                break;
+            default:
+                chatInput.placeholder = "Ask about usage, costs, or budget settings";
         }
     }
     
@@ -89,18 +175,74 @@ class BudgetComponent {
         
         const message = chatInput.value.trim();
         console.log('[BUDGET] Chat message:', message);
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', `Chat message: ${message}`);
+        
+        // Determine which messages container to use
+        const activeTab = this.state.activeTab;
+        let messagesContainer;
+        
+        if (activeTab === 'teamchat') {
+            messagesContainer = budgetContainer.querySelector('#teamchat-messages');
+        } else if (activeTab === 'budgetchat') {
+            messagesContainer = budgetContainer.querySelector('#budgetchat-messages');
+        } else {
+            // For all other tabs, we'll use budget chat by default
+            messagesContainer = budgetContainer.querySelector('#budgetchat-messages');
+            
+            // Switch to budget chat tab to show the message
+            window.budget_switchTab('budgetchat');
+        }
+        
+        if (messagesContainer) {
+            // Add user message
+            this.addUserMessageToChatUI(messagesContainer, message);
+            
+            // Simulate a response (for demo purposes)
+            setTimeout(() => {
+                // Customize the response based on the active tab
+                let responsePrefix = activeTab === 'teamchat' ? 'Team: ' : 'Budget: ';
+                let responseText = `${responsePrefix}I received your message about "${message}". This is a simulated response from the Budget component.`;
+                
+                this.addAIMessageToChatUI(messagesContainer, responseText);
+            }, 1000);
+        }
         
         // Clear the input
         chatInput.value = '';
+    }
+    
+    /**
+     * Add a user message to the chat UI
+     */
+    addUserMessageToChatUI(messagesContainer, message) {
+        if (!messagesContainer) return;
         
-        // TODO: Implement chat functionality for budget questions
+        const userBubble = document.createElement('div');
+        userBubble.className = 'budget__message budget__message--user';
+        userBubble.textContent = message;
+        messagesContainer.appendChild(userBubble);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    /**
+     * Add an AI message to the chat UI
+     */
+    addAIMessageToChatUI(messagesContainer, message) {
+        if (!messagesContainer) return;
+        
+        const aiBubble = document.createElement('div');
+        aiBubble.className = 'budget__message budget__message--ai';
+        aiBubble.textContent = message;
+        messagesContainer.appendChild(aiBubble);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
     /**
      * Load data for the currently active tab
      */
     loadTabContent(tabId) {
-        console.log('[BUDGET] Loading content for tab:', tabId);
+        console.log(`[BUDGET] Loading content for ${tabId} tab`);
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', `Loading content for ${tabId} tab`);
         
         switch (tabId) {
             case 'dashboard':
@@ -115,6 +257,12 @@ class BudgetComponent {
             case 'alerts':
                 this.loadAlerts();
                 break;
+            case 'budgetchat':
+                // No special loading needed for budget chat
+                break;
+            case 'teamchat':
+                // No special loading needed for team chat
+                break;
         }
     }
     
@@ -123,6 +271,7 @@ class BudgetComponent {
      */
     refreshData() {
         console.log('[BUDGET] Refreshing all data');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Refreshing all data');
         
         // Load data for the active tab
         this.loadTabContent(this.state.activeTab);
@@ -133,6 +282,7 @@ class BudgetComponent {
      */
     async loadBudgetData() {
         console.log('[BUDGET] Loading budget data');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Loading budget data');
         
         // Show loading indicator
         this.setLoading(true);
@@ -144,8 +294,12 @@ class BudgetComponent {
             
             // Update the UI
             this.updateBudgetDashboard();
+            
+            console.log('[BUDGET] Budget data loaded');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Budget data loaded successfully');
         } catch (error) {
             console.error('[BUDGET] Error loading budget data:', error);
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', `Error loading budget data: ${error.message}`);
             this.showErrorMessage('Failed to load budget data');
         } finally {
             // Hide loading indicator
@@ -158,6 +312,7 @@ class BudgetComponent {
      */
     async loadUsageDetails() {
         console.log('[BUDGET] Loading usage details');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Loading usage details');
         
         // Show loading indicator
         this.setLoading(true);
@@ -174,8 +329,12 @@ class BudgetComponent {
             
             // Update the UI
             this.updateUsageDetails();
+            
+            console.log('[BUDGET] Usage details loaded');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Usage details loaded successfully');
         } catch (error) {
             console.error('[BUDGET] Error loading usage details:', error);
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', `Error loading usage details: ${error.message}`);
             this.showErrorMessage('Failed to load usage details');
         } finally {
             // Hide loading indicator
@@ -188,6 +347,7 @@ class BudgetComponent {
      */
     async filterUsage() {
         console.log('[BUDGET] Filtering usage details');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Filtering usage details');
         
         // Load usage details with the current date range
         await this.loadUsageDetails();
@@ -198,6 +358,7 @@ class BudgetComponent {
      */
     async loadBudgetSettings() {
         console.log('[BUDGET] Loading budget settings');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Loading budget settings');
         
         // TODO: Load budget settings from service and update form
     }
@@ -207,6 +368,7 @@ class BudgetComponent {
      */
     async loadAlerts() {
         console.log('[BUDGET] Loading alerts');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Loading alerts');
         
         // TODO: Load alerts from service
     }
@@ -216,6 +378,7 @@ class BudgetComponent {
      */
     async saveBudgetSettings() {
         console.log('[BUDGET] Saving budget settings');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Saving budget settings');
         
         // Show loading indicator
         this.setLoading(true);
@@ -248,8 +411,12 @@ class BudgetComponent {
             
             // Show success message
             this.showSuccessMessage('Budget settings saved successfully');
+            
+            console.log('[BUDGET] Budget settings saved');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Budget settings saved successfully');
         } catch (error) {
             console.error('[BUDGET] Error saving budget settings:', error);
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', `Error saving budget settings: ${error.message}`);
             this.showErrorMessage('Failed to save budget settings');
         } finally {
             // Hide loading indicator
@@ -262,6 +429,7 @@ class BudgetComponent {
      */
     async saveAlertSettings() {
         console.log('[BUDGET] Saving alert settings');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Saving alert settings');
         
         // Show loading indicator
         this.setLoading(true);
@@ -285,8 +453,12 @@ class BudgetComponent {
             
             // Show success message
             this.showSuccessMessage('Alert settings saved successfully');
+            
+            console.log('[BUDGET] Alert settings saved');
+            if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Alert settings saved successfully');
         } catch (error) {
             console.error('[BUDGET] Error saving alert settings:', error);
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', `Error saving alert settings: ${error.message}`);
             this.showErrorMessage('Failed to save alert settings');
         } finally {
             // Hide loading indicator
@@ -299,6 +471,7 @@ class BudgetComponent {
      */
     clearAlerts() {
         console.log('[BUDGET] Clearing all alerts');
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', 'Clearing all alerts');
         
         // Get the budget container
         const budgetContainer = document.querySelector('.budget');
@@ -313,6 +486,9 @@ class BudgetComponent {
         
         // Show success message
         this.showSuccessMessage('All alerts cleared');
+        
+        console.log('[BUDGET] Alerts cleared');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Alerts cleared successfully');
     }
     
     /**
@@ -320,6 +496,7 @@ class BudgetComponent {
      */
     updateBudgetDashboard() {
         console.log('[BUDGET] Updating budget dashboard UI');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Updating budget dashboard UI');
         
         // TODO: Update dashboard UI with budget data
     }
@@ -329,6 +506,7 @@ class BudgetComponent {
      */
     updateUsageDetails() {
         console.log('[BUDGET] Updating usage details UI');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Updating usage details UI');
         
         // TODO: Update usage details UI with usage data
     }
@@ -347,8 +525,10 @@ class BudgetComponent {
      */
     showErrorMessage(message) {
         console.error('[BUDGET] Error:', message);
+        if (window.TektonDebug) TektonDebug.error('budgetComponent', message);
         
         // TODO: Show error message in UI
+        alert(message); // Temporary simple alert for testing
     }
     
     /**
@@ -356,8 +536,10 @@ class BudgetComponent {
      */
     showSuccessMessage(message) {
         console.log('[BUDGET] Success:', message);
+        if (window.TektonDebug) TektonDebug.info('budgetComponent', message);
         
         // TODO: Show success message in UI
+        alert(message); // Temporary simple alert for testing
     }
     
     /**
@@ -365,6 +547,7 @@ class BudgetComponent {
      */
     saveComponentState() {
         console.log('[BUDGET] Saving component state');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Saving component state');
         
         try {
             // Save state to local storage
@@ -375,6 +558,7 @@ class BudgetComponent {
             localStorage.setItem('budgetComponentState', JSON.stringify(stateToSave));
         } catch (error) {
             console.error('[BUDGET] Error saving component state:', error);
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', `Error saving state: ${error.message}`);
         }
     }
     
@@ -383,6 +567,7 @@ class BudgetComponent {
      */
     loadComponentState() {
         console.log('[BUDGET] Loading component state');
+        if (window.TektonDebug) TektonDebug.debug('budgetComponent', 'Loading component state');
         
         try {
             // Load state from local storage
@@ -400,6 +585,7 @@ class BudgetComponent {
             }
         } catch (error) {
             console.error('[BUDGET] Error loading component state:', error);
+            if (window.TektonDebug) TektonDebug.error('budgetComponent', `Error loading state: ${error.message}`);
         }
     }
     
@@ -408,6 +594,7 @@ class BudgetComponent {
      */
     _createFallbackService() {
         console.warn('[BUDGET] Creating fallback budget service');
+        if (window.TektonDebug) TektonDebug.warn('budgetComponent', 'Creating fallback budget service');
         
         // Return a simple service class
         return class FallbackBudgetService {

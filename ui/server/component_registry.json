@@ -321,21 +321,22 @@
       "id": "budget",
       "name": "Budget",
       "description": "LLM cost tracking and budget management",
-      "icon": "📊",
+      "icon": "💰",
       "defaultMode": "html",
       "capabilities": [
         "cost_tracking",
         "budget_management",
         "usage_reporting",
         "shadow_dom",
-        "component_isolation"
+        "component_isolation",
+        "chat_interface"
       ],
-      "componentPath": "components/budget/budget-dashboard.html",
+      "componentPath": "components/budget/budget-component.html",
       "scripts": [
-        "scripts/budget/budget-dashboard.js"
+        "scripts/budget/budget-component.js"
       ],
       "styles": [
-        "styles/budget/budget-component.css"
+        "styles/budget.css"
       ],
       "usesShadowDom": true
     },
