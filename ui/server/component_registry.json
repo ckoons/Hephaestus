@@ -336,7 +336,7 @@
         "scripts/budget/budget-component.js"
       ],
       "styles": [
-        "styles/budget.css"
+        "styles/budget/budget-component.css"
       ],
       "usesShadowDom": true
     },

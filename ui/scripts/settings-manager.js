@@ -202,6 +202,9 @@ class SettingsManager {
                 case 'codex': return 'Codex - Coding';
                 case 'tekton': return 'Tekton - Projects';
                 case 'terma': return 'Terma - Terminal';
+                case 'budget': return 'Budget';
+                case 'profile': return 'Profile';
+                case 'settings': return 'Settings';
                 default: return component;
             }
         } else {
@@ -222,6 +225,9 @@ class SettingsManager {
                 case 'codex': return 'Coding';
                 case 'tekton': return 'Projects';
                 case 'terma': return 'Terminal';
+                case 'budget': return 'Budget';
+                case 'profile': return 'Profile';
+                case 'settings': return 'Settings';
                 default: return component;
             }
         }

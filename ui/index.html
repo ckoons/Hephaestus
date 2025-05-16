@@ -120,30 +120,37 @@
             height: 18px !important; /* Match main navigation height */
         }
         
-        /* Style the footer nav items to match the footer buttons */
-        .footer-nav {
-            margin: 0 0 8px 0 !important;
-            padding: 0 !important;
+        /* Style the footer nav items */
+        .left-panel-footer .component-nav {
+            margin: 0 !important;
+            padding: 16px !important; /* Consistent padding all around */
         }
         
-        .footer-nav .nav-item {
-            padding: 8px 16px !important;
+        .left-panel-footer .nav-item {
+            padding: 8px 12px !important; /* Standard padding */
             height: 18px !important;
             display: flex !important;
             align-items: center !important;
-            margin-bottom: 4px !important;
+            margin: 0 0 8px 0 !important; /* Consistent 8px spacing between items */
             cursor: pointer !important;
         }
         
-        .footer-nav .button-icon {
-            margin-right: 10px !important;
+        /* Remove margin from last nav item to align properly */
+        .left-panel-footer .nav-item:last-child {
+            margin-bottom: 0 !important;
         }
         
-        .footer-nav .nav-item:hover {
+        .left-panel-footer .button-icon {
+            margin-right: 12px !important; /* Standard spacing */
+            width: 20px !important; /* Fixed width for alignment */
+            text-align: center !important; /* Center icon */
+        }
+        
+        .left-panel-footer .nav-item:hover {
             background-color: var(--bg-hover, #3a3a4a) !important;
         }
         
-        .footer-nav .nav-item.active {
+        .left-panel-footer .nav-item.active {
             background-color: var(--bg-hover, #3a3a4a) !important;
         }
         
@@ -237,20 +244,20 @@
                 <ul class="component-nav">
                     <li class="nav-item" data-component="budget">
                         <span class="button-icon">💰</span>
-                        <span class="nav-label">Budget</span>
+                        <span class="nav-label" data-greek-name="Budget - LLM Cost" data-functional-name="LLM Cost">Budget - LLM Cost</span>
                         <span class="status-indicator" style="background-color: #34A853;"></span>
                     </li>
-                </ul>
-                <div class="footer-buttons">
-                    <button class="control-button" id="profile-button" title="Profile">
+                    <li class="nav-item" data-component="profile">
                         <span class="button-icon">👤</span>
-                        <span class="button-label">Profile</span>
-                    </button>
-                    <button class="control-button" id="settings-button" title="Settings">
+                        <span class="nav-label" data-greek-name="Profile" data-functional-name="Profile">Profile</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                    <li class="nav-item" data-component="settings">
                         <span class="button-icon">⚙️</span>
-                        <span class="button-label">Settings</span>
-                    </button>
-                </div>
+                        <span class="nav-label" data-greek-name="Settings" data-functional-name="Settings">Settings</span>
+                        <span class="status-indicator"></span>
+                    </li>
+                </ul>
             </div>
         </div>
         
@@ -512,7 +519,7 @@
     <script src="scripts/settings-manager.js"></script>
     <script src="scripts/settings-ui.js"></script>
     
-    <!-- Fix for Rhetor label -->
+    <!-- Fix for Rhetor and Budget labels -->
     <script>
       // This script runs after all other scripts have loaded
       document.addEventListener('DOMContentLoaded', function() {
@@ -532,6 +539,17 @@
           console.log('Forced Rhetor label:', rhetorLabel.textContent);
         }
         
+        // Force the correct Budget label when component is active
+        const budgetLabel = document.querySelector('.nav-item[data-component="budget"] .nav-label');
+        if (budgetLabel) {
+          // Keep the current "Budget" label but set data attributes for pattern matching
+          if (budgetLabel.getAttribute('data-greek-name') !== 'Budget') {
+            budgetLabel.setAttribute('data-greek-name', 'Budget');
+            budgetLabel.setAttribute('data-functional-name', 'Budget');
+          }
+          console.log('Set Budget label data attributes');
+        }
+        
         // Try again after a short delay to catch any updates
         setTimeout(function() {
           const rhetorLabel = document.querySelector('.nav-item[data-component="rhetor"] .nav-label');
@@ -539,28 +557,48 @@
             rhetorLabel.textContent = 'Rhetor - LLM/Prompt/Context';
             console.log('Forced Rhetor label (delayed):', rhetorLabel.textContent);
           }
+          
+          // Also check Budget label again
+          const budgetLabel = document.querySelector('.nav-item[data-component="budget"] .nav-label');
+          if (budgetLabel) {
+            if (budgetLabel.getAttribute('data-greek-name') !== 'Budget') {
+              budgetLabel.setAttribute('data-greek-name', 'Budget');
+              budgetLabel.setAttribute('data-functional-name', 'Budget');
+            }
+            console.log('Set Budget label data attributes (delayed)');
+          }
         }, 500);
         
-        // Add a MutationObserver to watch for changes to the label
+        // Add a MutationObserver to watch for changes to the labels
         const observer = new MutationObserver(function(mutations) {
           mutations.forEach(function(mutation) {
             if (mutation.type === 'childList' || mutation.type === 'characterData') {
+              // Fix Rhetor label
               const rhetorLabel = document.querySelector('.nav-item[data-component="rhetor"] .nav-label');
               if (rhetorLabel && rhetorLabel.textContent !== 'Rhetor - LLM/Prompt/Context') {
                 rhetorLabel.textContent = 'Rhetor - LLM/Prompt/Context';
                 console.log('MutationObserver fixed Rhetor label');
               }
+              
+              // Fix Budget label attributes
+              const budgetLabel = document.querySelector('.nav-item[data-component="budget"] .nav-label');
+              if (budgetLabel && budgetLabel.getAttribute('data-greek-name') !== 'Budget') {
+                budgetLabel.setAttribute('data-greek-name', 'Budget');
+                budgetLabel.setAttribute('data-functional-name', 'Budget');
+                console.log('MutationObserver fixed Budget label attributes');
+              }
             }
           });
         });
         
-        // Start observing the navigation
-        const navContainer = document.querySelector('.left-panel-nav');
-        if (navContainer) {
-          observer.observe(navContainer, {
+        // Start observing the entire navigation area (including footer)
+        const leftPanel = document.querySelector('.left-panel');
+        if (leftPanel) {
+          observer.observe(leftPanel, {
             childList: true,
             subtree: true,
-            characterData: true
+            characterData: true,
+            attributes: true
           });
         }
       });

@@ -46,20 +46,36 @@ class UIManagerCore {
         // Initialize component availability checks
         this.initComponentAvailabilityChecks();
         
-        // Set up settings button
-        const settingsButton = document.getElementById('settings-button');
-        if (settingsButton) {
-            settingsButton.addEventListener('click', () => {
+        // Set up settings nav item (the new approach)
+        const settingsNavItem = document.querySelector('.nav-item[data-component="settings"]');
+        if (settingsNavItem) {
+            settingsNavItem.addEventListener('click', () => {
                 this.showSettingsPanel();
             });
+        } else {
+            // Fallback for the old button if it exists
+            const settingsButton = document.getElementById('settings-button');
+            if (settingsButton) {
+                settingsButton.addEventListener('click', () => {
+                    this.showSettingsPanel();
+                });
+            }
         }
         
-        // Set up profile button
-        const profileButton = document.getElementById('profile-button');
-        if (profileButton) {
-            profileButton.addEventListener('click', () => {
+        // Set up profile nav item (the new approach)
+        const profileNavItem = document.querySelector('.nav-item[data-component="profile"]');
+        if (profileNavItem) {
+            profileNavItem.addEventListener('click', () => {
                 this.showProfilePanel();
             });
+        } else {
+            // Fallback for the old button if it exists
+            const profileButton = document.getElementById('profile-button');
+            if (profileButton) {
+                profileButton.addEventListener('click', () => {
+                    this.showProfilePanel();
+                });
+            }
         }
         
         // We don't need to add a click handler for the budget button here.
