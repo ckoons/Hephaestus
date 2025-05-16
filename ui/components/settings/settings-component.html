@@ -2,7 +2,7 @@
 <div class="settings-container">
   <div class="settings-header">
     <div class="settings-title-container">
-      <img src="/images/hexagon.jpg" alt="Tekton" class="settings-icon" style="height: 30px; width: auto;">
+      <img src="/images/hexagon.jpg" alt="Tekton" class="settings-icon">
       <h2 class="settings-header__title">
         <span class="settings-title-main">Settings</span>
         <span class="settings-title-sub">Tekton Configuration</span>
@@ -19,21 +19,14 @@
       <div class="settings-tab" data-tab="interface" onclick="settings_switchTab('interface'); return false;">
         <span class="settings-tab-label">Interface</span>
       </div>
-      <div class="settings-tab" data-tab="terminal" onclick="settings_switchTab('terminal'); return false;">
-        <span class="settings-tab-label">Terminal</span>
-      </div>
-      <div class="settings-tab" data-tab="chat" onclick="settings_switchTab('chat'); return false;">
-        <span class="settings-tab-label">Chat</span>
-      </div>
-      <div class="settings-tab" data-tab="integration" onclick="settings_switchTab('integration'); return false;">
-        <span class="settings-tab-label">Integrations</span>
-      </div>
-      <div class="settings-tab" data-tab="system" onclick="settings_switchTab('system'); return false;">
-        <span class="settings-tab-label">System</span>
-      </div>
     </div>
     <div class="settings-actions">
-      <button class="settings-button settings-button--primary" id="save-all-settings" onclick="settings_saveAllSettings(); return false;">Save Settings</button>
+      <button class="settings-button settings-button--primary" id="save-all-settings" onclick="settings_saveAllSettings(); return false;">
+        Save Settings
+      </button>
+      <button class="settings-button" id="reset-all-settings" onclick="settings_resetAllSettings(); return false;">
+        Reset to Defaults
+      </button>
     </div>
   </div>
 
@@ -143,327 +136,101 @@ window.settings_resetAllSettings = function() {
   <div class="settings-content">
     <!-- Theme Tab (Default Active Tab) -->
     <div id="theme-panel" class="settings-panel settings-panel--active">
-      <div class="settings-section">
-    <h3 class="settings-section__title">Theme Settings</h3>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">UI Mode</div>
-        <div class="settings-controls settings-theme-mode">
-          <button class="settings-theme-mode__button" data-mode="light">
-            <span class="settings-theme-mode__icon">☀️</span>
-            <span class="settings-theme-mode__label">Light</span>
-          </button>
-          <button class="settings-theme-mode__button settings-theme-mode__button--active" data-mode="dark">
-            <span class="settings-theme-mode__icon">🌙</span>
-            <span class="settings-theme-mode__label">Dark</span>
-          </button>
+      <div class="settings-form">
+        <div class="settings-field">
+          <div class="settings-field-label">UI Mode</div>
+          <div class="settings-field-control">
+            <div class="settings-theme-mode">
+              <button class="settings-theme-mode__button" data-mode="light">
+                <span class="settings-theme-mode__icon">☀️</span>
+                <span class="settings-theme-mode__label">Light</span>
+              </button>
+              <button class="settings-theme-mode__button settings-theme-mode__button--active" data-mode="dark">
+                <span class="settings-theme-mode__icon">🌙</span>
+                <span class="settings-theme-mode__label">Dark</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Accent Color</div>
-        <div class="settings-controls settings-theme-color">
-          <button class="settings-theme-color__button settings-theme-color__button--active" data-color="blue" style="--color: #007bff">
-            <span class="settings-theme-color__dot"></span>
-            <span class="settings-theme-color__label">Blue</span>
-          </button>
-          <button class="settings-theme-color__button" data-color="green" style="--color: #28a745">
-            <span class="settings-theme-color__dot"></span>
-            <span class="settings-theme-color__label">Green</span>
-          </button>
-          <button class="settings-theme-color__button" data-color="purple" style="--color: #6f42c1">
-            <span class="settings-theme-color__dot"></span>
-            <span class="settings-theme-color__label">Purple</span>
-          </button>
+        
+        <div class="settings-field">
+          <div class="settings-field-label">Accent Color</div>
+          <div class="settings-field-control">
+            <div class="settings-theme-color">
+              <button class="settings-theme-color__button settings-theme-color__button--active" data-color="blue" style="--color: #007bff">
+                <span class="settings-theme-color__dot"></span>
+                <span class="settings-theme-color__label">Blue</span>
+              </button>
+              <button class="settings-theme-color__button" data-color="green" style="--color: #28a745">
+                <span class="settings-theme-color__dot"></span>
+                <span class="settings-theme-color__label">Green</span>
+              </button>
+              <button class="settings-theme-color__button" data-color="purple" style="--color: #6f42c1">
+                <span class="settings-theme-color__dot"></span>
+                <span class="settings-theme-color__label">Purple</span>
+              </button>
+              <button class="settings-theme-color__button" data-color="custom" style="--color: #ff5722">
+                <span class="settings-theme-color__dot"></span>
+                <span class="settings-theme-color__label">Custom</span>
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  
+        
+        <!-- Custom color area appears when Custom is selected -->
+        <div id="custom-color-area" class="settings-field" style="display: none; margin-top: 0;">
+          <div class="settings-field-label">Custom Color</div>
+          <div class="settings-field-control">
+            <div class="settings-custom-color">
+              <!-- Color picker -->
+              <div class="color-picker-container">
+                <input type="color" id="custom-color-input" value="#ff5722" class="settings-color-input">
+                <span id="custom-color-hex" class="color-hex-display">#FF5722</span>
+              </div>
+              
+              <!-- Color from image picker -->
+              <div class="settings-image-color-picker">
+                <div class="image-color-title">Pick color from image:</div>
+                <div class="image-color-container">
+                  <img src="/images/hexagon.jpg" id="color-sample-image" class="color-sample-image" alt="Sample image">
+                  <canvas id="color-canvas" class="color-canvas" width="20" height="20"></canvas>
+                </div>
+                <div class="image-color-instructions">Click anywhere on the image to sample color</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
       </div>
     </div>
     
     <!-- Interface Tab -->
     <div id="interface-panel" class="settings-panel">
-      <div class="settings-section">
-    <h3 class="settings-section__title">Interface Settings</h3>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Show Greek Names</div>
-        <div class="settings-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="greek-names-toggle" checked>
-            <span class="settings-toggle__slider"></span>
-          </label>
+      <div class="settings-form">
+        <div class="settings-field">
+          <div class="settings-field-label">Show Greek Names</div>
+          <div class="settings-field-control">
+            <label class="settings-toggle">
+              <input type="checkbox" id="greek-names-toggle" checked>
+              <span class="settings-toggle__slider"></span>
+            </label>
+            <div class="settings-field-description">
+              When enabled, components will be displayed with their Greek names (e.g., "Ergon - Agents/Tools/MCP"). 
+              When disabled, only functional names will be shown (e.g., "Agents/Tools/MCP").
+            </div>
+          </div>
         </div>
-      </div>
-      <div class="settings-description">
-        When enabled, components will be displayed with their Greek names (e.g., "Ergon - Agents/Tools/MCP"). 
-        When disabled, only functional names will be shown (e.g., "Agents/Tools/MCP").
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Terminal Font Size</div>
-        <div class="settings-control">
-          <select id="terminal-font-size" class="settings-select">
-            <option value="small">Small</option>
-            <option value="medium" selected>Medium</option>
-            <option value="large">Large</option>
-          </select>
+        
+        <div class="settings-field">
+          <div class="settings-field-label">Terminal Font Size</div>
+          <div class="settings-field-control">
+            <select id="terminal-font-size" class="settings-select">
+              <option value="small">Small</option>
+              <option value="medium" selected>Medium</option>
+              <option value="large">Large</option>
+            </select>
+          </div>
         </div>
-      </div>
-    </div>
-  </div>
-  
-      </div>
-    </div>
-    
-    <!-- Terminal Tab -->
-    <div id="terminal-panel" class="settings-panel">
-      <div class="settings-section">
-    <h3 class="settings-section__title">Terminal Settings</h3>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Terminal Mode</div>
-        <div class="settings-control">
-          <select id="terminal-mode-select" class="settings-select">
-            <option value="advanced">Advanced Terminal (Terma)</option>
-            <option value="simple">Simple Terminal</option>
-          </select>
-        </div>
-      </div>
-      <div class="settings-description">
-        Choose between the advanced Terma terminal or a simple terminal interface.
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Font Size</div>
-        <div class="settings-control">
-          <input type="range" id="terminal-font-size-slider" class="settings-slider" min="8" max="24" value="14">
-          <span id="terminal-font-size-value" class="settings-slider-value">14px</span>
-        </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Font Family</div>
-        <div class="settings-control">
-          <select id="terminal-font-family" class="settings-select">
-            <option value="'Courier New', monospace">Courier New</option>
-            <option value="'Source Code Pro', monospace">Source Code Pro</option>
-            <option value="'Fira Code', monospace">Fira Code</option>
-            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Theme</div>
-        <div class="settings-control">
-          <select id="terminal-theme" class="settings-select">
-            <option value="default">Default</option>
-            <option value="light">Light</option>
-            <option value="dark">Dark</option>
-            <option value="monokai">Monokai</option>
-            <option value="solarized">Solarized</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Cursor Style</div>
-        <div class="settings-control">
-          <select id="terminal-cursor-style" class="settings-select">
-            <option value="block">Block</option>
-            <option value="bar">Bar</option>
-            <option value="underline">Underline</option>
-          </select>
-        </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Cursor Blink</div>
-        <div class="settings-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="terminal-cursor-blink" checked>
-            <span class="settings-toggle__slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Enable Scrollback</div>
-        <div class="settings-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="terminal-scrollback" checked>
-            <span class="settings-toggle__slider"></span>
-          </label>
-        </div>
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Scrollback Lines</div>
-        <div class="settings-control">
-          <input type="number" id="terminal-scrollback-lines" class="settings-input" min="100" max="10000" value="1000">
-        </div>
-      </div>
-      <div class="settings-description">
-        Number of lines to keep in terminal history.
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Inherit OS Terminal Settings</div>
-        <div class="settings-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="terminal-inherit-os">
-            <span class="settings-toggle__slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="settings-description">
-        When enabled, try to use system terminal settings (when available).
-      </div>
-    </div>
-  </div>
-  
-      </div>
-    </div>
-    
-    <!-- Chat Tab -->
-    <div id="chat-panel" class="settings-panel">
-      <div class="settings-section">
-    <h3 class="settings-section__title">Chat Settings</h3>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Save Chat History</div>
-        <div class="settings-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="chat-history-toggle" checked>
-            <span class="settings-toggle__slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="settings-description">
-        When enabled, your chat conversations will be saved between sessions.
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Max History Entries</div>
-        <div class="settings-control">
-          <select id="chat-history-limit" class="settings-select">
-            <option value="20">20 messages</option>
-            <option value="50" selected>50 messages</option>
-            <option value="100">100 messages</option>
-            <option value="200">200 messages</option>
-          </select>
-        </div>
-      </div>
-      <div class="settings-description">
-        Maximum number of messages to keep in history per chat.
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Clear All Chat History</div>
-        <div class="settings-control">
-          <button class="settings-button settings-button--danger" id="clear-chat-history">
-            Clear History
-          </button>
-        </div>
-      </div>
-      <div class="settings-description settings-description--warning">
-        Warning: This will permanently delete all saved chat conversations.
-      </div>
-    </div>
-  </div>
-  
-      </div>
-    </div>
-    
-    <!-- Integration Tab -->
-    <div id="integration-panel" class="settings-panel">
-      <div class="settings-section">
-    <h3 class="settings-section__title">Hermes Integration</h3>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Register Terminals with Hermes</div>
-        <div class="settings-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="hermes-integration-toggle" checked>
-            <span class="settings-toggle__slider"></span>
-          </label>
-        </div>
-      </div>
-      <div class="settings-description">
-        When enabled, all chat terminals will register with Hermes message bus for AI communication.
-      </div>
-    </div>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Default Message Route</div>
-        <div class="settings-control">
-          <select id="default-message-route" class="settings-select">
-            <option value="direct">Direct (one-to-one)</option>
-            <option value="team" selected>Team (relevant LLMs)</option>
-            <option value="broadcast">Broadcast (all LLMs)</option>
-          </select>
-        </div>
-      </div>
-      <div class="settings-description">
-        Default routing behavior for messages without explicit targets.
-      </div>
-    </div>
-  </div>
-  
-      </div>
-    </div>
-    
-    <!-- System Tab -->
-    <div id="system-panel" class="settings-panel">
-      <div class="settings-section">
-    <h3 class="settings-section__title">System</h3>
-    
-    <div class="settings-group">
-      <div class="settings-row">
-        <div class="settings-label">Reset All Settings</div>
-        <div class="settings-control">
-          <button class="settings-button settings-button--danger" id="reset-all-settings">
-            Reset to Defaults
-          </button>
-        </div>
-      </div>
-      <div class="settings-description settings-description--warning">
-        Warning: This will reset all settings to their default values.
-      </div>
-    </div>
       </div>
     </div>
   </div>
@@ -490,7 +257,7 @@ window.settings_resetAllSettings = function() {
         padding: 10px 16px;
         background-color: var(--bg-secondary, #252535);
         border-bottom: 1px solid var(--border-color, #444444);
-        height: 46px;
+        height: 46px; /* Match Athena header height */
     }
     
     .settings-title-container {
@@ -522,9 +289,9 @@ window.settings_resetAllSettings = function() {
         justify-content: space-between;
         align-items: center;
         padding: 6px 16px;
-        background-color: var(--bg-secondary, #252535);
+        background-color: var(--bg-secondary, #252535); /* Match Athena menu bar */
         border-bottom: 1px solid var(--border-color, #444444);
-        height: 46px;
+        height: 46px; /* Match Athena menu bar height */
     }
     
     .settings-tabs {
@@ -550,32 +317,413 @@ window.settings_resetAllSettings = function() {
     }
     
     .settings-tab--active {
-        border-bottom-color: var(--color-primary, #10A283);
+        border-bottom-color: var(--color-primary, #10A283); /* Teal color for Settings */
         font-weight: 500;
+    }
+    
+    .settings-actions {
+        display: flex;
+        gap: 8px;
     }
     
     /* Content Area */
     .settings-content {
         flex: 1;
         overflow: auto;
-        position: relative;
+        padding: 20px;
     }
     
     .settings-panel {
         display: none;
-        padding: 16px;
+        padding: 0;
+        height: 100%;
     }
     
     .settings-panel--active {
         display: block;
     }
     
-    /* General styles */
-    .settings-section {
-        background-color: var(--bg-secondary, #252535);
-        border-radius: 8px;
+    /* Form styles */
+    .settings-form {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .settings-field {
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .settings-field-label {
+        min-width: 180px;
+        padding-top: 2px;
+        font-weight: 500;
+        color: #10A283; /* Teal color for labels */
+        line-height: 36px; /* Match the height of input fields */
+    }
+    
+    .settings-field-control {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .settings-select,
+    .settings-input {
+        width: 100%;
+        min-width: 350px; /* At least twice as wide as before */
+        padding: 8px 12px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid #66BB6A; /* Mint color border */
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+        font-size: 14px;
+    }
+    
+    .settings-field-description {
+        font-size: 0.9em;
+        color: var(--text-secondary, #f0f0f0); /* White for descriptions */
+        margin-top: 4px;
+    }
+    
+    /* Theme mode selector */
+    .settings-theme-mode {
+        display: flex;
+        gap: 12px;
+    }
+    
+    .settings-theme-mode__button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: var(--bg-tertiary, #333345);
         border: 1px solid var(--border-color, #444444);
-        margin-bottom: 24px;
-        overflow: hidden;
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+    }
+    
+    .settings-theme-mode__button--active {
+        background-color: var(--color-primary, #10A283); /* Teal accent */
+        color: white;
+        border-color: var(--color-primary, #10A283);
+    }
+    
+    /* Theme color selector */
+    .settings-theme-color {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    
+    .settings-theme-color__button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+    }
+    
+    .settings-theme-color__button--active {
+        background-color: var(--bg-hover, #3a3a4a);
+        border-color: var(--color, #007bff);
+    }
+    
+    .settings-theme-color__dot {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background-color: var(--color);
+    }
+    
+    /* Toggle switch */
+    .settings-toggle {
+        display: inline-flex;
+        position: relative;
+        width: 44px;
+        height: 22px;
+    }
+    
+    .settings-toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .settings-toggle__slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        transition: .4s;
+        border-radius: 22px;
+    }
+    
+    .settings-toggle__slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 2px;
+        bottom: 2px;
+        background-color: var(--text-primary, #f0f0f0);
+        transition: .4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .settings-toggle__slider {
+        background-color: var(--color-primary, #10A283); /* Teal accent */
+        border-color: var(--color-primary, #10A283);
+    }
+    
+    input:checked + .settings-toggle__slider:before {
+        transform: translateX(22px);
+    }
+    
+    /* Button styles */
+    .settings-button {
+        padding: 6px 12px;
+        background-color: var(--bg-tertiary, #333345);
+        border: 1px solid var(--border-color, #444444);
+        border-radius: 4px;
+        color: var(--text-primary, #f0f0f0);
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.2s ease;
+    }
+    
+    .settings-button:hover {
+        background-color: var(--bg-hover, #3a3a4a);
+    }
+    
+    .settings-button--primary {
+        background-color: var(--color-primary, #10A283); /* Teal accent */
+        color: white;
+        border-color: var(--color-primary, #10A283);
+    }
+    
+    .settings-button--primary:hover {
+        background-color: #0A8C6F; /* Darker teal */
+    }
+    
+    .settings-button--danger {
+        background-color: #d32f2f;
+        color: white;
+        border-color: #d32f2f;
+    }
+    
+    /* Custom color picker */
+    .settings-custom-color {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .color-picker-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .settings-color-input {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 50px;
+        height: 36px;
+        padding: 0;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background-color: transparent;
+    }
+    
+    .settings-color-input::-webkit-color-swatch-wrapper {
+        padding: 0;
+    }
+    
+    .settings-color-input::-webkit-color-swatch {
+        border: none;
+        border-radius: 4px;
+    }
+    
+    .color-hex-display {
+        font-family: monospace;
+        font-size: 14px;
+        padding: 4px 8px;
+        background-color: var(--bg-tertiary, #333345);
+        border-radius: 4px;
+    }
+    
+    /* Image color picker */
+    .settings-image-color-picker {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    
+    .image-color-title {
+        font-weight: 500;
+        margin-bottom: 6px;
+    }
+    
+    .image-color-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    
+    .color-sample-image {
+        width: 200px;
+        height: auto;
+        max-height: 200px;
+        object-fit: contain;
+        border-radius: 4px;
+        cursor: crosshair;
+    }
+    
+    .color-canvas {
+        width: 40px;
+        height: 40px;
+        border-radius: 4px;
+        border: 1px solid var(--border-color, #444444);
+    }
+    
+    .image-color-instructions {
+        font-size: 0.85em;
+        color: var(--text-secondary, #aaaaaa);
+        margin-top: 4px;
     }
 </style>
+
+<script>
+    // Initialize color picker functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get color buttons and custom color picker elements
+        const colorButtons = document.querySelectorAll('.settings-theme-color__button');
+        const customColorArea = document.getElementById('custom-color-area');
+        const customColorInput = document.getElementById('custom-color-input');
+        const customColorHex = document.getElementById('custom-color-hex');
+        const colorSampleImage = document.getElementById('color-sample-image');
+        const colorCanvas = document.getElementById('color-canvas');
+        
+        // Initialize canvas context
+        const ctx = colorCanvas.getContext('2d', { willReadFrequently: true });
+        
+        // Add click event to all color buttons
+        colorButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                colorButtons.forEach(btn => btn.classList.remove('settings-theme-color__button--active'));
+                
+                // Add active class to clicked button
+                this.classList.add('settings-theme-color__button--active');
+                
+                // Show/hide custom color picker based on button clicked
+                if (this.getAttribute('data-color') === 'custom') {
+                    customColorArea.style.display = 'flex';
+                } else {
+                    customColorArea.style.display = 'none';
+                }
+            });
+        });
+        
+        // Update custom color hex value when color picker changes
+        if (customColorInput) {
+            customColorInput.addEventListener('input', function() {
+                const color = this.value.toUpperCase();
+                updateColorDisplay(color);
+            });
+        }
+        
+        // Initialize color canvas with initial color
+        if (colorCanvas && ctx && customColorInput) {
+            updateColorCanvas(customColorInput.value);
+        }
+        
+        // Enable color picking from image
+        if (colorSampleImage) {
+            colorSampleImage.addEventListener('click', function(e) {
+                // Get click position relative to image
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                // Create a temporary canvas to get the image data
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
+                tempCanvas.width = this.width;
+                tempCanvas.height = this.height;
+                tempCtx.drawImage(this, 0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Get pixel color
+                const pixelData = tempCtx.getImageData(x, y, 1, 1).data;
+                
+                // Convert RGB to hex
+                const hexColor = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+                
+                // Update color picker and display
+                customColorInput.value = hexColor;
+                updateColorDisplay(hexColor);
+                
+                // Make sure custom button is active
+                const customButton = document.querySelector('.settings-theme-color__button[data-color="custom"]');
+                if (customButton) {
+                    colorButtons.forEach(btn => btn.classList.remove('settings-theme-color__button--active'));
+                    customButton.classList.add('settings-theme-color__button--active');
+                    customColorArea.style.display = 'flex';
+                }
+            });
+        }
+        
+        // Helper function to convert rgb to hex
+        function rgbToHex(r, g, b) {
+            return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
+        }
+        
+        // Helper function to update color display
+        function updateColorDisplay(color) {
+            // Update hex display
+            if (customColorHex) {
+                customColorHex.textContent = color;
+            }
+            
+            // Update canvas
+            updateColorCanvas(color);
+            
+            // Update custom button color
+            const customButton = document.querySelector('.settings-theme-color__button[data-color="custom"]');
+            if (customButton) {
+                customButton.style.setProperty('--color', color);
+                const colorDot = customButton.querySelector('.settings-theme-color__dot');
+                if (colorDot) {
+                    colorDot.style.backgroundColor = color;
+                }
+            }
+        }
+        
+        // Helper function to update color canvas
+        function updateColorCanvas(color) {
+            if (ctx) {
+                ctx.fillStyle = color;
+                ctx.fillRect(0, 0, colorCanvas.width, colorCanvas.height);
+            }
+        }
+    });
+</script>
