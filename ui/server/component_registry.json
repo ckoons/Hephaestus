@@ -404,6 +404,26 @@
         "automation",
         "external_tools"
       ]
+    },
+    {
+      "id": "metis",
+      "name": "Metis",
+      "description": "Task management and visualization",
+      "icon": "📋",
+      "defaultMode": "html",
+      "capabilities": [
+        "task_management",
+        "dependency_visualization",
+        "complexity_analysis",
+        "prd_parsing",
+        "component_isolation",
+        "state_management"
+      ],
+      "componentPath": "components/metis/metis-component.html",
+      "scripts": [
+        "scripts/metis/metis-component.js"
+      ],
+      "usesShadowDom": false
     }
   ]
 }
