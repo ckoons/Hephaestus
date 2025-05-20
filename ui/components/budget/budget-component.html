@@ -1,4 +1,7 @@
 <!-- Budget Component - LLM Usage and Budget Management -->
+<!-- Load Chart.js dependency -->
+<script src="/scripts/chart.js"></script>
+
 <div class="budget">
     <!-- Component Header with Title -->
     <div class="budget__header">
@@ -27,7 +30,7 @@
                 <span class="budget__tab-label">Alerts</span>
             </div>
             <div class="budget__tab" data-tab="budgetchat" onclick="budget_switchTab('budgetchat'); return false;">
-                <span class="budget__tab-label">Chat</span>
+                <span class="budget__tab-label">Budget Chat</span>
             </div>
             <div class="budget__tab" data-tab="teamchat" onclick="budget_switchTab('teamchat'); return false;">
                 <span class="budget__tab-label">Team Chat</span>
@@ -1334,6 +1337,15 @@
         100% { transform: rotate(360deg); }
     }
 </style>
+
+<!-- Load Component Scripts -->
+<script src="/components/budget/scripts/budget-models.js"></script>
+<script src="/components/budget/scripts/budget-api-client.js"></script>
+<script src="/components/budget/scripts/budget-state-manager.js"></script>
+<script src="/components/budget/scripts/budget-ws-handler.js"></script>
+<script src="/components/budget/scripts/budget-chart-utils.js"></script>
+<script src="/components/budget/scripts/budget-cli-handler.js"></script>
+<script src="/components/budget/scripts/budget-component.js"></script>
 
 <script type="text/javascript">
 // SIMPLIFIED COMPONENT SCRIPT - FULLY SELF-CONTAINED

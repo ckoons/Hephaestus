@@ -16,6 +16,9 @@ window.HARMONIA_PORT = 8007;    // Default Harmonia port
 window.TELOS_PORT = 8008;       // Default Telos port
 window.SYNTHESIS_PORT = 8009;   // Default Synthesis port
 window.TEKTON_CORE_PORT = 8010; // Default Tekton Core port
+window.METIS_PORT = 8011;       // Default Metis port
+window.APOLLO_PORT = 8012;      // Default Apollo port
+window.BUDGET_PORT = 8013;      // Default Budget port
 
 // UI Display settings
 window.SHOW_GREEK_NAMES = true; // Whether to show Greek names for components
