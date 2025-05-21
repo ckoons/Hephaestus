@@ -62,6 +62,14 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             # Handle port configuration endpoint
             self.serve_port_configuration()
             return
+        elif self.path.startswith("/api/environment"):
+            # Handle environment variable endpoints
+            self.handle_environment_request("GET")
+            return
+        elif self.path.startswith("/api/settings"):
+            # Handle settings endpoints
+            self.handle_settings_request("GET")
+            return
         elif self.path.startswith("/api/"):
             self.proxy_api_request("GET")
             return
@@ -447,7 +455,15 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     def do_POST(self):
         """Handle POST requests"""
         # Check if this is an API request that needs to be proxied
-        if self.path.startswith("/api/"):
+        if self.path.startswith("/api/environment"):
+            # Handle environment variable endpoints
+            self.handle_environment_request("POST")
+            return
+        elif self.path.startswith("/api/settings"):
+            # Handle settings endpoints
+            self.handle_settings_request("POST")
+            return
+        elif self.path.startswith("/api/"):
             self.proxy_api_request("POST")
             return
         
@@ -607,6 +623,126 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         # Convert to JSON and send
         import json
         self.wfile.write(json.dumps(port_vars).encode('utf-8'))
+
+    def handle_environment_request(self, method):
+        """Handle environment variable API requests"""
+        try:
+            if method == "GET":
+                # Load environment using TektonEnvManager
+                sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared", "utils"))
+                
+                try:
+                    from env_manager import TektonEnvManager
+                    env_manager = TektonEnvManager()
+                    
+                    if self.path == "/api/environment":
+                        # Return all environment variables
+                        env_data = env_manager.load_environment()
+                    elif self.path == "/api/environment/tekton":
+                        # Return only Tekton-specific variables
+                        env_data = env_manager.get_tekton_variables()
+                    else:
+                        self.send_error(404, "Environment endpoint not found")
+                        return
+                    
+                    # Send response
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    
+                    import json
+                    self.wfile.write(json.dumps(env_data).encode('utf-8'))
+                    
+                except ImportError as e:
+                    logger.error(f"Could not import TektonEnvManager: {e}")
+                    # Fallback to simple environment reading
+                    env_data = dict(os.environ)
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    
+                    import json
+                    self.wfile.write(json.dumps(env_data).encode('utf-8'))
+                    
+            else:
+                self.send_error(405, "Method not allowed for environment endpoint")
+                
+        except Exception as e:
+            logger.error(f"Error handling environment request: {e}")
+            self.send_error(500, f"Environment request error: {str(e)}")
+            
+    def handle_settings_request(self, method):
+        """Handle settings API requests"""
+        try:
+            if method == "GET":
+                # Load current settings from environment
+                sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared", "utils"))
+                
+                try:
+                    from env_manager import TektonEnvManager
+                    env_manager = TektonEnvManager()
+                    tekton_vars = env_manager.get_tekton_variables()
+                    
+                    # Send response
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    
+                    import json
+                    self.wfile.write(json.dumps(tekton_vars).encode('utf-8'))
+                    
+                except ImportError as e:
+                    logger.error(f"Could not import TektonEnvManager: {e}")
+                    self.send_error(500, "TektonEnvManager not available")
+                    
+            elif method == "POST":
+                # Save settings to .env.tekton
+                try:
+                    # Read request body
+                    content_length = int(self.headers.get('Content-Length', 0))
+                    post_data = self.rfile.read(content_length)
+                    
+                    import json
+                    settings = json.loads(post_data.decode('utf-8'))
+                    
+                    # Load TektonEnvManager and save settings
+                    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared", "utils"))
+                    from env_manager import TektonEnvManager
+                    
+                    env_manager = TektonEnvManager()
+                    env_manager.save_tekton_settings(settings)
+                    
+                    # Send success response
+                    self.send_response(200)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Access-Control-Allow-Origin", "*")
+                    self.end_headers()
+                    
+                    response = {"status": "success", "message": "Settings saved successfully"}
+                    self.wfile.write(json.dumps(response).encode('utf-8'))
+                    
+                except ImportError as e:
+                    logger.error(f"Could not import TektonEnvManager: {e}")
+                    self.send_error(500, "TektonEnvManager not available")
+                except json.JSONDecodeError as e:
+                    logger.error(f"Invalid JSON in settings request: {e}")
+                    self.send_error(400, "Invalid JSON data")
+                except Exception as e:
+                    logger.error(f"Error saving settings: {e}")
+                    self.send_error(500, f"Settings save error: {str(e)}")
+                    
+            else:
+                self.send_error(405, "Method not allowed for settings endpoint")
+                
+        except Exception as e:
+            logger.error(f"Error handling settings request: {e}")
+            self.send_error(500, f"Settings request error: {str(e)}")
         
     def log_message(self, format, *args):
         """Override to use our logger"""
