@@ -58,7 +58,11 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             return
         
         # Check if this is an API request that needs to be proxied
-        if self.path.startswith("/api/config/ports"):
+        if self.path == "/health" or self.path == "/api/health":
+            # Handle health check endpoint
+            self.handle_health_check()
+            return
+        elif self.path.startswith("/api/config/ports"):
             # Handle port configuration endpoint
             self.serve_port_configuration()
             return
@@ -583,7 +587,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.send_response(200)
         self.send_header('Content-Type', 'application/json')
         self.end_headers()
-        
+
         response = {
             "status": "ok",
             "service": "hermes",
@@ -591,7 +595,37 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             "components": ["ergon", "engram", "athena"],
             "message": "Hermes is running (mock)"
         }
-        
+
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+
+    def handle_health_check(self):
+        """Handle health check endpoint for component status monitoring"""
+        import json
+
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header("Cache-Control", "no-cache, no-store, must-revalidate")
+        self.send_header("Pragma", "no-cache")
+        self.send_header("Expires", "0")
+        self.end_headers()
+
+        response = {
+            "status": "healthy",
+            "service": "hephaestus",
+            "version": "1.0.0",
+            "component_type": "ui_server",
+            "port": int(os.environ.get("HEPHAESTUS_PORT", 8080)),
+            "endpoints": [
+                "/health",
+                "/api/health",
+                "/api/config/ports",
+                "/api/environment",
+                "/api/settings",
+                "/ws"
+            ],
+            "message": "Hephaestus UI server is running"
+        }
+
         self.wfile.write(json.dumps(response).encode('utf-8'))
     
     def serve_port_configuration(self):
@@ -1014,6 +1048,32 @@ def main():
         directory = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     
     logger.info(f"Serving files from: {directory}")
+    
+    # Register with Hermes
+    try:
+        hermes_url = f"http://localhost:{os.environ.get('HERMES_PORT', 8001)}/api/register"
+        registration_data = {
+            "name": "hephaestus",
+            "version": "1.0.0",
+            "type": "ui",
+            "endpoint": f"http://localhost:{args.port}",
+            "capabilities": ["ui", "visualization", "websocket"],
+            "metadata": {"description": "Tekton UI and visualization component"}
+        }
+        
+        req = urllib.request.Request(
+            hermes_url,
+            data=json.dumps(registration_data).encode('utf-8'),
+            headers={'Content-Type': 'application/json'}
+        )
+        
+        with urllib.request.urlopen(req) as response:
+            if response.status == 200:
+                logger.info("Successfully registered with Hermes")
+            else:
+                logger.warning(f"Failed to register with Hermes: HTTP {response.status}")
+    except Exception as e:
+        logger.warning(f"Could not register with Hermes: {e}")
     
     # Initialize the WebSocket server (but don't run it separately)
     # In Single Port Architecture, the same port handles both HTTP and WebSocket
