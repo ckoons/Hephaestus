@@ -479,10 +479,10 @@ class TermaService extends window.tektonUI.componentUtils.BaseService {
     async loadLlmProviderModels() {
         try {
             // Try direct connection to LLM adapter first
-            const llmAdapterUrl = "http://localhost:8300/providers";
+            const rhetorUrl = "http://localhost:8003/api/providers";
             
             try {
-                const response = await fetch(llmAdapterUrl);
+                const response = await fetch(rhetorUrl);
                 if (response.ok) {
                     const data = await response.json();
                     return data;
@@ -514,10 +514,10 @@ class TermaService extends window.tektonUI.componentUtils.BaseService {
     async setLlmProviderModel(providerId, modelId) {
         try {
             // Try direct LLM adapter first
-            const llmAdapterUrl = "http://localhost:8300/provider";
+            const rhetorUrl = "http://localhost:8003/api/provider";
             
             try {
-                const directResponse = await fetch(llmAdapterUrl, {
+                const directResponse = await fetch(rhetorUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
