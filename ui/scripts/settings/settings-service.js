@@ -362,10 +362,11 @@ class SettingsService extends window.tektonUI.componentUtils.BaseService {
 }
 
 // Initialize the settings service when the script loads
-document.addEventListener('DOMContentLoaded', () => {
-    // Create and initialize the settings service if not already present
-    if (!window.tektonUI?.services?.settingsService) {
-        const settingsService = new SettingsService();
-        settingsService.init();
-    }
-});
+// Disabled: Using SettingsManager instead of SettingsService to avoid conflicts
+// document.addEventListener('DOMContentLoaded', () => {
+//     // Create and initialize the settings service if not already present
+//     if (!window.tektonUI?.services?.settingsService) {
+//         const settingsService = new SettingsService();
+//         settingsService.init();
+//     }
+// });

@@ -26,11 +26,14 @@ class UIManagerCore {
             console.log('Component utilities detected');
         }
         
-        // Make sure ergon text is correct regardless of cached versions
-        const ergonNavItem = document.querySelector('.nav-item[data-component="ergon"] .nav-label');
-        if (ergonNavItem) {
-            ergonNavItem.textContent = 'Ergon - Agents/Tools/MCP';
-        }
+        // Let settings manager handle all label updates
+        // Removed hard-coded label override
+        
+        // Listen for name changes from settings manager
+        window.addEventListener('tekton-names-changed', (event) => {
+            console.log('[UIManager] Received names changed event:', event.detail);
+            this._updateAllComponentLabels();
+        });
         
         // Set up component navigation
         const navItems = document.querySelectorAll('.nav-item');
@@ -137,9 +140,9 @@ class UIManagerCore {
             
             // Update the component title to reflect the active component
             const componentTitle = document.querySelector('.component-title');
-            const activeNavItem = document.querySelector(`.nav-item[data-component="${componentId}"]`);
-            if (activeNavItem && componentTitle) {
-                componentTitle.textContent = activeNavItem.querySelector('.nav-label').textContent;
+            if (componentTitle && window.settingsManager) {
+                // Use settings manager to get the correct label
+                componentTitle.textContent = window.settingsManager.getComponentLabel(componentId);
             }
             
             // Just update the active component state and return
@@ -196,9 +199,9 @@ class UIManagerCore {
         
         // Update component title
         const componentTitle = document.querySelector('.component-title');
-        const activeNavItem = document.querySelector(`.nav-item[data-component="${componentId}"]`);
-        if (activeNavItem && componentTitle) {
-            componentTitle.textContent = activeNavItem.querySelector('.nav-label').textContent;
+        if (componentTitle && window.settingsManager) {
+            // Use settings manager to get the correct label
+            componentTitle.textContent = window.settingsManager.getComponentLabel(componentId);
         }
         
         // Clear component controls
@@ -861,17 +864,22 @@ class UIManagerCore {
         
         // Define component health check endpoints
         const componentEndpoints = {
-            'hermes': '/api/health',
-            'engram': '/api/status',
-            'ergon': '/api/health',
-            'rhetor': '/api/status',
-            'athena': '/api/status',
-            'prometheus': '/api/status',
-            'harmonia': '/api/status',
-            'sophia': '/api/status',
-            'telos': '/api/status',
-            'codex': '/api/status',
-            'terma': '/api/status'
+            'hermes': '/health',
+            'engram': '/health',
+            'ergon': '/health',
+            'rhetor': '/health',
+            'athena': '/health',
+            'prometheus': '/health',
+            'harmonia': '/health',
+            'sophia': '/health',
+            'telos': '/health',
+            'codex': '/health',
+            'terma': '/health',
+            'metis': '/health',
+            'apollo': '/health',
+            'budget': '/health',
+            'synthesis': '/health',
+            'tekton': '/health'
         };
         
         // Get port configuration 
@@ -882,9 +890,17 @@ class UIManagerCore {
                 return {}; // Return empty object if fetch fails
             })
             .then(portConfig => {
+                // Convert port config keys to lowercase component IDs
+                const normalizedPorts = {};
+                Object.keys(portConfig).forEach(key => {
+                    // Convert HERMES_PORT to hermes, etc.
+                    const componentId = key.replace('_PORT', '').toLowerCase();
+                    normalizedPorts[componentId] = portConfig[key];
+                });
+                
                 // Setup periodic health checks for each component
                 Object.keys(componentEndpoints).forEach(componentId => {
-                    const port = portConfig[componentId] || this._getDefaultPort(componentId);
+                    const port = normalizedPorts[componentId] || this._getDefaultPort(componentId);
                     if (port) {
                         this._checkComponentAvailability(componentId, port, componentEndpoints[componentId]);
                         
@@ -958,17 +974,22 @@ class UIManagerCore {
      */
     _getDefaultPort(componentId) {
         const defaultPorts = {
-            'hermes': 8000,
-            'engram': 8001,
+            'engram': 8000,
+            'hermes': 8001,
             'ergon': 8002,
             'rhetor': 8003,
-            'athena': 8004,
-            'prometheus': 8005,
-            'harmonia': 8006,
-            'sophia': 8007,
+            'terma': 8004,
+            'athena': 8005,
+            'prometheus': 8006,
+            'harmonia': 8007,
             'telos': 8008,
-            'codex': 8009,
-            'terma': 8010
+            'synthesis': 8009,
+            'tekton': 8010,
+            'metis': 8011,
+            'apollo': 8012,
+            'budget': 8013,
+            'sophia': 8014,
+            'codex': 8015
         };
         
         return defaultPorts[componentId] || null;
@@ -1205,6 +1226,45 @@ class UIManagerCore {
       loaded: true,
       usesTerminal: false,
     };
+  }
+  
+  /**
+   * Update all component labels when naming convention changes
+   */
+  _updateAllComponentLabels() {
+    if (!window.settingsManager) return;
+    
+    // Update navigation labels
+    document.querySelectorAll('.nav-item').forEach(item => {
+      const component = item.getAttribute('data-component');
+      const label = item.querySelector('.nav-label');
+      if (component && label) {
+        label.innerHTML = window.settingsManager.getComponentLabel(component);
+      }
+    });
+    
+    // Update active component header
+    const activeNavItem = document.querySelector('.nav-item.active');
+    if (activeNavItem) {
+      const componentId = activeNavItem.getAttribute('data-component');
+      const componentTitle = document.querySelector('.component-title');
+      if (componentTitle && componentId) {
+        componentTitle.textContent = window.settingsManager.getComponentLabel(componentId);
+      }
+    }
+    
+    // Update any component-specific headers
+    document.querySelectorAll('[id$="-container"] .component-title').forEach(title => {
+      const container = title.closest('[id$="-container"]');
+      if (container) {
+        const componentId = container.id.replace('-container', '');
+        if (componentId) {
+          title.textContent = window.settingsManager.getComponentLabel(componentId);
+        }
+      }
+    });
+    
+    console.log('[UIManager] Updated all component labels');
   }
 }
 

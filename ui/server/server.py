@@ -643,7 +643,12 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             "HARMONIA_PORT": int(os.environ.get("HARMONIA_PORT", 8007)),
             "TELOS_PORT": int(os.environ.get("TELOS_PORT", 8008)),
             "SYNTHESIS_PORT": int(os.environ.get("SYNTHESIS_PORT", 8009)),
-            "TEKTON_CORE_PORT": int(os.environ.get("TEKTON_CORE_PORT", 8010))
+            "TEKTON_CORE_PORT": int(os.environ.get("TEKTON_CORE_PORT", 8010)),
+            "METIS_PORT": int(os.environ.get("METIS_PORT", 8011)),
+            "APOLLO_PORT": int(os.environ.get("APOLLO_PORT", 8012)),
+            "BUDGET_PORT": int(os.environ.get("BUDGET_PORT", 8013)),
+            "SOPHIA_PORT": int(os.environ.get("SOPHIA_PORT", 8014)),
+            "CODEX_PORT": int(os.environ.get("CODEX_PORT", 8015))
         }
         
         # Send port configuration

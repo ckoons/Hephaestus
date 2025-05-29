@@ -20,8 +20,8 @@ class SettingsEnvBridge {
         try {
             console.log('[SettingsEnvBridge] Initializing...');
             
-            // Load environment variables and sync with SettingsManager
-            await this.syncFromEnvironment();
+            // Don't sync from environment on init - let SettingsManager control this
+            // await this.syncFromEnvironment();
             
             // Hook into SettingsManager save events
             this.hookSettingsManager();

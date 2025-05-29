@@ -133,6 +133,16 @@ class SettingsManager {
             }
         });
 
+        // Update the header if a component is active
+        const activeNavItem = document.querySelector('.nav-item.active');
+        if (activeNavItem) {
+            const componentId = activeNavItem.getAttribute('data-component');
+            const componentTitle = document.querySelector('.component-title');
+            if (componentTitle && componentId) {
+                componentTitle.textContent = this.getComponentLabel(componentId);
+            }
+        }
+
         // Update chat tab names
         document.querySelectorAll('.tab-button').forEach(tab => {
             const context = tab.getAttribute('data-tab');
@@ -141,7 +151,24 @@ class SettingsManager {
             }
         });
         
+        // Update any component-specific headers that might exist within component containers
+        document.querySelectorAll('[id$="-container"] .component-title').forEach(title => {
+            const container = title.closest('[id$="-container"]');
+            if (container) {
+                const componentId = container.id.replace('-container', '');
+                if (componentId) {
+                    title.textContent = this.getComponentLabel(componentId);
+                }
+            }
+        });
+        
         console.log(`Applied naming convention: ${this.settings.showGreekNames ? 'Greek names' : 'Function names'}`);
+        
+        // Dispatch a custom event to notify UI Manager to update its labels
+        window.dispatchEvent(new CustomEvent('tekton-names-changed', {
+            detail: { showGreekNames: this.settings.showGreekNames }
+        }));
+        
         return this;
     }
 
@@ -202,7 +229,7 @@ class SettingsManager {
                 case 'codex': return 'Codex - Coding';
                 case 'tekton': return 'Tekton - Projects';
                 case 'terma': return 'Terma - Terminal';
-                case 'budget': return 'Budget';
+                case 'budget': return 'Budget - LLM Cost';
                 case 'profile': return 'Profile';
                 case 'settings': return 'Settings';
                 default: return component;
@@ -225,7 +252,7 @@ class SettingsManager {
                 case 'codex': return 'Coding';
                 case 'tekton': return 'Projects';
                 case 'terma': return 'Terminal';
-                case 'budget': return 'Budget';
+                case 'budget': return 'LLM Cost';
                 case 'profile': return 'Profile';
                 case 'settings': return 'Settings';
                 default: return component;
@@ -241,16 +268,16 @@ class SettingsManager {
     getChatTabLabel(context) {
         if (this.settings.showGreekNames) {
             switch(context) {
-                case 'ergon': return 'Ergon';
-                case 'awt-team': return 'Symposium';
-                case 'agora': return 'Agora';
+                case 'ergon': return 'Ergon - Tools';
+                case 'awt-team': return 'Team Chat';
+                case 'agora': return 'Team Chat';
                 default: return context;
             }
         } else {
             switch(context) {
-                case 'ergon': return 'Tool Chat';
+                case 'ergon': return 'Tools';
                 case 'awt-team': return 'Team Chat';
-                case 'agora': return 'All LLMs Chat';
+                case 'agora': return 'Team Chat';
                 default: return context;
             }
         }
@@ -267,9 +294,9 @@ class SettingsManager {
                 case 'ergon': 
                     return 'Welcome to Ergon AI Assistant. I specialize in agent management, workflow automation, and tool configuration.';
                 case 'awt-team': 
-                    return 'Welcome to the Symposium. This is where multiple AI specialists collaborate on complex problems.';
+                    return 'Welcome to Team Chat. This is where multiple AI specialists collaborate on complex problems.';
                 case 'agora': 
-                    return 'Welcome to the Agora, a central forum for all AI assistants to collaborate on solving complex problems.';
+                    return 'Welcome to Team Chat. This is where multiple AI specialists collaborate on complex problems.';
                 default: 
                     return `Welcome to ${context.charAt(0).toUpperCase() + context.slice(1)}`;
             }
@@ -278,9 +305,9 @@ class SettingsManager {
                 case 'ergon': 
                     return 'Welcome to the Tool Chat. I can help you with agents, workflows, and tool configuration.';
                 case 'awt-team': 
-                    return 'Welcome to the Team Chat. Here, multiple AI specialists collaborate on complex problems.';
+                    return 'Welcome to Team Chat. Here, multiple AI specialists collaborate on complex problems.';
                 case 'agora': 
-                    return 'Welcome to the All LLMs Chat. This is a central forum for all AI assistants to collaborate.';
+                    return 'Welcome to Team Chat. Here, multiple AI specialists collaborate on complex problems.';
                 default: 
                     return `Welcome to ${context.charAt(0).toUpperCase() + context.slice(1)}`;
             }
@@ -339,5 +366,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize after UI elements are available
     setTimeout(() => {
         window.settingsManager.init();
+        
+        // Re-apply names after components may have loaded
+        setTimeout(() => {
+            window.settingsManager.applyNames();
+        }, 1000);
     }, 500);
 });
