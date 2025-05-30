@@ -193,6 +193,14 @@ class MinimalLoader {
       }
 
       console.log(`MinimalLoader: ${componentId} loaded successfully`);
+      
+      // Update component headers based on current naming convention
+      if (window.settingsManager && window.settingsManager.updateComponentHeaders) {
+        setTimeout(() => {
+          window.settingsManager.updateComponentHeaders();
+          console.log(`MinimalLoader: Updated component headers for ${componentId}`);
+        }, 100);
+      }
     } catch (error) {
       console.error(`MinimalLoader: Error loading ${componentId}:`, error);
       container.innerHTML = `

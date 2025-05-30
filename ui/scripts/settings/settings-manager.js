@@ -164,6 +164,14 @@ class SettingsManager {
         
         console.log(`Applied naming convention: ${this.settings.showGreekNames ? 'Greek names' : 'Function names'}`);
         
+        // Update component headers inside loaded components
+        this.updateComponentHeaders();
+        
+        // Also update again after a delay to catch dynamically loaded components
+        setTimeout(() => {
+            this.updateComponentHeaders();
+        }, 500);
+        
         // Dispatch a custom event to notify UI Manager to update its labels
         window.dispatchEvent(new CustomEvent('tekton-names-changed', {
             detail: { showGreekNames: this.settings.showGreekNames }
@@ -203,6 +211,71 @@ class SettingsManager {
         this.save().applyNames();
         this.dispatchEvent('namesChanged', this.settings);
         return this;
+    }
+
+    /**
+     * Update component headers inside loaded components
+     */
+    updateComponentHeaders() {
+        const headerConfigs = {
+            'athena': { main: 'Athena', sub: this.settings.showGreekNames ? 'Knowledge Graph' : 'Knowledge' },
+            'ergon': { main: this.settings.showGreekNames ? 'Ergon' : '', sub: 'Agents/Tools/MCP' },
+            'prometheus': { main: this.settings.showGreekNames ? 'Prometheus' : '', sub: this.settings.showGreekNames ? 'Planning System' : 'Planning' },
+            'telos': { main: this.settings.showGreekNames ? 'Telos' : '', sub: this.settings.showGreekNames ? 'Requirements Manager' : 'Requirements' },
+            'metis': { main: this.settings.showGreekNames ? 'Metis' : '', sub: this.settings.showGreekNames ? 'Task Management' : 'Workflows' },
+            'harmonia': { main: this.settings.showGreekNames ? 'Harmonia' : '', sub: this.settings.showGreekNames ? 'Workflow Orchestration' : 'Orchestration' },
+            'synthesis': { main: this.settings.showGreekNames ? 'Synthesis' : '', sub: this.settings.showGreekNames ? 'Execution Engine' : 'Integration' },
+            'sophia': { main: this.settings.showGreekNames ? 'Sophia' : '', sub: this.settings.showGreekNames ? 'Intelligence Measurement' : 'Learning' },
+            'engram': { main: this.settings.showGreekNames ? 'Engram' : '', sub: this.settings.showGreekNames ? 'Memory System' : 'Memory' },
+            'apollo': { main: this.settings.showGreekNames ? 'Apollo' : '', sub: 'Attention/Prediction' },
+            'rhetor': { main: this.settings.showGreekNames ? 'Rhetor' : '', sub: 'LLM/Prompt/Context' },
+            'hermes': { main: this.settings.showGreekNames ? 'Hermes' : '', sub: 'Messages/Data' },
+            'codex': { main: this.settings.showGreekNames ? 'Codex' : '', sub: 'Coding' },
+            'tekton': { main: this.settings.showGreekNames ? 'Tekton' : '', sub: this.settings.showGreekNames ? 'Project Management' : 'Projects' },
+            'terma': { main: this.settings.showGreekNames ? 'Terma' : '', sub: 'Terminal' },
+            'budget': { main: this.settings.showGreekNames ? 'Budget' : '', sub: this.settings.showGreekNames ? 'LLM Cost Management' : 'LLM Cost' },
+            'profile': { main: 'Profile', sub: this.settings.showGreekNames ? 'User Information' : '' },
+            'settings': { main: 'Settings', sub: this.settings.showGreekNames ? 'Tekton Configuration' : '' }
+        };
+        
+        // Update each component's header if it exists
+        Object.keys(headerConfigs).forEach(componentId => {
+            const config = headerConfigs[componentId];
+            
+            // Try multiple selectors to find the elements
+            let mainElement = document.querySelector(`.${componentId}__title-main`);
+            let subElement = document.querySelector(`.${componentId}__title-sub`);
+            
+            // Special case for Apollo which has an ID
+            if (componentId === 'apollo' && !mainElement) {
+                mainElement = document.getElementById('apollo-title-text');
+            }
+            
+            // Also try within component containers
+            const container = document.querySelector(`.${componentId}`);
+            if (container && !mainElement) {
+                mainElement = container.querySelector('[class*="title-main"]');
+            }
+            if (container && !subElement) {
+                subElement = container.querySelector('[class*="title-sub"]');
+            }
+            
+            if (mainElement) {
+                if (config.main) {
+                    mainElement.textContent = config.main;
+                    mainElement.style.display = 'inline';
+                } else {
+                    // For functional names only, hide the Greek name part
+                    mainElement.style.display = 'none';
+                }
+            }
+            
+            if (subElement) {
+                subElement.textContent = config.sub;
+            }
+        });
+        
+        console.log('Updated component headers for naming convention:', this.settings.showGreekNames ? 'Greek names' : 'Function names');
     }
 
     /**
@@ -372,4 +445,58 @@ document.addEventListener('DOMContentLoaded', () => {
             window.settingsManager.applyNames();
         }, 1000);
     }, 500);
+    
+    // Set up MutationObserver to watch for dynamically loaded components
+    const observer = new MutationObserver((mutations) => {
+        // Check if any component headers were added
+        let componentHeadersAdded = false;
+        
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'childList') {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if this node or its children contain component headers
+                        if (node.classList && (
+                            node.classList.contains('harmonia') ||
+                            node.classList.contains('apollo') ||
+                            node.classList.contains('athena') ||
+                            node.classList.contains('ergon') ||
+                            node.classList.contains('rhetor') ||
+                            node.classList.contains('metis') ||
+                            node.querySelector && (
+                                node.querySelector('[class*="__title-main"]') ||
+                                node.querySelector('[class*="__title-sub"]')
+                            )
+                        )) {
+                            componentHeadersAdded = true;
+                        }
+                    }
+                });
+            }
+        });
+        
+        // If component headers were added, update them
+        if (componentHeadersAdded && window.settingsManager) {
+            setTimeout(() => {
+                window.settingsManager.updateComponentHeaders();
+                console.log('SettingsManager: Updated component headers after DOM change');
+            }, 100);
+        }
+    });
+    
+    // Start observing the html-panel for changes
+    const htmlPanel = document.getElementById('html-panel');
+    if (htmlPanel) {
+        observer.observe(htmlPanel, {
+            childList: true,
+            subtree: true
+        });
+    }
 });
+
+// Global function to update component headers (can be called from anywhere)
+window.updateComponentHeaders = function() {
+    if (window.settingsManager && window.settingsManager.updateComponentHeaders) {
+        window.settingsManager.updateComponentHeaders();
+    }
+};
