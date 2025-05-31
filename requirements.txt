@@ -1,0 +1,7 @@
+# Include shared requirements
+-r ../shared/requirements/base.txt
+-r ../shared/requirements/web.txt
+
+# Component-specific dependencies
+# websockets is included in web.txt
+# All other dependencies (asyncio, json, logging, etc.) are part of Python standard library
