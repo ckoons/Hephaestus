@@ -485,22 +485,16 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             if self.path.startswith("/api/terminal/"):
                 # Convert /api/terminal/* to /terminal/* for Ergon API
                 target_path = self.path.replace("/api/terminal/", "/terminal/")
-            # Hermes registration endpoints
-            elif self.path.startswith("/api/register"):
-                # Direct to Hermes registration endpoint when available
-                # For now, we'll mock this
-                self.mock_registration_endpoint()
-                return
-            # General message endpoints
-            elif self.path.startswith("/api/message"):
-                # Direct to message bus when available
-                # For now, we'll mock this
-                self.mock_message_endpoint()
-                return
-            # Status endpoint
-            elif self.path == "/api/status":
-                self.mock_status_endpoint()
-                return
+            # Hermes endpoints - proxy to actual Hermes service
+            elif self.path.startswith("/api/register") or \
+                 self.path.startswith("/api/message") or \
+                 self.path == "/api/status" or \
+                 self.path.startswith("/api/query") or \
+                 self.path.startswith("/api/components"):
+                # Proxy to Hermes
+                target_host = "localhost"
+                target_port = int(os.environ.get("HERMES_PORT", 8001))
+                target_path = self.path  # Keep the same path
             else:
                 # Unknown API endpoint
                 self.send_error(404, f"API endpoint not supported: {self.path}")
@@ -540,63 +534,6 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             logger.error(f"Error proxying request: {e}")
             self.send_error(500, f"Error proxying request: {str(e)}")
     
-    def mock_registration_endpoint(self):
-        """Mock Hermes registration endpoint for development"""
-        content_length = int(self.headers.get('Content-Length', 0))
-        if content_length > 0:
-            body = self.rfile.read(content_length).decode('utf-8')
-            request = json.loads(body)
-            logger.info(f"Mock registration: {request}")
-        
-        # Return success response
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-        
-        response = {
-            "status": "success",
-            "registered": True,
-            "message": "Component registered successfully (mock)"
-        }
-        
-        self.wfile.write(json.dumps(response).encode('utf-8'))
-    
-    def mock_message_endpoint(self):
-        """Mock Hermes message endpoint for development"""
-        content_length = int(self.headers.get('Content-Length', 0))
-        if content_length > 0:
-            body = self.rfile.read(content_length).decode('utf-8')
-            message = json.loads(body)
-            logger.info(f"Mock message received: {message}")
-        
-        # Return success response
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-        
-        response = {
-            "status": "success",
-            "delivered": True,
-            "message": "Message delivered successfully (mock)"
-        }
-        
-        self.wfile.write(json.dumps(response).encode('utf-8'))
-    
-    def mock_status_endpoint(self):
-        """Mock Hermes status endpoint for development"""
-        self.send_response(200)
-        self.send_header('Content-Type', 'application/json')
-        self.end_headers()
-
-        response = {
-            "status": "ok",
-            "service": "hermes",
-            "version": "0.1.0",
-            "components": ["ergon", "engram", "athena"],
-            "message": "Hermes is running (mock)"
-        }
-
-        self.wfile.write(json.dumps(response).encode('utf-8'))
 
     def handle_health_check(self):
         """Handle health check endpoint for component status monitoring"""
@@ -1054,7 +991,8 @@ def main():
     
     logger.info(f"Serving files from: {directory}")
     
-    # Register with Hermes
+    # Register with Hermes and start heartbeat
+    heartbeat_client = None
     try:
         hermes_url = f"http://localhost:{os.environ.get('HERMES_PORT', 8001)}/api/register"
         registration_data = {
@@ -1074,7 +1012,26 @@ def main():
         
         with urllib.request.urlopen(req) as response:
             if response.status == 200:
+                # Parse registration response
+                response_data = json.loads(response.read().decode('utf-8'))
                 logger.info("Successfully registered with Hermes")
+                
+                # Extract component ID and token from response
+                component_id = response_data.get('component_id', 'hephaestus')
+                token = response_data.get('token')
+                
+                if token:
+                    # Import and start heartbeat client
+                    from heartbeat_client import HeartbeatClient
+                    heartbeat_client = HeartbeatClient(
+                        component_id=component_id,
+                        registration_token=token,
+                        interval=30  # Send heartbeat every 30 seconds
+                    )
+                    heartbeat_client.start()
+                    logger.info("Heartbeat client started")
+                else:
+                    logger.warning("No registration token received from Hermes")
             else:
                 logger.warning(f"Failed to register with Hermes: HTTP {response.status}")
     except Exception as e:
@@ -1085,7 +1042,13 @@ def main():
     run_websocket_server(args.port)
     
     # Start HTTP server in the main thread (will also handle WebSocket upgrades)
-    run_http_server(directory, args.port)
+    try:
+        run_http_server(directory, args.port)
+    finally:
+        # Stop heartbeat client on shutdown
+        if heartbeat_client:
+            logger.info("Stopping heartbeat client...")
+            heartbeat_client.stop()
 
 if __name__ == "__main__":
     main()
