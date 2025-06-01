@@ -605,7 +605,6 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         try:
             if method == "GET":
                 # Load environment using TektonEnvManager
-                sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared", "utils"))
                 
                 try:
                     from env_manager import TektonEnvManager
@@ -656,7 +655,6 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         try:
             if method == "GET":
                 # Load current settings from environment
-                sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared", "utils"))
                 
                 try:
                     from env_manager import TektonEnvManager
@@ -688,7 +686,6 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
                     settings = json.loads(post_data.decode('utf-8'))
                     
                     # Load TektonEnvManager and save settings
-                    sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "shared", "utils"))
                     from env_manager import TektonEnvManager
                     
                     env_manager = TektonEnvManager()
