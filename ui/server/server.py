@@ -8,7 +8,6 @@ import os
 import sys
 import json
 import argparse
-import logging
 import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 import socketserver
@@ -22,22 +21,25 @@ from urllib.parse import urlparse
 import http.client
 import random
 
+# Add Tekton root to path if not already present
+tekton_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
+if tekton_root not in sys.path:
+    sys.path.insert(0, tekton_root)
+
+# Import shared utilities
+from shared.utils.logging_setup import setup_component_logging
+from shared.utils.env_config import get_component_config
+
 # Configure logging
-logging.basicConfig(
-    level=logging.DEBUG,  # Set to DEBUG level for more detailed logs
-    format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.StreamHandler(sys.stdout)
-    ]
-)
-logger = logging.getLogger(__name__)
+logger = setup_component_logging("hephaestus")
 
 class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     """Handler for serving the Tekton UI"""
     
     # Configuration for API proxying - using environment variables
     ERGON_API_HOST = "localhost"
-    ERGON_API_PORT = int(os.environ.get("ERGON_PORT", 8002))  # Ergon API port from environment
+    config = get_component_config()
+    ERGON_API_PORT = config.ergon.port if hasattr(config, 'ergon') else int(os.environ.get("ERGON_PORT", 8002))
     
     # Add class variable to store the WebSocket server instance
     websocket_server = None
@@ -493,7 +495,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
                  self.path.startswith("/api/components"):
                 # Proxy to Hermes
                 target_host = "localhost"
-                target_port = int(os.environ.get("HERMES_PORT", 8001))
+                target_port = self.config.hermes.port if hasattr(self.config, 'hermes') else int(os.environ.get("HERMES_PORT", 8001))
                 target_path = self.path  # Keep the same path
             else:
                 # Unknown API endpoint
@@ -546,12 +548,15 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Expires", "0")
         self.end_headers()
 
+        config = get_component_config()
+        port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT", 8080))
+        
         response = {
             "status": "healthy",
             "service": "hephaestus",
             "version": "1.0.0",
             "component_type": "ui_server",
-            "port": int(os.environ.get("HEPHAESTUS_PORT", 8080)),
+            "port": port,
             "endpoints": [
                 "/health",
                 "/api/health",
@@ -726,7 +731,9 @@ class WebSocketServer:
     
     def __init__(self, port=None):
         # Use the same port as HTTP server for Single Port Architecture
-        self.port = port or int(os.environ.get("HEPHAESTUS_PORT", 8080))
+        config = get_component_config()
+        default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT", 8080))
+        self.port = port or default_port
         self.clients = set()
         self.component_servers = {}
     
@@ -973,8 +980,11 @@ def run_http_server(directory, port):
 
 def main():
     """Main entry point"""
+    config = get_component_config()
+    default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT", 8080))
+    
     parser = argparse.ArgumentParser(description='Tekton UI Server')
-    parser.add_argument('--port', type=int, default=int(os.environ.get("HEPHAESTUS_PORT", 8080)), 
+    parser.add_argument('--port', type=int, default=default_port, 
                       help='HTTP/WebSocket Server port')
     parser.add_argument('--directory', type=str, default=None, help='Directory to serve')
     args = parser.parse_args()
@@ -991,7 +1001,8 @@ def main():
     # Register with Hermes and start heartbeat
     heartbeat_client = None
     try:
-        hermes_url = f"http://localhost:{os.environ.get('HERMES_PORT', 8001)}/api/register"
+        hermes_port = config.hermes.port if hasattr(config, 'hermes') else int(os.environ.get('HERMES_PORT', 8001))
+        hermes_url = f"http://localhost:{hermes_port}/api/register"
         registration_data = {
             "name": "hephaestus",
             "version": "1.0.0",
