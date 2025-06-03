@@ -26,8 +26,9 @@ export class MetisService {
   async initService() {
     try {
       const config = await getAppConfig();
-      this.apiUrl = config.metisApiUrl || 'http://localhost:8008/api/v1';
-      this.wsUrl = config.metisWsUrl || 'ws://localhost:8008/ws';
+      const metisPort = window.METIS_PORT || 8011;
+      this.apiUrl = config.metisApiUrl || `http://localhost:${metisPort}/api/v1`;
+      this.wsUrl = config.metisWsUrl || `ws://localhost:${metisPort}/ws`;
       console.log('Metis service initialized with API URL:', this.apiUrl);
     } catch (error) {
       console.error('Failed to initialize Metis service:', error);

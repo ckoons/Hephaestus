@@ -35,8 +35,8 @@ class ApolloService {
       return window.ENV.APOLLO_API_URL;
     }
     
-    // Use Single Port Architecture with standard port assignment
-    const port = '8001'; // Standard port for Apollo in the Single Port Architecture
+    // Use Single Port Architecture with dynamic port assignment
+    const port = window.APOLLO_PORT || 8012; // Dynamic port for Apollo in the Single Port Architecture
     return `http://${window.location.hostname}:${port}`;
   }
 

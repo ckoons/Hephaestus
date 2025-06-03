@@ -6,7 +6,8 @@
 class TektonService extends window.tektonUI.componentUtils.BaseService {
     constructor() {
         // Call base service with service name and default API endpoint
-        super('tektonService', 'http://localhost:8000/api');
+        const tektonCorePort = window.TEKTON_CORE_PORT || 8010;
+        super('tektonService', `http://localhost:${tektonCorePort}/api`);
         
         // System status and metrics
         this.systemStatus = {};

@@ -27,8 +27,9 @@ class SynthesisService {
             return window.ENV.SYNTHESIS_SERVICE_URL;
         }
         
-        // Default to localhost with standard port
-        return 'http://localhost:8005';
+        // Default to localhost with dynamic port from environment
+        const synthesisPort = window.SYNTHESIS_PORT || 8009;
+        return `http://localhost:${synthesisPort}`;
     }
     
     /**

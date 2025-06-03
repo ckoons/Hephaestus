@@ -18,8 +18,9 @@ class LLMAdapterClient {
      */
     constructor(options = {}) {
         // Get API URL from options, environment, or default
+        const rhetorPort = window.RHETOR_PORT || 8003;
         this.apiUrl = options.apiUrl || 
-                    (window.RHETOR_API_URL || 'http://localhost:8003');
+                    (window.RHETOR_API_URL || `http://localhost:${rhetorPort}`);
         
         // Add path if not already included
         if (!this.apiUrl.endsWith('/api/v1')) {

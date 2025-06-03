@@ -7,7 +7,8 @@
 class GitHubService extends window.tektonUI.componentUtils.BaseService {
     constructor() {
         // Call base service with service name and default API endpoint
-        super('githubService', 'http://localhost:8000/api/github');
+        const hermesPort = window.HERMES_PORT || 8001;
+        super('githubService', `http://localhost:${hermesPort}/api/github`);
         
         // GitHub data collections
         this.repositories = [];

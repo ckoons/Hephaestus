@@ -11,7 +11,8 @@ class PrometheusService {
         console.log(`${this.debugPrefix} Service constructed`);
         
         // Get API URL from environment or use default
-        this.apiUrl = window.ENV?.PROMETHEUS_URL || 'http://localhost:8006';
+        const prometheusPort = window.PROMETHEUS_PORT || 8006;
+        this.apiUrl = window.ENV?.PROMETHEUS_URL || `http://localhost:${prometheusPort}`;
         this.apiBaseUrl = `${this.apiUrl}/api`;
         
         // Get WebSocket URL for streaming responses

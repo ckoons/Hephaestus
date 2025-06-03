@@ -930,7 +930,8 @@
    */
   class BudgetService {
     constructor() {
-      this.apiUrl = 'http://localhost:8400/budget'; // Dedicated Budget API endpoint
+      const budgetPort = window.BUDGET_PORT || 8013;
+      this.apiUrl = `http://localhost:${budgetPort}/budget`; // Dedicated Budget API endpoint
       this.connected = false;
       
       // Register service globally

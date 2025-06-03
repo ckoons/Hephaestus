@@ -18,7 +18,8 @@ class TermaService extends window.tektonUI.componentUtils.BaseService {
      */
     constructor(options = {}) {
         // Initialize base service with name and API URL
-        super('termaService', options.serverUrl || 'http://localhost:8765');
+        const termaPort = window.TERMA_PORT || 8004;
+        super('termaService', options.serverUrl || `http://localhost:${termaPort}`);
         
         // Configure WebSocket URL (either provided or constructed)
         this.wsUrl = options.wsUrl || this._constructWebSocketUrl();
@@ -479,7 +480,8 @@ class TermaService extends window.tektonUI.componentUtils.BaseService {
     async loadLlmProviderModels() {
         try {
             // Try direct connection to LLM adapter first
-            const rhetorUrl = "http://localhost:8003/api/providers";
+            const rhetorPort = window.RHETOR_PORT || 8003;
+            const rhetorUrl = `http://localhost:${rhetorPort}/api/providers`;
             
             try {
                 const response = await fetch(rhetorUrl);
@@ -514,7 +516,8 @@ class TermaService extends window.tektonUI.componentUtils.BaseService {
     async setLlmProviderModel(providerId, modelId) {
         try {
             // Try direct LLM adapter first
-            const rhetorUrl = "http://localhost:8003/api/provider";
+            const rhetorPort = window.RHETOR_PORT || 8003;
+            const rhetorUrl = `http://localhost:${rhetorPort}/api/provider`;
             
             try {
                 const directResponse = await fetch(rhetorUrl, {
@@ -655,9 +658,10 @@ class TermaService extends window.tektonUI.componentUtils.BaseService {
         } catch (error) {
             console.error('Error constructing WebSocket URL:', error);
             
-            // Use a fallback WebSocket URL
+            // Use a fallback WebSocket URL with dynamic port
             const hostname = window.location.hostname || 'localhost';
-            return `ws://${hostname}:8767/ws`;
+            const termaPort = window.TERMA_PORT || 8004;
+            return `ws://${hostname}:${termaPort}/ws`;
         }
     }
     

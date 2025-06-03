@@ -4,7 +4,8 @@
  */
 class SophiaAnalyticsService {
     constructor() {
-        this.serviceUrl = window.env?.SOPHIA_API_URL || 'http://localhost:8007';
+        const sophiaPort = window.SOPHIA_PORT || 8014;
+        this.serviceUrl = window.env?.SOPHIA_API_URL || `http://localhost:${sophiaPort}`;
         this.metricTypes = ['performance', 'resource', 'accuracy', 'behavioral'];
         this.timeRanges = ['1h', '6h', '24h', '7d', '30d'];
         this.experimentStatuses = ['draft', 'scheduled', 'running', 'completed', 'analyzing', 'analyzed'];

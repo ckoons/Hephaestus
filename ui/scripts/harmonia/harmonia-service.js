@@ -20,14 +20,16 @@ class HarmoniaService {
         this.debugLog('[HARMONIA-SERVICE] Constructing service');
         
         // Set API base URL - use environment configuration if available
+        const harmoniaPort = window.HARMONIA_PORT || 8007;
         this.baseUrl = window.env && window.env.HARMONIA_API_URL 
             ? window.env.HARMONIA_API_URL 
-            : 'http://localhost:8003/api';
+            : `http://localhost:${harmoniaPort}/api`;
             
         // Set WebSocket URL - use environment configuration if available
+        const harmoniaPort2 = window.HARMONIA_PORT || 8007;
         this.wsUrl = window.env && window.env.HARMONIA_WS_URL 
             ? window.env.HARMONIA_WS_URL 
-            : 'ws://localhost:8003/ws';
+            : `ws://localhost:${harmoniaPort2}/ws`;
             
         // Initialize WebSocket connection
         this.ws = null;

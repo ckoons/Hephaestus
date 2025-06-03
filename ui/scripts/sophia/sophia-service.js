@@ -4,7 +4,8 @@
  */
 class SophiaService {
     constructor() {
-        this.serviceUrl = window.env?.SOPHIA_API_URL || 'http://localhost:8007';
+        const sophiaPort = window.SOPHIA_PORT || 8014;
+        this.serviceUrl = window.env?.SOPHIA_API_URL || `http://localhost:${sophiaPort}`;
         this.isConnected = false;
         this.connectionAttempts = 0;
         this.maxConnectionAttempts = 3;

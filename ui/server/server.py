@@ -39,7 +39,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     # Configuration for API proxying - using environment variables
     ERGON_API_HOST = "localhost"
     config = get_component_config()
-    ERGON_API_PORT = config.ergon.port if hasattr(config, 'ergon') else int(os.environ.get("ERGON_PORT", 8002))
+    ERGON_API_PORT = config.ergon.port if hasattr(config, 'ergon') else int(os.environ.get("ERGON_PORT"))
     
     # Add class variable to store the WebSocket server instance
     websocket_server = None
@@ -495,7 +495,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
                  self.path.startswith("/api/components"):
                 # Proxy to Hermes
                 target_host = "localhost"
-                target_port = self.config.hermes.port if hasattr(self.config, 'hermes') else int(os.environ.get("HERMES_PORT", 8001))
+                target_port = self.config.hermes.port if hasattr(self.config, 'hermes') else int(os.environ.get("HERMES_PORT"))
                 target_path = self.path  # Keep the same path
             else:
                 # Unknown API endpoint
@@ -549,7 +549,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
 
         config = get_component_config()
-        port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT", 8080))
+        port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
         
         response = {
             "status": "healthy",
@@ -574,23 +574,23 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         """Serve port configuration from environment variables"""
         # Get all environment variables for components
         port_vars = {
-            "HEPHAESTUS_PORT": int(os.environ.get("HEPHAESTUS_PORT", 8080)),
-            "ENGRAM_PORT": int(os.environ.get("ENGRAM_PORT", 8000)),
-            "HERMES_PORT": int(os.environ.get("HERMES_PORT", 8001)),
-            "ERGON_PORT": int(os.environ.get("ERGON_PORT", 8002)),
-            "RHETOR_PORT": int(os.environ.get("RHETOR_PORT", 8003)),
-            "TERMA_PORT": int(os.environ.get("TERMA_PORT", 8004)),
-            "ATHENA_PORT": int(os.environ.get("ATHENA_PORT", 8005)),
-            "PROMETHEUS_PORT": int(os.environ.get("PROMETHEUS_PORT", 8006)),
-            "HARMONIA_PORT": int(os.environ.get("HARMONIA_PORT", 8007)),
-            "TELOS_PORT": int(os.environ.get("TELOS_PORT", 8008)),
-            "SYNTHESIS_PORT": int(os.environ.get("SYNTHESIS_PORT", 8009)),
-            "TEKTON_CORE_PORT": int(os.environ.get("TEKTON_CORE_PORT", 8010)),
-            "METIS_PORT": int(os.environ.get("METIS_PORT", 8011)),
-            "APOLLO_PORT": int(os.environ.get("APOLLO_PORT", 8012)),
-            "BUDGET_PORT": int(os.environ.get("BUDGET_PORT", 8013)),
-            "SOPHIA_PORT": int(os.environ.get("SOPHIA_PORT", 8014)),
-            "CODEX_PORT": int(os.environ.get("CODEX_PORT", 8015))
+            "HEPHAESTUS_PORT": int(os.environ.get("HEPHAESTUS_PORT")),
+            "ENGRAM_PORT": int(os.environ.get("ENGRAM_PORT")),
+            "HERMES_PORT": int(os.environ.get("HERMES_PORT")),
+            "ERGON_PORT": int(os.environ.get("ERGON_PORT")),
+            "RHETOR_PORT": int(os.environ.get("RHETOR_PORT")),
+            "TERMA_PORT": int(os.environ.get("TERMA_PORT")),
+            "ATHENA_PORT": int(os.environ.get("ATHENA_PORT")),
+            "PROMETHEUS_PORT": int(os.environ.get("PROMETHEUS_PORT")),
+            "HARMONIA_PORT": int(os.environ.get("HARMONIA_PORT")),
+            "TELOS_PORT": int(os.environ.get("TELOS_PORT")),
+            "SYNTHESIS_PORT": int(os.environ.get("SYNTHESIS_PORT")),
+            "TEKTON_CORE_PORT": int(os.environ.get("TEKTON_CORE_PORT")),
+            "METIS_PORT": int(os.environ.get("METIS_PORT")),
+            "APOLLO_PORT": int(os.environ.get("APOLLO_PORT")),
+            "BUDGET_PORT": int(os.environ.get("BUDGET_PORT")),
+            "SOPHIA_PORT": int(os.environ.get("SOPHIA_PORT")),
+            "CODEX_PORT": int(os.environ.get("CODEX_PORT"))
         }
         
         # Send port configuration
@@ -732,7 +732,7 @@ class WebSocketServer:
     def __init__(self, port=None):
         # Use the same port as HTTP server for Single Port Architecture
         config = get_component_config()
-        default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT", 8080))
+        default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
         self.port = port or default_port
         self.clients = set()
         self.component_servers = {}
@@ -981,7 +981,7 @@ def run_http_server(directory, port):
 def main():
     """Main entry point"""
     config = get_component_config()
-    default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT", 8080))
+    default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
     
     parser = argparse.ArgumentParser(description='Tekton UI Server')
     parser.add_argument('--port', type=int, default=default_port, 
@@ -1001,7 +1001,7 @@ def main():
     # Register with Hermes and start heartbeat
     heartbeat_client = None
     try:
-        hermes_port = config.hermes.port if hasattr(config, 'hermes') else int(os.environ.get('HERMES_PORT', 8001))
+        hermes_port = config.hermes.port if hasattr(config, 'hermes') else int(os.environ.get('HERMES_PORT'))
         hermes_url = f"http://localhost:{hermes_port}/api/register"
         registration_data = {
             "name": "hephaestus",

@@ -5,8 +5,9 @@
 
 class HermesService extends window.tektonUI.componentUtils.BaseService {
     constructor() {
-        // Call base service with service name and default API endpoint
-        super('hermesService', 'http://localhost:8000/api');
+        // Call base service with service name and dynamic port from environment
+        const hermesPort = window.HERMES_PORT || 8001;
+        super('hermesService', `http://localhost:${hermesPort}/api`);
         
         // Track real-time message monitoring
         this.monitoringMessages = false;

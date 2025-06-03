@@ -27,7 +27,7 @@
       
       // Service configuration
       this.serviceName = 'rhetorService';
-      this.servicePort = window.ENV?.RHETOR_PORT || 8050;
+      this.servicePort = window.RHETOR_PORT || 8003;
       this.apiUrl = `http://localhost:${this.servicePort}/api`;
       this.wsUrl = `ws://localhost:${this.servicePort}/ws`;
       this.apiVersion = null;

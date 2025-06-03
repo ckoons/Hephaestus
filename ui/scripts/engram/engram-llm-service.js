@@ -12,8 +12,9 @@
     class EngramLLMService {
         constructor() {
             // Service configuration
-            this.baseUrl = 'http://localhost:8200'; // Default Engram port
-            this.wsUrl = 'ws://localhost:8200';
+            const engramPort = window.ENGRAM_PORT || 8000;
+            this.baseUrl = `http://localhost:${engramPort}`; // Dynamic Engram port
+            this.wsUrl = `ws://localhost:${engramPort}`;
             this.websocket = null;
             this.isConnected = false;
             this.isConnecting = false;

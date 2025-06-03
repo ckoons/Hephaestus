@@ -6,7 +6,8 @@
 class HermesLLMService extends window.tektonUI.componentUtils.BaseService {
     constructor() {
         // Call base service with service name and default API endpoint
-        super('hermesLLMService', 'http://localhost:8000/api/llm');
+        const hermesPort = window.HERMES_PORT || 8001;
+        super('hermesLLMService', `http://localhost:${hermesPort}/api/llm`);
         
         // Track active chat
         this.chatHistory = [];
@@ -15,7 +16,8 @@ class HermesLLMService extends window.tektonUI.componentUtils.BaseService {
         this.currentRequestId = null;
         
         // WebSocket for streaming
-        this.wsUrl = 'ws://localhost:8000/api/llm/ws/chat';
+        const hermesPort2 = window.HERMES_PORT || 8001;
+        this.wsUrl = `ws://localhost:${hermesPort2}/api/llm/ws/chat`;
         this.ws = null;
         this.wsConnected = false;
         this.wsCallbacks = {};

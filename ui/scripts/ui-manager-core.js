@@ -974,22 +974,22 @@ class UIManagerCore {
      */
     _getDefaultPort(componentId) {
         const defaultPorts = {
-            'engram': 8000,
-            'hermes': 8001,
-            'ergon': 8002,
-            'rhetor': 8003,
-            'terma': 8004,
-            'athena': 8005,
-            'prometheus': 8006,
-            'harmonia': 8007,
-            'telos': 8008,
-            'synthesis': 8009,
-            'tekton': 8010,
-            'metis': 8011,
-            'apollo': 8012,
-            'budget': 8013,
-            'sophia': 8014,
-            'codex': 8015
+            'engram': window.ENGRAM_PORT || 8000,
+            'hermes': window.HERMES_PORT || 8001,
+            'ergon': window.ERGON_PORT || 8002,
+            'rhetor': window.RHETOR_PORT || 8003,
+            'terma': window.TERMA_PORT || 8004,
+            'athena': window.ATHENA_PORT || 8005,
+            'prometheus': window.PROMETHEUS_PORT || 8006,
+            'harmonia': window.HARMONIA_PORT || 8007,
+            'telos': window.TELOS_PORT || 8008,
+            'synthesis': window.SYNTHESIS_PORT || 8009,
+            'tekton': window.TEKTON_CORE_PORT || 8010,
+            'metis': window.METIS_PORT || 8011,
+            'apollo': window.APOLLO_PORT || 8012,
+            'budget': window.BUDGET_PORT || 8013,
+            'sophia': window.SOPHIA_PORT || 8014,
+            'codex': window.CODEX_PORT || 8015
         };
         
         return defaultPorts[componentId] || null;
