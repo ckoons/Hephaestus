@@ -33,6 +33,11 @@ from shared.utils.env_config import get_component_config
 # Configure logging
 logger = setup_component_logging("hephaestus")
 
+# Component configuration
+COMPONENT_NAME = "hephaestus"
+COMPONENT_VERSION = "0.1.0"
+COMPONENT_DESCRIPTION = "UI and visualization component for Tekton ecosystem"
+
 class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     """Handler for serving the Tekton UI"""
     
@@ -553,8 +558,8 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         
         response = {
             "status": "healthy",
-            "service": "hephaestus",
-            "version": "1.0.0",
+            "service": COMPONENT_NAME,
+            "version": COMPONENT_VERSION,
             "component_type": "ui_server",
             "port": port,
             "endpoints": [
@@ -1004,12 +1009,12 @@ def main():
         hermes_port = config.hermes.port if hasattr(config, 'hermes') else int(os.environ.get('HERMES_PORT'))
         hermes_url = f"http://localhost:{hermes_port}/api/register"
         registration_data = {
-            "name": "hephaestus",
-            "version": "1.0.0",
+            "name": COMPONENT_NAME,
+            "version": COMPONENT_VERSION,
             "type": "ui",
             "endpoint": f"http://localhost:{args.port}",
             "capabilities": ["ui", "visualization", "websocket"],
-            "metadata": {"description": "Tekton UI and visualization component"}
+            "metadata": {"description": COMPONENT_DESCRIPTION}
         }
         
         req = urllib.request.Request(
