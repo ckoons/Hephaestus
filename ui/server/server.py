@@ -38,6 +38,9 @@ COMPONENT_NAME = "hephaestus"
 COMPONENT_VERSION = "0.1.0"
 COMPONENT_DESCRIPTION = "UI and visualization component for Tekton ecosystem"
 
+# Global server start time
+server_start_time = None
+
 class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     """Handler for serving the Tekton UI"""
     
@@ -68,6 +71,10 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         if self.path == "/health" or self.path == "/api/health":
             # Handle health check endpoint
             self.handle_health_check()
+            return
+        elif self.path == "/ready":
+            # Handle ready check endpoint
+            self.handle_ready_check()
             return
         elif self.path.startswith("/api/config/ports"):
             # Handle port configuration endpoint
@@ -565,6 +572,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             "endpoints": [
                 "/health",
                 "/api/health",
+                "/ready",
                 "/api/config/ports",
                 "/api/environment",
                 "/api/settings",
@@ -573,6 +581,38 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
             "message": "Hephaestus UI server is running"
         }
 
+        self.wfile.write(json.dumps(response).encode('utf-8'))
+    
+    def handle_ready_check(self):
+        """Handle ready check endpoint following Tekton standards"""
+        global server_start_time
+        
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        
+        # Calculate uptime
+        uptime = time.time() - server_start_time if server_start_time else 0
+        
+        # Check readiness conditions
+        checks = {
+            "http_server": True,  # We're responding, so HTTP is ready
+            "websocket_server": self.websocket_server is not None,
+            "static_files": os.path.exists(self.directory) if hasattr(self, 'directory') else True
+        }
+        
+        # All checks must pass for ready status
+        is_ready = all(checks.values())
+        
+        response = {
+            "ready": is_ready,
+            "component": COMPONENT_NAME,
+            "version": COMPONENT_VERSION,
+            "uptime": uptime,
+            "checks": checks
+        }
+        
         self.wfile.write(json.dumps(response).encode('utf-8'))
     
     def serve_port_configuration(self):
@@ -985,6 +1025,9 @@ def run_http_server(directory, port):
 
 def main():
     """Main entry point"""
+    global server_start_time
+    server_start_time = time.time()
+    
     config = get_component_config()
     default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
     
