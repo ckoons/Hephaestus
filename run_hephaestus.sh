@@ -28,7 +28,8 @@ cd "$SCRIPT_DIR"
 export PYTHONPATH="$SCRIPT_DIR:$TEKTON_ROOT:$PYTHONPATH"
 
 # Create log directories
-mkdir -p "$HOME/.tekton/logs"
+LOG_DIR="${TEKTON_LOG_DIR:-$TEKTON_ROOT/.tekton/logs}"
+mkdir -p "$LOG_DIR"
 
 # Check if virtual environment exists
 if [ -d "venv" ]; then
@@ -43,7 +44,7 @@ fi
 
 # Start the Hephaestus UI server
 echo -e "${YELLOW}Starting Hephaestus UI server on port $HEPHAESTUS_PORT...${RESET}"
-python3 ui/server/server.py > "$HOME/.tekton/logs/hephaestus.log" 2>&1 &
+python3 ui/server/server.py > "$LOG_DIR/hephaestus.log" 2>&1 &
 HEPHAESTUS_PID=$!
 
 # Trap signals for graceful shutdown
@@ -62,7 +63,7 @@ for i in {1..30}; do
     if ! kill -0 $HEPHAESTUS_PID 2>/dev/null; then
         echo -e "${RED}Hephaestus process terminated unexpectedly${RESET}"
         echo -e "${RED}Last 20 lines of log:${RESET}"
-        tail -20 "$HOME/.tekton/logs/hephaestus.log"
+        tail -20 "$LOG_DIR/hephaestus.log"
         exit 1
     fi
     
