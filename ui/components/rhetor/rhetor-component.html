@@ -20,17 +20,17 @@
   <!-- Tab Navigation - DIRECT ONCLICK HANDLERS -->
   <div class="rhetor__menu-bar">
     <div class="rhetor__tabs">
-      <div class="rhetor__tab rhetor__tab--active" data-tab="llm" onclick="rhetor_switchTab('llm'); return false;">
-        <span class="rhetor__tab-label">LLM Management</span>
+      <div class="rhetor__tab rhetor__tab--active" data-tab="specialists" onclick="rhetor_switchTab('specialists'); return false;">
+        <span class="rhetor__tab-label">AI Specialists</span>
       </div>
-      <div class="rhetor__tab" data-tab="prompts" onclick="rhetor_switchTab('prompts'); return false;">
-        <span class="rhetor__tab-label">Prompt Templates</span>
+      <div class="rhetor__tab" data-tab="orchestration" onclick="rhetor_switchTab('orchestration'); return false;">
+        <span class="rhetor__tab-label">Orchestration</span>
       </div>
-      <div class="rhetor__tab" data-tab="context" onclick="rhetor_switchTab('context'); return false;">
-        <span class="rhetor__tab-label">Context Management</span>
+      <div class="rhetor__tab" data-tab="sessions" onclick="rhetor_switchTab('sessions'); return false;">
+        <span class="rhetor__tab-label">Active Sessions</span>
       </div>
-      <div class="rhetor__tab" data-tab="agency" onclick="rhetor_switchTab('agency'); return false;">
-        <span class="rhetor__tab-label">Agency/Alignment</span>
+      <div class="rhetor__tab" data-tab="configuration" onclick="rhetor_switchTab('configuration'); return false;">
+        <span class="rhetor__tab-label">Configuration</span>
       </div>
       <div class="rhetor__tab" data-tab="llmchat" onclick="rhetor_switchTab('llmchat'); return false;">
         <span class="rhetor__tab-label">LLM Chat</span>
@@ -48,122 +48,132 @@
   
   <!-- Content Area with Panels -->
   <div class="rhetor__content">
-    <!-- LLM Management Tab (Default Active Tab) -->
-    <div id="llm-panel" class="rhetor__panel rhetor__panel--active" style="display: block;">
+    <!-- AI Specialists Tab (Default Active Tab) -->
+    <div id="specialists-panel" class="rhetor__panel rhetor__panel--active" style="display: block;">
       <div class="rhetor__section-header">
-        <h2>LLM Management</h2>
+        <h2>AI Specialists</h2>
         <div class="rhetor__controls">
-          <button class="rhetor__button rhetor__button--primary">Add Model</button>
-          <button class="rhetor__button">Refresh</button>
+          <button class="rhetor__button rhetor__button--primary" onclick="rhetor_createSpecialist()">Create Specialist</button>
+          <button class="rhetor__button" onclick="rhetor_refreshSpecialists()">Refresh</button>
         </div>
       </div>
       
+      <div class="rhetor__specialists-grid" id="specialists-grid">
+        <!-- AI Specialist cards will be dynamically inserted here -->
+        <div class="rhetor__loading">Loading AI specialists...</div>
+      </div>
+    </div>
+    
+    <!-- Orchestration Tab -->
+    <div id="orchestration-panel" class="rhetor__panel" style="display: none;">
+      <div class="rhetor__section-header">
+        <h2>Orchestration Settings</h2>
+      </div>
+      
       <div class="rhetor__settings-section">
-        <h3>LLM Provider Settings</h3>
+        <h3>Message Routing</h3>
         <div class="rhetor__form-group">
-          <label class="rhetor__form-label">Default Provider</label>
-          <select class="rhetor__form-select" id="provider-select">
-            <option value="anthropic">Anthropic Claude</option>
-            <option value="openai">OpenAI GPT-4</option>
-            <option value="ollama">Ollama (Local)</option>
+          <label class="rhetor__form-label">Orchestration Mode</label>
+          <select class="rhetor__form-select" id="orchestration-mode">
+            <option value="passive">Passive Monitor</option>
+            <option value="active" selected>Active Coordinator</option>
+            <option value="translator">Universal Translator</option>
           </select>
         </div>
         
         <div class="rhetor__form-group">
-          <label class="rhetor__form-label">Default Model</label>
-          <select class="rhetor__form-select" id="model-select">
-            <option value="claude-3-opus">Claude 3 Opus</option>
-            <option value="claude-3-sonnet">Claude 3 Sonnet</option>
-            <option value="claude-3-haiku">Claude 3 Haiku</option>
-          </select>
+          <label class="rhetor__form-label">Auto-Translation</label>
+          <div class="rhetor__checkbox-group">
+            <label class="rhetor__checkbox">
+              <input type="checkbox" id="auto-translate" checked> Enable automatic translation between AI specialists
+            </label>
+          </div>
         </div>
         
         <div class="rhetor__form-group">
-          <label class="rhetor__form-label">Temperature</label>
-          <div class="rhetor__slider-container">
-            <input type="range" class="rhetor__form-slider" id="temperature-slider" min="0" max="1" step="0.1" value="0.7">
-            <span class="rhetor__slider-value">0.7</span>
+          <label class="rhetor__form-label">Message Filtering</label>
+          <div class="rhetor__checkbox-group">
+            <label class="rhetor__checkbox">
+              <input type="checkbox" id="filter-redundant" checked> Filter redundant messages
+            </label>
+            <label class="rhetor__checkbox">
+              <input type="checkbox" id="filter-errors"> Filter error messages
+            </label>
+            <label class="rhetor__checkbox">
+              <input type="checkbox" id="summarize-verbose"> Summarize verbose exchanges
+            </label>
           </div>
         </div>
         
         <div class="rhetor__form-actions">
-          <button class="rhetor__button" id="test-provider">Test Connection</button>
-          <button class="rhetor__button rhetor__button--primary" id="save-provider">Save Settings</button>
+          <button class="rhetor__button rhetor__button--primary" onclick="rhetor_saveOrchestration()">Save Settings</button>
         </div>
       </div>
     </div>
     
-    <!-- Prompt Templates Tab -->
-    <div id="prompts-panel" class="rhetor__panel" style="display: none;">
+    <!-- Active Sessions Tab -->
+    <div id="sessions-panel" class="rhetor__panel" style="display: none;">
       <div class="rhetor__section-header">
-        <h2>Prompt Templates</h2>
+        <h2>Active AI Sessions</h2>
         <div class="rhetor__controls">
-          <button class="rhetor__button rhetor__button--primary">New Template</button>
+          <button class="rhetor__button rhetor__button--primary" onclick="rhetor_createSession()">New Session</button>
+          <button class="rhetor__button" onclick="rhetor_refreshSessions()">Refresh</button>
         </div>
       </div>
       
-      <div class="rhetor__template-list">
-        <div class="rhetor__template-item">
-          <div class="rhetor__template-item-header">
-            <span class="rhetor__template-item-name">Business Proposal</span>
-            <span class="rhetor__template-item-badge rhetor__template-item-badge--system">System</span>
-          </div>
-          <p class="rhetor__template-item-description">A comprehensive business proposal template for pitching new ideas to clients or investors.</p>
-          <div class="rhetor__template-item-footer">
-            <button class="rhetor__template-item-button">Use</button>
-            <button class="rhetor__template-item-button">Edit</button>
-            <button class="rhetor__template-item-button">History</button>
-          </div>
-        </div>
-        
-        <div class="rhetor__template-item">
-          <div class="rhetor__template-item-header">
-            <span class="rhetor__template-item-name">Academic Paper</span>
-            <span class="rhetor__template-item-badge rhetor__template-item-badge--task">Task</span>
-          </div>
-          <p class="rhetor__template-item-description">Academic research paper format with sections for abstract, methodology, results, and conclusion.</p>
-          <div class="rhetor__template-item-footer">
-            <button class="rhetor__template-item-button">Use</button>
-            <button class="rhetor__template-item-button">Edit</button>
-            <button class="rhetor__template-item-button">History</button>
-          </div>
-        </div>
+      <div class="rhetor__sessions-list" id="sessions-list">
+        <!-- Active sessions will be dynamically inserted here -->
+        <div class="rhetor__empty-state">No active AI sessions. Create a new session to begin.</div>
       </div>
     </div>
     
-    <!-- Context Management Tab -->
-    <div id="context-panel" class="rhetor__panel" style="display: none;">
+    <!-- Configuration Tab -->
+    <div id="configuration-panel" class="rhetor__panel" style="display: none;">
       <div class="rhetor__section-header">
-        <h2>Context Management</h2>
-      </div>
-      
-      <p>Context management settings and options will appear here.</p>
-    </div>
-    
-    <!-- Agency/Alignment Tab -->
-    <div id="agency-panel" class="rhetor__panel" style="display: none;">
-      <div class="rhetor__section-header">
-        <h2>Agency & Alignment</h2>
+        <h2>AI Configuration</h2>
       </div>
       
       <div class="rhetor__settings-section">
-        <h3>LLM Alignment Settings</h3>
+        <h3>Model Settings</h3>
         <div class="rhetor__form-group">
-          <label class="rhetor__form-label">Alignment Mode</label>
-          <select class="rhetor__form-select" id="alignment-select">
-            <option value="assistance">Assistance (Default)</option>
-            <option value="research">Research</option>
-            <option value="creative">Creative</option>
-            <option value="structured">Structured</option>
-          </select>
+          <label class="rhetor__form-label">Anthropic Max Account</label>
+          <div class="rhetor__checkbox-group">
+            <label class="rhetor__checkbox">
+              <input type="checkbox" id="anthropic-max" onchange="rhetor_toggleAnthropicMax()"> Use Anthropic Max (Unlimited tokens for testing)
+            </label>
+          </div>
         </div>
         
-        <div class="rhetor__form-group">
-          <label class="rhetor__form-label">Agency Level</label>
-          <div class="rhetor__slider-container">
-            <input type="range" class="rhetor__form-slider" id="agency-slider" min="0" max="1" step="0.1" value="0.5">
-            <span class="rhetor__slider-value">0.5</span>
+        <h3>Default Models by Specialist Type</h3>
+        <div class="rhetor__model-config">
+          <div class="rhetor__form-group">
+            <label class="rhetor__form-label">Orchestrator (Meta-AI)</label>
+            <select class="rhetor__form-select" id="model-orchestrator">
+              <option value="claude-3-opus-20240229" selected>Claude 3 Opus</option>
+              <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+              <option value="claude-3-haiku-20240307">Claude 3 Haiku</option>
+            </select>
           </div>
+          
+          <div class="rhetor__form-group">
+            <label class="rhetor__form-label">Memory Specialist</label>
+            <select class="rhetor__form-select" id="model-memory">
+              <option value="claude-3-haiku-20240307" selected>Claude 3 Haiku</option>
+              <option value="claude-3-sonnet-20240229">Claude 3 Sonnet</option>
+            </select>
+          </div>
+          
+          <div class="rhetor__form-group">
+            <label class="rhetor__form-label">Executive Coordinator</label>
+            <select class="rhetor__form-select" id="model-coordinator">
+              <option value="claude-3-sonnet-20240229" selected>Claude 3 Sonnet</option>
+              <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="rhetor__form-actions">
+          <button class="rhetor__button rhetor__button--primary" onclick="rhetor_saveConfiguration()">Save Configuration</button>
         </div>
       </div>
     </div>
@@ -653,9 +663,259 @@
     background-color: var(--color-primary-hover, #5E35B1);
   }
   
+  /* AI Specialists Grid */
+  .rhetor__specialists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 16px 0;
+  }
+  
+  .rhetor__specialist-card {
+    background-color: var(--bg-tertiary, #333345);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s ease;
+    position: relative;
+  }
+  
+  .rhetor__specialist-card--active {
+    border-color: var(--color-primary, #673AB7);
+    box-shadow: 0 0 0 1px var(--color-primary, #673AB7);
+  }
+  
+  .rhetor__specialist-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .rhetor__specialist-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--bg-secondary, #252535);
+    border: 2px solid var(--border-color, #444444);
+  }
+  
+  .rhetor__specialist-status--active {
+    background-color: #28a745;
+    border-color: #28a745;
+    box-shadow: 0 0 4px #28a745;
+  }
+  
+  .rhetor__specialist-status--processing {
+    background-color: #ffc107;
+    border-color: #ffc107;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+  
+  .rhetor__specialist-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .rhetor__specialist-icon {
+    font-size: 32px;
+    margin-right: 12px;
+  }
+  
+  .rhetor__specialist-info {
+    flex: 1;
+  }
+  
+  .rhetor__specialist-name {
+    font-weight: 600;
+    color: var(--text-primary, #f0f0f0);
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  
+  .rhetor__specialist-type {
+    color: var(--text-secondary, #aaaaaa);
+    font-size: 0.85rem;
+  }
+  
+  .rhetor__specialist-stats {
+    display: flex;
+    gap: 16px;
+    margin: 12px 0;
+    padding: 8px 0;
+    border-top: 1px solid var(--border-color, #444444);
+    border-bottom: 1px solid var(--border-color, #444444);
+  }
+  
+  .rhetor__specialist-stat {
+    flex: 1;
+    text-align: center;
+  }
+  
+  .rhetor__specialist-stat-value {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-primary, #f0f0f0);
+  }
+  
+  .rhetor__specialist-stat-label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #aaaaaa);
+    margin-top: 2px;
+  }
+  
+  .rhetor__specialist-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  
+  .rhetor__specialist-action {
+    flex: 1;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 4px;
+    background-color: var(--bg-secondary, #252535);
+    color: var(--text-secondary, #aaaaaa);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+  
+  .rhetor__specialist-action:hover {
+    background-color: var(--bg-hover, #3a3a4a);
+    color: var(--text-primary, #f0f0f0);
+  }
+  
+  .rhetor__specialist-action--primary {
+    background-color: var(--color-primary, #673AB7);
+    border-color: var(--color-primary, #673AB7);
+    color: white;
+  }
+  
+  .rhetor__specialist-action--primary:hover {
+    background-color: var(--color-primary-hover, #5E35B1);
+  }
+  
+  /* Active Sessions */
+  .rhetor__sessions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 0;
+  }
+  
+  .rhetor__session-item {
+    background-color: var(--bg-tertiary, #333345);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 8px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.2s ease;
+  }
+  
+  .rhetor__session-item:hover {
+    background-color: var(--bg-hover, #3a3a4a);
+  }
+  
+  .rhetor__session-participants {
+    display: flex;
+    gap: -8px;
+  }
+  
+  .rhetor__session-participant {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--bg-secondary, #252535);
+    border: 2px solid var(--bg-tertiary, #333345);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .rhetor__session-info {
+    flex: 1;
+  }
+  
+  .rhetor__session-title {
+    font-weight: 600;
+    color: var(--text-primary, #f0f0f0);
+    margin: 0 0 4px 0;
+  }
+  
+  .rhetor__session-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary, #aaaaaa);
+  }
+  
+  .rhetor__session-actions {
+    display: flex;
+    gap: 8px;
+  }
+  
+  .rhetor__session-action {
+    padding: 6px 12px;
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 4px;
+    background-color: var(--bg-secondary, #252535);
+    color: var(--text-secondary, #aaaaaa);
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .rhetor__session-action:hover {
+    background-color: var(--bg-hover, #3a3a4a);
+    color: var(--text-primary, #f0f0f0);
+  }
+  
+  /* Loading and Empty States */
+  .rhetor__loading {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-secondary, #aaaaaa);
+  }
+  
+  .rhetor__empty-state {
+    text-align: center;
+    padding: 48px;
+    color: var(--text-secondary, #aaaaaa);
+    background-color: var(--bg-tertiary, #333345);
+    border: 1px dashed var(--border-color, #444444);
+    border-radius: 8px;
+  }
+  
+  /* Model Configuration */
+  .rhetor__model-config {
+    display: grid;
+    gap: 16px;
+    margin-top: 16px;
+  }
+  
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .rhetor__template-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .rhetor__specialists-grid {
       grid-template-columns: 1fr;
     }
     
@@ -787,6 +1047,63 @@ window.rhetor_clearChat = function() {
     }
     
     return false; // Stop event propagation
+};
+
+// AI ORCHESTRATION FUNCTIONS
+window.rhetor_refreshSpecialists = function() {
+    console.log('[RHETOR] Refreshing AI specialists');
+    if (window.rhetorComponent && window.rhetorComponent.refreshSpecialists) {
+        window.rhetorComponent.refreshSpecialists();
+    }
+    return false;
+};
+
+window.rhetor_createSpecialist = function() {
+    console.log('[RHETOR] Creating new AI specialist');
+    if (window.rhetorComponent && window.rhetorComponent.createSpecialist) {
+        window.rhetorComponent.createSpecialist();
+    }
+    return false;
+};
+
+window.rhetor_saveOrchestration = function() {
+    console.log('[RHETOR] Saving orchestration settings');
+    if (window.rhetorComponent && window.rhetorComponent.saveOrchestration) {
+        window.rhetorComponent.saveOrchestration();
+    }
+    return false;
+};
+
+window.rhetor_refreshSessions = function() {
+    console.log('[RHETOR] Refreshing active sessions');
+    if (window.rhetorComponent && window.rhetorComponent.refreshSessions) {
+        window.rhetorComponent.refreshSessions();
+    }
+    return false;
+};
+
+window.rhetor_createSession = function() {
+    console.log('[RHETOR] Creating new AI session');
+    if (window.rhetorComponent && window.rhetorComponent.createSession) {
+        window.rhetorComponent.createSession();
+    }
+    return false;
+};
+
+window.rhetor_toggleAnthropicMax = function() {
+    console.log('[RHETOR] Toggling Anthropic Max');
+    if (window.rhetorComponent && window.rhetorComponent.toggleAnthropicMax) {
+        window.rhetorComponent.toggleAnthropicMax();
+    }
+    return false;
+};
+
+window.rhetor_saveConfiguration = function() {
+    console.log('[RHETOR] Saving AI configuration');
+    if (window.rhetorComponent && window.rhetorComponent.saveConfiguration) {
+        window.rhetorComponent.saveConfiguration();
+    }
+    return false;
 };
 
 // LOAD COMPONENT

@@ -21,14 +21,21 @@
     state: {
       initialized: false,
       loaded: false,
-      activeTab: 'writing',
+      activeTab: 'specialists',
       connected: false,
       provider: null,
       model: null,
       documentCount: 0,
       templateCount: 0,
       chatHistory: [],
-      debugMode: false
+      debugMode: false,
+      // AI Orchestration state
+      specialists: [],
+      sessions: [],
+      orchestrationMode: 'active',
+      autoTranslate: true,
+      anthropicMax: false,
+      specialistConfigs: {}
     },
     
     // DOM element references
@@ -40,7 +47,12 @@
       sendButton: null,
       statusIndicator: null,
       statusText: null,
-      loadingIndicator: null
+      loadingIndicator: null,
+      // AI Orchestration elements
+      specialistsGrid: null,
+      sessionsList: null,
+      orchestrationForm: null,
+      configForm: null
     },
     
     // Services
@@ -108,19 +120,31 @@
       
       try {
         // Cache DOM elements by selecting only within component container for isolation
-        this.elements.tabs = this.elements.container.querySelectorAll('.rhetor-tabs__button');
+        const container = this.elements.container || document.querySelector('.rhetor');
+        this.elements.tabs = container.querySelectorAll('.rhetor__tab');
         this.elements.contents = {};
-        this.elements.contents.writing = this.elements.container.querySelector('#writing-content');
-        this.elements.contents.templates = this.elements.container.querySelector('#templates-content');
-        this.elements.contents.revision = this.elements.container.querySelector('#revision-content');
-        this.elements.contents.settings = this.elements.container.querySelector('#settings-content');
-        this.elements.contents.chat = this.elements.container.querySelector('#chat-content');
-        this.elements.chatInput = this.elements.container.querySelector('.rhetor-chat-input');
-        this.elements.sendButton = this.elements.container.querySelector('.rhetor-send-button');
-        this.elements.statusIndicator = this.elements.container.querySelector('.rhetor-header__status-indicator');
-        this.elements.statusText = this.elements.container.querySelector('.rhetor-header__status-text');
+        this.elements.contents.specialists = container.querySelector('#specialists-panel');
+        this.elements.contents.orchestration = container.querySelector('#orchestration-panel');
+        this.elements.contents.sessions = container.querySelector('#sessions-panel');
+        this.elements.contents.configuration = container.querySelector('#configuration-panel');
+        this.elements.contents.llmchat = container.querySelector('#llmchat-panel');
+        this.elements.contents.teamchat = container.querySelector('#teamchat-panel');
+        this.elements.chatInput = container.querySelector('#chat-input');
+        this.elements.sendButton = container.querySelector('#send-button');
+        this.elements.statusIndicator = container.querySelector('.rhetor__status-indicator');
+        this.elements.statusText = container.querySelector('.rhetor__status-text');
+        // AI Orchestration elements
+        this.elements.specialistsGrid = container.querySelector('#specialists-grid');
+        this.elements.sessionsList = container.querySelector('#sessions-list');
+        this.elements.orchestrationForm = container.querySelector('#orchestration-panel');
+        this.elements.configForm = container.querySelector('#configuration-panel');
         
         this.debug('initElements', 'DOM elements initialized');
+        
+        // Load initial specialists if on specialists tab
+        if (this.state.activeTab === 'specialists') {
+          setTimeout(() => this.refreshSpecialists(), 100);
+        }
       } catch (err) {
         this.error('initElements', 'Failed to initialize DOM elements', { error: err.message });
       }
@@ -328,6 +352,9 @@
         // Update chat input placeholder based on active tab
         this.updateChatPlaceholder(tabId);
         
+        // Load tab-specific content
+        this.loadTabContent(tabId);
+        
         this.debug('handleTabClick', 'Tab switch complete', { activeTab: this.state.activeTab });
       } catch (err) {
         this.error('handleTabClick', 'Failed to handle tab click', { error: err.message });
@@ -462,6 +489,293 @@
           this.addResponseToChat('This is a placeholder response. Connect to the Rhetor service for full functionality.');
         }, 1000);
       }
+    },
+    
+    /**
+     * Refresh AI specialists list
+     */
+    refreshSpecialists: function() {
+      this.info('refreshSpecialists', 'Refreshing AI specialists');
+      
+      if (!this.elements.specialistsGrid) {
+        this.error('refreshSpecialists', 'Cannot find specialists grid');
+        return;
+      }
+      
+      // Show loading state
+      this.elements.specialistsGrid.innerHTML = '<div class="rhetor__loading">Loading AI specialists...</div>';
+      
+      // Fetch specialists from backend
+      fetch('/api/ai/specialists')
+        .then(response => response.json())
+        .then(data => {
+          this.state.specialists = data.specialists || [];
+          this.renderSpecialists();
+        })
+        .catch(err => {
+          this.error('refreshSpecialists', 'Failed to fetch specialists', { error: err.message });
+          this.elements.specialistsGrid.innerHTML = '<div class="rhetor__error">Failed to load specialists</div>';
+        });
+    },
+    
+    /**
+     * Render AI specialists grid
+     */
+    renderSpecialists: function() {
+      if (!this.elements.specialistsGrid) return;
+      
+      if (this.state.specialists.length === 0) {
+        this.elements.specialistsGrid.innerHTML = '<div class="rhetor__empty-state">No AI specialists available</div>';
+        return;
+      }
+      
+      let html = '';
+      this.state.specialists.forEach(specialist => {
+        const icon = this.getSpecialistIcon(specialist.type);
+        const statusClass = specialist.active ? 'rhetor__specialist-status--active' : '';
+        const cardClass = specialist.active ? 'rhetor__specialist-card rhetor__specialist-card--active' : 'rhetor__specialist-card';
+        
+        html += `
+          <div class="${cardClass}" data-id="${specialist.id}">
+            <div class="rhetor__specialist-status ${statusClass}"></div>
+            <div class="rhetor__specialist-header">
+              <div class="rhetor__specialist-icon">${icon}</div>
+              <div class="rhetor__specialist-info">
+                <h3 class="rhetor__specialist-name">${this.escapeHtml(specialist.name)}</h3>
+                <div class="rhetor__specialist-type">${this.escapeHtml(specialist.type)}</div>
+              </div>
+            </div>
+            <div class="rhetor__specialist-stats">
+              <div class="rhetor__specialist-stat">
+                <span class="rhetor__specialist-stat-value">${specialist.messages || 0}</span>
+                <span class="rhetor__specialist-stat-label">Messages</span>
+              </div>
+              <div class="rhetor__specialist-stat">
+                <span class="rhetor__specialist-stat-value">${specialist.sessions || 0}</span>
+                <span class="rhetor__specialist-stat-label">Sessions</span>
+              </div>
+            </div>
+            <div class="rhetor__specialist-actions">
+              ${specialist.active 
+                ? '<button class="rhetor__specialist-action" onclick="rhetorComponent.deactivateSpecialist(\'' + specialist.id + '\')">Deactivate</button>'
+                : '<button class="rhetor__specialist-action rhetor__specialist-action--primary" onclick="rhetorComponent.activateSpecialist(\'' + specialist.id + '\')">Activate</button>'
+              }
+              <button class="rhetor__specialist-action" onclick="rhetorComponent.messageSpecialist('${specialist.id}')">Message</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      this.elements.specialistsGrid.innerHTML = html;
+    },
+    
+    /**
+     * Get specialist icon based on type
+     */
+    getSpecialistIcon: function(type) {
+      const icons = {
+        'orchestrator': '🎯',
+        'memory': '🧠',
+        'coordinator': '👔',
+        'analyst': '📊',
+        'strategist': '🎯',
+        'messenger': '📨'
+      };
+      return icons[type] || '🤖';
+    },
+    
+    /**
+     * Activate a specialist
+     */
+    activateSpecialist: function(specialistId) {
+      this.info('activateSpecialist', 'Activating specialist', { specialistId });
+      
+      fetch(`/api/ai/specialists/${specialistId}/activate`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          this.showNotification(`Activated ${data.name}`, 'success');
+          this.refreshSpecialists();
+        })
+        .catch(err => {
+          this.error('activateSpecialist', 'Failed to activate specialist', { error: err.message });
+          this.showNotification('Failed to activate specialist', 'error');
+        });
+    },
+    
+    /**
+     * Deactivate a specialist
+     */
+    deactivateSpecialist: function(specialistId) {
+      this.info('deactivateSpecialist', 'Deactivating specialist', { specialistId });
+      
+      // TODO: Implement deactivation endpoint
+      this.showNotification('Deactivation not yet implemented', 'info');
+    },
+    
+    /**
+     * Message a specialist
+     */
+    messageSpecialist: function(specialistId) {
+      this.info('messageSpecialist', 'Opening message dialog', { specialistId });
+      
+      // Switch to LLM chat tab
+      window.rhetor_switchTab('llmchat');
+      
+      // Set context for specialist
+      if (this.elements.chatInput) {
+        this.elements.chatInput.placeholder = `Message to specialist ${specialistId}...`;
+        this.elements.chatInput.focus();
+      }
+    },
+    
+    /**
+     * Create new specialist
+     */
+    createSpecialist: function() {
+      this.info('createSpecialist', 'Creating new specialist');
+      
+      // TODO: Show specialist creation dialog
+      this.showNotification('Dynamic specialist creation coming soon', 'info');
+    },
+    
+    /**
+     * Save orchestration settings
+     */
+    saveOrchestration: function() {
+      this.info('saveOrchestration', 'Saving orchestration settings');
+      
+      const settings = {
+        mode: document.getElementById('orchestration-mode')?.value || 'active',
+        autoTranslate: document.getElementById('auto-translate')?.checked || false,
+        filterRedundant: document.getElementById('filter-redundant')?.checked || false,
+        filterErrors: document.getElementById('filter-errors')?.checked || false,
+        summarizeVerbose: document.getElementById('summarize-verbose')?.checked || false
+      };
+      
+      // TODO: Send to backend
+      this.state.orchestrationMode = settings.mode;
+      this.state.autoTranslate = settings.autoTranslate;
+      
+      this.showNotification('Orchestration settings saved', 'success');
+    },
+    
+    /**
+     * Refresh active sessions
+     */
+    refreshSessions: function() {
+      this.info('refreshSessions', 'Refreshing active sessions');
+      
+      if (!this.elements.sessionsList) {
+        this.error('refreshSessions', 'Cannot find sessions list');
+        return;
+      }
+      
+      // TODO: Fetch from backend
+      this.state.sessions = [
+        {
+          id: 'session-1',
+          title: 'Rhetor ↔ Engram Memory Sync',
+          participants: ['rhetor-orchestrator', 'engram-memory'],
+          messages: 15,
+          created: new Date(Date.now() - 3600000).toISOString()
+        }
+      ];
+      
+      this.renderSessions();
+    },
+    
+    /**
+     * Render active sessions
+     */
+    renderSessions: function() {
+      if (!this.elements.sessionsList) return;
+      
+      if (this.state.sessions.length === 0) {
+        this.elements.sessionsList.innerHTML = '<div class="rhetor__empty-state">No active AI sessions</div>';
+        return;
+      }
+      
+      let html = '';
+      this.state.sessions.forEach(session => {
+        const timeAgo = this.formatTimeAgo(session.created);
+        
+        html += `
+          <div class="rhetor__session-item" data-id="${session.id}">
+            <div class="rhetor__session-participants">
+              ${session.participants.map(p => `<div class="rhetor__session-participant">${this.getSpecialistIcon(p.split('-')[0])}</div>`).join('')}
+            </div>
+            <div class="rhetor__session-info">
+              <h3 class="rhetor__session-title">${this.escapeHtml(session.title)}</h3>
+              <div class="rhetor__session-meta">${session.messages} messages • Started ${timeAgo}</div>
+            </div>
+            <div class="rhetor__session-actions">
+              <button class="rhetor__session-action" onclick="rhetorComponent.viewSession('${session.id}')">View</button>
+              <button class="rhetor__session-action" onclick="rhetorComponent.joinSession('${session.id}')">Join</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      this.elements.sessionsList.innerHTML = html;
+    },
+    
+    /**
+     * Create new session
+     */
+    createSession: function() {
+      this.info('createSession', 'Creating new AI session');
+      
+      // TODO: Show session creation dialog
+      this.showNotification('Session creation dialog coming soon', 'info');
+    },
+    
+    /**
+     * Toggle Anthropic Max
+     */
+    toggleAnthropicMax: function() {
+      const checkbox = document.getElementById('anthropic-max');
+      this.state.anthropicMax = checkbox?.checked || false;
+      
+      this.info('toggleAnthropicMax', 'Toggled Anthropic Max', { enabled: this.state.anthropicMax });
+      
+      if (this.state.anthropicMax) {
+        this.showNotification('Anthropic Max enabled - unlimited tokens for testing', 'success');
+      } else {
+        this.showNotification('Anthropic Max disabled - normal budget limits apply', 'info');
+      }
+    },
+    
+    /**
+     * Save AI configuration
+     */
+    saveConfiguration: function() {
+      this.info('saveConfiguration', 'Saving AI configuration');
+      
+      const config = {
+        anthropicMax: this.state.anthropicMax,
+        models: {
+          orchestrator: document.getElementById('model-orchestrator')?.value,
+          memory: document.getElementById('model-memory')?.value,
+          coordinator: document.getElementById('model-coordinator')?.value
+        }
+      };
+      
+      // TODO: Send to backend
+      this.showNotification('Configuration saved', 'success');
+    },
+    
+    /**
+     * Format time ago
+     */
+    formatTimeAgo: function(timestamp) {
+      const now = Date.now();
+      const then = new Date(timestamp).getTime();
+      const diff = now - then;
+      
+      if (diff < 60000) return 'just now';
+      if (diff < 3600000) return Math.floor(diff / 60000) + ' minutes ago';
+      if (diff < 86400000) return Math.floor(diff / 3600000) + ' hours ago';
+      return Math.floor(diff / 86400000) + ' days ago';
     },
     
     /**
@@ -603,20 +917,23 @@
       if (!this.elements.chatInput) return;
       
       switch (tabId) {
-        case 'writing':
-          this.elements.chatInput.placeholder = 'Enter a writing instruction or prompt...';
+        case 'specialists':
+          this.elements.chatInput.placeholder = 'Enter command for AI specialist management...';
           break;
-        case 'templates':
-          this.elements.chatInput.placeholder = 'Search templates or enter a template command...';
+        case 'orchestration':
+          this.elements.chatInput.placeholder = 'Configure orchestration settings...';
           break;
-        case 'revision':
-          this.elements.chatInput.placeholder = 'Enter revision instructions...';
+        case 'sessions':
+          this.elements.chatInput.placeholder = 'Manage AI session...';
           break;
-        case 'format':
-          this.elements.chatInput.placeholder = 'Describe formatting changes...';
+        case 'configuration':
+          this.elements.chatInput.placeholder = 'Update AI configuration...';
           break;
-        case 'team-chat':
-          this.elements.chatInput.placeholder = 'Type a message to the team...';
+        case 'llmchat':
+          this.elements.chatInput.placeholder = 'Chat with Rhetor AI orchestrator...';
+          break;
+        case 'teamchat':
+          this.elements.chatInput.placeholder = 'Type a message to the AI team...';
           break;
         default:
           this.elements.chatInput.placeholder = 'Enter a command or message...';
@@ -641,19 +958,26 @@
       
       // Load tab content based on the tab ID
       switch (tabId) {
-        case 'writing':
-          this.loadWritingTabContent();
+        case 'specialists':
+          this.refreshSpecialists();
+          this.showLoading(false);
           break;
-        case 'templates':
-          this.loadTemplatesTabContent();
+        case 'orchestration':
+          // Orchestration settings are static HTML, just hide loading
+          this.showLoading(false);
           break;
-        case 'revision':
-          this.loadRevisionTabContent();
+        case 'sessions':
+          this.refreshSessions();
+          this.showLoading(false);
           break;
-        case 'format':
-          this.loadFormatTabContent();
+        case 'configuration':
+          // Configuration is static HTML, just hide loading
+          this.showLoading(false);
           break;
-        case 'team-chat':
+        case 'llmchat':
+          this.loadLLMChatTabContent();
+          break;
+        case 'teamchat':
           this.loadTeamChatTabContent();
           break;
         default:
@@ -1114,54 +1438,22 @@
     },
     
     /**
+     * Load LLM chat tab content
+     */
+    loadLLMChatTabContent: function() {
+      this.debug('loadLLMChatTabContent', 'Loading LLM chat tab content');
+      
+      // LLM chat content is already in the HTML, just hide loading
+      this.showLoading(false);
+    },
+    
+    /**
      * Load team chat tab content
      */
     loadTeamChatTabContent: function() {
       this.debug('loadTeamChatTabContent', 'Loading team chat tab content');
       
-      const content = `
-        <div class="rhetor__chat-panel">
-          <div class="rhetor__chat-messages">
-            <div class="rhetor__message rhetor__message--system">
-              <div class="rhetor__message-content">
-                <div class="rhetor__message-text">
-                  <h3>Tekton Team Chat</h3>
-                  <p>This chat is shared across all Tekton components. Use this for team communication and coordination.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      
-      this.elements.content.innerHTML = content;
-      
-      // Load chat history if available
-      if (this.state.chatHistory && this.state.chatHistory.length > 0) {
-        const chatContainer = this.container.querySelector('.rhetor__chat-messages');
-        
-        this.state.chatHistory.forEach(message => {
-          const messageElement = document.createElement('div');
-          messageElement.className = `rhetor__message rhetor__message--${message.role === 'user' ? 'user' : 'ai'}`;
-          
-          const timestamp = new Date(message.timestamp);
-          const formattedTime = timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-          
-          messageElement.innerHTML = `
-            <div class="rhetor__message-content">
-              <div class="rhetor__message-text">${message.role === 'user' ? this.escapeHtml(message.content) : this.formatResponseText(message.content)}</div>
-              <div class="rhetor__message-meta">${formattedTime}</div>
-            </div>
-          `;
-          
-          chatContainer.appendChild(messageElement);
-        });
-        
-        // Scroll to bottom
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
-      
-      // Hide loading indicator
+      // Team chat content is already in the HTML, just hide loading
       this.showLoading(false);
     },
     
