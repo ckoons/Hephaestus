@@ -507,7 +507,10 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
                  self.path.startswith("/api/components"):
                 # Proxy to Hermes
                 target_host = "localhost"
-                target_port = self.config.hermes.port if hasattr(self.config, 'hermes') else int(os.environ.get("HERMES_PORT"))
+                try:
+                    target_port = self.config.hermes.port
+                except (AttributeError, TypeError):
+                    target_port = int(os.environ.get("HERMES_PORT"))
                 target_path = self.path  # Keep the same path
             else:
                 # Unknown API endpoint
@@ -618,25 +621,44 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     def serve_port_configuration(self):
         """Serve port configuration from environment variables"""
         # Get all environment variables for components
-        port_vars = {
-            "HEPHAESTUS_PORT": int(os.environ.get("HEPHAESTUS_PORT")),
-            "ENGRAM_PORT": int(os.environ.get("ENGRAM_PORT")),
-            "HERMES_PORT": int(os.environ.get("HERMES_PORT")),
-            "ERGON_PORT": int(os.environ.get("ERGON_PORT")),
-            "RHETOR_PORT": int(os.environ.get("RHETOR_PORT")),
-            "TERMA_PORT": int(os.environ.get("TERMA_PORT")),
-            "ATHENA_PORT": int(os.environ.get("ATHENA_PORT")),
-            "PROMETHEUS_PORT": int(os.environ.get("PROMETHEUS_PORT")),
-            "HARMONIA_PORT": int(os.environ.get("HARMONIA_PORT")),
-            "TELOS_PORT": int(os.environ.get("TELOS_PORT")),
-            "SYNTHESIS_PORT": int(os.environ.get("SYNTHESIS_PORT")),
-            "TEKTON_CORE_PORT": int(os.environ.get("TEKTON_CORE_PORT")),
-            "METIS_PORT": int(os.environ.get("METIS_PORT")),
-            "APOLLO_PORT": int(os.environ.get("APOLLO_PORT")),
-            "BUDGET_PORT": int(os.environ.get("BUDGET_PORT")),
-            "SOPHIA_PORT": int(os.environ.get("SOPHIA_PORT")),
-            "CODEX_PORT": int(os.environ.get("CODEX_PORT"))
-        }
+        config = get_component_config()
+        
+        # Build port configuration using config pattern
+        port_vars = {}
+        
+        # Define component names and their config attributes
+        components = [
+            ("HEPHAESTUS_PORT", "hephaestus"),
+            ("ENGRAM_PORT", "engram"),
+            ("HERMES_PORT", "hermes"),
+            ("ERGON_PORT", "ergon"),
+            ("RHETOR_PORT", "rhetor"),
+            ("TERMA_PORT", "terma"),
+            ("ATHENA_PORT", "athena"),
+            ("PROMETHEUS_PORT", "prometheus"),
+            ("HARMONIA_PORT", "harmonia"),
+            ("TELOS_PORT", "telos"),
+            ("SYNTHESIS_PORT", "synthesis"),
+            ("TEKTON_CORE_PORT", "tekton_core"),
+            ("METIS_PORT", "metis"),
+            ("APOLLO_PORT", "apollo"),
+            ("BUDGET_PORT", "budget"),
+            ("SOPHIA_PORT", "sophia"),
+        ]
+        
+        for env_var, component_name in components:
+            if hasattr(config, component_name):
+                component_config = getattr(config, component_name)
+                if hasattr(component_config, 'port'):
+                    port_vars[env_var] = component_config.port
+                else:
+                    port_vars[env_var] = int(os.environ.get(env_var))
+            else:
+                port_vars[env_var] = int(os.environ.get(env_var))
+        
+        # Handle special cases
+        if "CODEX_PORT" in os.environ:
+            port_vars["CODEX_PORT"] = int(os.environ.get("CODEX_PORT"))
         
         # Send port configuration
         self.send_response(200)
