@@ -26,8 +26,8 @@ from shared.utils.logging_setup import setup_component_logging
 # Initialize logger
 logger = setup_component_logging("hephaestus_mcp")
 
-from hephaestus.mcp.ui_tools import (
-    ui_capture, ui_interact, ui_sandbox, ui_analyze, browser_manager
+from hephaestus.mcp.ui_tools_v2 import (
+    ui_capture, ui_interact, ui_sandbox, ui_analyze, ui_list_areas, ui_help, browser_manager
 )
 
 # Debug imports
@@ -52,20 +52,28 @@ heartbeat_task: Optional[asyncio.Task] = None
 
 # Tool metadata for MCP
 TOOL_METADATA = {
+    "ui_list_areas": {
+        "name": "ui_list_areas",
+        "description": "List all available UI areas in Hephaestus",
+        "category": "ui",
+        "tags": ["ui", "discovery", "areas"],
+        "parameters": {}
+    },
     "ui_capture": {
         "name": "ui_capture",
-        "description": "Capture UI state without screenshots, returning structured data",
+        "description": "Capture UI state from Hephaestus UI without screenshots",
         "category": "ui",
         "tags": ["ui", "capture", "analysis"],
         "parameters": {
-            "component": {
+            "area": {
                 "type": "string",
-                "description": "Name of the Tekton component (e.g., 'rhetor', 'hermes')",
-                "required": True
+                "description": "UI area name (e.g., 'rhetor', 'navigation', 'content'). Use 'hephaestus' for entire UI",
+                "required": False,
+                "default": "hephaestus"
             },
             "selector": {
                 "type": "string",
-                "description": "Optional CSS selector to focus on specific elements",
+                "description": "Optional CSS selector to focus on specific elements within the area",
                 "required": False
             },
             "include_screenshot": {
@@ -78,13 +86,13 @@ TOOL_METADATA = {
     },
     "ui_interact": {
         "name": "ui_interact",
-        "description": "Interact with UI elements and capture what happens",
+        "description": "Interact with UI elements in Hephaestus",
         "category": "ui",
         "tags": ["ui", "interaction", "automation"],
         "parameters": {
-            "component": {
+            "area": {
                 "type": "string",
-                "description": "Name of the Tekton component",
+                "description": "UI area name (use 'hephaestus' for general interactions)",
                 "required": True
             },
             "action": {
@@ -113,13 +121,13 @@ TOOL_METADATA = {
     },
     "ui_sandbox": {
         "name": "ui_sandbox",
-        "description": "Test UI changes in a sandboxed environment before applying",
+        "description": "Test UI changes in a sandboxed environment",
         "category": "ui",
         "tags": ["ui", "sandbox", "testing", "safety"],
         "parameters": {
-            "component": {
+            "area": {
                 "type": "string",
-                "description": "Name of the Tekton component",
+                "description": "UI area to modify (use 'hephaestus' for general changes)",
                 "required": True
             },
             "changes": {
@@ -160,16 +168,31 @@ TOOL_METADATA = {
         "category": "ui",
         "tags": ["ui", "analysis", "structure"],
         "parameters": {
-            "component": {
+            "area": {
                 "type": "string",
-                "description": "Name of the Tekton component",
-                "required": True
+                "description": "UI area to analyze",
+                "required": False,
+                "default": "hephaestus"
             },
             "deep_scan": {
                 "type": "boolean",
                 "description": "Whether to perform deep analysis",
                 "required": False,
                 "default": False
+            }
+        }
+    },
+    "ui_help": {
+        "name": "ui_help",
+        "description": "Get help about UI DevTools usage - your guide to success!",
+        "category": "ui",
+        "tags": ["ui", "help", "guidance", "documentation"],
+        "parameters": {
+            "topic": {
+                "type": "string",
+                "description": "Specific help topic: 'areas', 'selectors', 'frameworks', 'errors', 'tasks', 'architecture'",
+                "required": False,
+                "enum": ["areas", "selectors", "frameworks", "errors", "tasks", "architecture"]
             }
         }
     }
@@ -194,7 +217,7 @@ async def lifespan(app: FastAPI):
             component_name=COMPONENT_NAME,
             port=MCP_PORT,
             version=VERSION,
-            capabilities=["ui_capture", "ui_interact", "ui_sandbox", "ui_analyze"],
+            capabilities=["ui_list_areas", "ui_capture", "ui_interact", "ui_sandbox", "ui_analyze", "ui_help"],
             metadata={
                 "description": "UI DevTools for safe UI manipulation",
                 "category": "devtools",
@@ -295,10 +318,12 @@ async def execute_tool(request_data: Dict[str, Any]):
     
     # Map tool names to functions
     tool_functions = {
+        "ui_list_areas": ui_list_areas,
         "ui_capture": ui_capture,
         "ui_interact": ui_interact,
         "ui_sandbox": ui_sandbox,
-        "ui_analyze": ui_analyze
+        "ui_analyze": ui_analyze,
+        "ui_help": ui_help
     }
     
     if tool_name not in tool_functions:
