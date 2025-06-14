@@ -205,60 +205,19 @@ async def lifespan(app: FastAPI):
     """Manage application lifecycle"""
     global hermes_registration, heartbeat_task
     
-    logger.info(f"Starting {COMPONENT_NAME} MCP server on port {MCP_PORT}")
+    logger.info(f"Starting hephaestus_ui_devtools MCP server on port {MCP_PORT}")
     
     # Initialize browser manager
     await browser_manager.initialize()
     
-    # Register with Hermes
-    try:
-        hermes_registration = HermesRegistration()
-        is_registered = await hermes_registration.register_component(
-            component_name=COMPONENT_NAME,
-            port=MCP_PORT,
-            version=VERSION,
-            capabilities=["ui_list_areas", "ui_capture", "ui_interact", "ui_sandbox", "ui_analyze", "ui_help"],
-            metadata={
-                "description": "UI DevTools for safe UI manipulation",
-                "category": "devtools",
-                "mcp_version": "2.0"
-            }
-        )
-        
-        if is_registered:
-            logger.info(f"Successfully registered {COMPONENT_NAME} with Hermes")
-            # Start heartbeat
-            heartbeat_task = asyncio.create_task(
-                heartbeat_loop(hermes_registration, COMPONENT_NAME, interval=30)
-            )
-        else:
-            logger.warning(f"Failed to register {COMPONENT_NAME} with Hermes")
-    
-    except Exception as e:
-        logger.error(f"Error during Hermes registration: {e}")
-        hermes_registration = None
+    # Note: Hermes registration is handled by HephaestusComponent
+    # The MCP server runs as a subprocess and doesn't need separate registration
+    logger.info("MCP DevTools server initialized")
     
     yield
     
     # Cleanup
-    logger.info(f"Shutting down {COMPONENT_NAME} MCP server")
-    
-    # Cancel heartbeat
-    if heartbeat_task:
-        heartbeat_task.cancel()
-        try:
-            await heartbeat_task
-        except asyncio.CancelledError:
-            pass
-    
-    # Deregister from Hermes
-    if hermes_registration:
-        try:
-            # Note: HermesRegistration doesn't have deregister_component method
-            # This is handled by Hermes through heartbeat timeout
-            logger.info(f"Shutting down {COMPONENT_NAME} - Hermes will detect via heartbeat timeout")
-        except Exception as e:
-            logger.error(f"Error during shutdown: {e}")
+    logger.info("Shutting down hephaestus_ui_devtools MCP server")
     
     # Clean up browser
     await browser_manager.cleanup()
@@ -266,8 +225,8 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(
-    title=f"{COMPONENT_NAME} MCP Server",
-    version=VERSION,
+    title="hephaestus_ui_devtools MCP Server",
+    version="0.1.0",
     lifespan=lifespan
 )
 
@@ -288,8 +247,8 @@ mcp_router = APIRouter(prefix="/api/mcp/v2")
 async def get_capabilities():
     """Get MCP capabilities"""
     return {
-        "name": COMPONENT_NAME,
-        "version": VERSION,
+        "name": "hephaestus_ui_devtools",
+        "version": "0.1.0",
         "description": "UI DevTools for safe UI manipulation",
         "tools": list(TOOL_METADATA.keys()),
         "metadata": {
@@ -371,8 +330,10 @@ async def health_check():
     """Health check endpoint"""
     return {
         "status": "healthy",
-        "component": COMPONENT_NAME,
-        "version": VERSION
+        "component": "hephaestus_ui_devtools",
+        "version": "0.1.0",
+        "port": MCP_PORT,
+        "registered": False  # MCP server doesn't register separately
     }
 
 
@@ -384,10 +345,10 @@ async def ready_check():
     
     return {
         "ready": browser_ready,
-        "component": COMPONENT_NAME,
+        "component": "hephaestus_ui_devtools",
+        "version": "0.1.0",
         "checks": {
-            "browser": browser_ready,
-            "hermes": hermes_registration is not None
+            "browser": browser_ready
         }
     }
 

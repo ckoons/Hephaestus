@@ -29,17 +29,13 @@ if tekton_root not in sys.path:
 # Import shared utilities
 from shared.utils.logging_setup import setup_component_logging
 from shared.utils.env_config import get_component_config
+from shared.utils.global_config import GlobalConfig
 
 # Configure logging
 logger = setup_component_logging("hephaestus")
 
-# Component configuration
-COMPONENT_NAME = "hephaestus"
-COMPONENT_VERSION = "0.1.0"
-COMPONENT_DESCRIPTION = "UI and visualization component for Tekton ecosystem"
-
-# Global server start time
-server_start_time = None
+# Get global configuration instance
+global_config = GlobalConfig.get_instance()
 
 class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     """Handler for serving the Tekton UI"""
@@ -563,13 +559,12 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.send_header("Expires", "0")
         self.end_headers()
 
-        config = get_component_config()
-        port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
+        port = global_config.config.hephaestus.port
         
         response = {
             "status": "healthy",
-            "service": COMPONENT_NAME,
-            "version": COMPONENT_VERSION,
+            "service": "hephaestus",
+            "version": "0.1.0",
             "component_type": "ui_server",
             "port": port,
             "endpoints": [
@@ -596,7 +591,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         
         # Calculate uptime
-        uptime = time.time() - server_start_time if server_start_time else 0
+        uptime = time.time() - global_config._start_time if hasattr(global_config, '_start_time') else 0
         
         # Check readiness conditions
         checks = {
@@ -610,8 +605,8 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         
         response = {
             "ready": is_ready,
-            "component": COMPONENT_NAME,
-            "version": COMPONENT_VERSION,
+            "component": "hephaestus",
+            "version": "0.1.0",
             "uptime": uptime,
             "checks": checks
         }
@@ -647,8 +642,8 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
         ]
         
         for env_var, component_name in components:
-            if hasattr(config, component_name):
-                component_config = getattr(config, component_name)
+            if hasattr(global_config.config, component_name):
+                component_config = getattr(global_config.config, component_name)
                 if hasattr(component_config, 'port'):
                     port_vars[env_var] = component_config.port
                 else:
@@ -1047,11 +1042,10 @@ def run_http_server(directory, port):
 
 def main():
     """Main entry point"""
-    global server_start_time
-    server_start_time = time.time()
+    # Note: When running from HephaestusComponent, this main() is not used
+    # The component calls run_http_server and run_websocket_server directly
     
-    config = get_component_config()
-    default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
+    default_port = global_config.config.hephaestus.port
     
     parser = argparse.ArgumentParser(description='Tekton UI Server')
     parser.add_argument('--port', type=int, default=default_port, 
@@ -1068,65 +1062,15 @@ def main():
     
     logger.info(f"Serving files from: {directory}")
     
-    # Register with Hermes and start heartbeat
-    heartbeat_client = None
-    try:
-        hermes_port = config.hermes.port if hasattr(config, 'hermes') else int(os.environ.get('HERMES_PORT'))
-        hermes_url = f"http://localhost:{hermes_port}/api/register"
-        registration_data = {
-            "name": COMPONENT_NAME,
-            "version": COMPONENT_VERSION,
-            "type": "ui",
-            "endpoint": f"http://localhost:{args.port}",
-            "capabilities": ["ui", "visualization", "websocket"],
-            "metadata": {"description": COMPONENT_DESCRIPTION}
-        }
-        
-        req = urllib.request.Request(
-            hermes_url,
-            data=json.dumps(registration_data).encode('utf-8'),
-            headers={'Content-Type': 'application/json'}
-        )
-        
-        with urllib.request.urlopen(req) as response:
-            if response.status == 200:
-                # Parse registration response
-                response_data = json.loads(response.read().decode('utf-8'))
-                logger.info("Successfully registered with Hermes")
-                
-                # Extract component ID and token from response
-                component_id = response_data.get('component_id', 'hephaestus')
-                token = response_data.get('token')
-                
-                if token:
-                    # Import and start heartbeat client
-                    from heartbeat_client import HeartbeatClient
-                    heartbeat_client = HeartbeatClient(
-                        component_id=component_id,
-                        registration_token=token,
-                        interval=30  # Send heartbeat every 30 seconds
-                    )
-                    heartbeat_client.start()
-                    logger.info("Heartbeat client started")
-                else:
-                    logger.warning("No registration token received from Hermes")
-            else:
-                logger.warning(f"Failed to register with Hermes: HTTP {response.status}")
-    except Exception as e:
-        logger.warning(f"Could not register with Hermes: {e}")
+    # Note: Hermes registration is handled by HephaestusComponent
+    # When running standalone, we skip registration
     
     # Initialize the WebSocket server (but don't run it separately)
     # In Single Port Architecture, the same port handles both HTTP and WebSocket
     run_websocket_server(args.port)
     
     # Start HTTP server in the main thread (will also handle WebSocket upgrades)
-    try:
-        run_http_server(directory, args.port)
-    finally:
-        # Stop heartbeat client on shutdown
-        if heartbeat_client:
-            logger.info("Stopping heartbeat client...")
-            heartbeat_client.stop()
+    run_http_server(directory, args.port)
 
 if __name__ == "__main__":
     main()
