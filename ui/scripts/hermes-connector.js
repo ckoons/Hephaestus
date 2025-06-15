@@ -25,7 +25,7 @@ class HermesConnector {
         this.endpoints = {
             register: '/api/register',
             message: '/api/message',
-            status: '/api/status',
+            health: '/health',  // Changed from status to health
             // Add new endpoints for LLM integration
             terminal_message: '/api/terminal/message',
             terminal_stream: '/api/terminal/stream'
@@ -199,16 +199,16 @@ class HermesConnector {
             clearTimeout(this.connectionTimeout);
         }
         
-        // Check Hermes status
-        fetch(`${this.baseUrl}${this.endpoints.status}`)
+        // Check Hermes health
+        fetch(`${this.baseUrl}${this.endpoints.health}`)
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`Hermes status check failed: ${response.status}`);
+                    throw new Error(`Hermes health check failed: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Hermes status:', data);
+                console.log('Hermes health:', data);
                 this.connected = true;
                 this.retryDelay = 5000; // Reset retry delay on successful connection
                 this.dispatchEvent('connected', data);
