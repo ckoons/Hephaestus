@@ -18,10 +18,11 @@ import lxml.html
 from cssselect import GenericTranslator
 
 # Import configuration properly
-from shared.utils.env_config import get_component_config
+from shared.utils.global_config import GlobalConfig
 
 # The MAIN UI is always Hephaestus at port 8080
-HEPHAESTUS_PORT = 8080
+global_config = GlobalConfig.get_instance()
+HEPHAESTUS_PORT = global_config.config.hephaestus.port
 HEPHAESTUS_URL = f"http://localhost:{HEPHAESTUS_PORT}"
 
 # Component areas within Hephaestus UI

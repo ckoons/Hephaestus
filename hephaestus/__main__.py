@@ -75,7 +75,7 @@ async def main():
         logger.error(f"Error in main: {e}", exc_info=True)
     finally:
         # Cleanup
-        await component.cleanup()
+        await component.shutdown()
         logger.info("Hephaestus server stopped")
 
 

@@ -28,7 +28,6 @@ if tekton_root not in sys.path:
 
 # Import shared utilities
 from shared.utils.logging_setup import setup_component_logging
-from shared.utils.env_config import get_component_config
 from shared.utils.global_config import GlobalConfig
 
 # Configure logging
@@ -42,8 +41,8 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     
     # Configuration for API proxying - using environment variables
     ERGON_API_HOST = "localhost"
-    config = get_component_config()
-    ERGON_API_PORT = config.ergon.port if hasattr(config, 'ergon') else int(os.environ.get("ERGON_PORT"))
+    global_config = GlobalConfig.get_instance()
+    ERGON_API_PORT = global_config.config.ergon.port if hasattr(global_config.config, 'ergon') else int(os.environ.get("ERGON_PORT"))
     
     # Add class variable to store the WebSocket server instance
     websocket_server = None
@@ -616,7 +615,7 @@ class TektonUIRequestHandler(SimpleHTTPRequestHandler):
     def serve_port_configuration(self):
         """Serve port configuration from environment variables"""
         # Get all environment variables for components
-        config = get_component_config()
+        config = global_config.config
         
         # Build port configuration using config pattern
         port_vars = {}
@@ -793,8 +792,8 @@ class WebSocketServer:
     
     def __init__(self, port=None):
         # Use the same port as HTTP server for Single Port Architecture
-        config = get_component_config()
-        default_port = config.hephaestus.port if hasattr(config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
+        global_config = GlobalConfig.get_instance()
+        default_port = global_config.config.hephaestus.port if hasattr(global_config.config, 'hephaestus') else int(os.environ.get("HEPHAESTUS_PORT"))
         self.port = port or default_port
         self.clients = set()
         self.component_servers = {}

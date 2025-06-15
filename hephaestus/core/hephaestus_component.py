@@ -18,6 +18,7 @@ class HephaestusComponent(StandardComponentBase):
     def __init__(self):
         super().__init__(component_name="hephaestus", version="0.1.0")
         # Component-specific attributes
+        self.initialized = False
         self.http_server_thread = None
         self.http_server = None
         self.mcp_process = None
@@ -49,6 +50,7 @@ class HephaestusComponent(StandardComponentBase):
         # Start MCP DevTools server
         self.mcp_process = await self._start_mcp_server()
         
+        self.initialized = True
         logger.info("Hephaestus component initialization completed")
     
     def _start_http_server(self):
@@ -200,3 +202,14 @@ class HephaestusComponent(StandardComponentBase):
         }
         
         return metadata
+    
+    def get_component_status(self) -> Dict[str, Any]:
+        """Get component status information."""
+        return {
+            "initialized": self.initialized,
+            "http_server_running": bool(self.http_server_thread and self.http_server_thread.is_alive()),
+            "mcp_server_running": bool(self.mcp_process and self.mcp_process.poll() is None),
+            "ui_directory": str(self.ui_directory) if self.ui_directory else None,
+            "http_port": self.http_port,
+            "mcp_port": self.mcp_port
+        }

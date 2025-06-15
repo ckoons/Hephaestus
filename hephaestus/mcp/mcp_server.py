@@ -37,11 +37,11 @@ logger.info(f"Imported ui_sandbox type: {type(ui_sandbox)}")
 logger.info(f"Imported ui_analyze type: {type(ui_analyze)}")
 
 # Import configuration
-from shared.utils.env_config import get_component_config
+from shared.utils.global_config import GlobalConfig
 
 # MCP Server configuration
-config = get_component_config()
-MCP_PORT = config.hephaestus.mcp_port
+global_config = GlobalConfig.get_instance()
+MCP_PORT = global_config.config.hephaestus.mcp_port
 COMPONENT_NAME = "hephaestus_ui_devtools"
 VERSION = "0.1.0"
 

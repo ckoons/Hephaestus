@@ -42,9 +42,9 @@ if lsof -Pi :$HEPHAESTUS_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
     exit 1
 fi
 
-# Start the Hephaestus UI server
+# Start the Hephaestus UI server using the component-based approach
 echo -e "${YELLOW}Starting Hephaestus UI server on port $HEPHAESTUS_PORT...${RESET}"
-python3 ui/server/server.py > "$LOG_DIR/hephaestus.log" 2>&1 &
+python3 -m hephaestus > "$LOG_DIR/hephaestus.log" 2>&1 &
 HEPHAESTUS_PID=$!
 
 # Trap signals for graceful shutdown
